@@ -4,7 +4,7 @@ YDrive is SEGA Consoles Emulator.
 
 **YDrive Emulator** is a modern, feature-rich **SEGA Console Emulator and game library manager (Launcher) built with C# and WPF architecture.
 
-Featuring an automated API scraper, region-based cover art mapping, and an optimized Genesis Plus GX core integration, it offers a seamless and powerful retro gaming experience.
+Featuring an automated API scraper, mapping, and an optimized Genesis Plus GX core integration, it offers a seamless and powerful retro gaming experience.
 
 ---
 
