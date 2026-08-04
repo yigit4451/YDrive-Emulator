@@ -36,7 +36,7 @@ Featuring an automated API scraper, mapping, and an optimized Genesis Plus GX co
 1. Go to the [Releases](../../releases) section and download the latest `YDrive_Emulator_v1.0.0_win-x64.zip`.
 2. Extract the ZIP file to any folder on your PC.
 3. Run `YDrive.exe` and enjoy your SEGA console games.
-4. 
+ 
 ## 📌 Development Roadmap
 
 - [ ] In-game Save/Load State UI
