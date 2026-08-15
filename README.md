@@ -1,3 +1,13 @@
+## 📸 Screenshots
+<img width="686" height="493" alt="Capture 2" src="https://github.com/user-attachments/assets/74185337-8f4f-4b5e-b08c-469703d768ee" />
+<img width="686" height="493" alt="Capture 2" src="https://github.com/user-attachments/assets/ebb74311-9db6-492d-8ea3-c75beb70a2fb" />
+<img width="686" height="573" alt="Capture 5" src="https://github.com/user-attachments/assets/c6ce9a11-b819-4fce-8ed3-df755a72c51a" />
+<img width="686" height="573" alt="Capture 4" src="https://github.com/user-attachments/assets/c7cb196c-b16c-4470-ac18-b9de95a27f67" />
+<img width="686" height="573" alt="Capture 3" src="https://github.com/user-attachments/assets/3020ef7f-4ef9-4bfd-84e5-690a87ee9437" />
+<img width="1086" height="713" alt="Capture" src="https://github.com/user-attachments/assets/28f03d4d-5c0f-4d5a-a446-4d5832638aa4" />
+
+
+
 # YDrive-Emulator
 YDrive is SEGA Consoles Emulator.
 # 🎮 YDrive Emulator
