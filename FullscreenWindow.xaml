@@ -1,0 +1,185 @@
+<Window x:Class="SegaEmulator.Views.FullscreenWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding Title, FallbackValue='YDrive - Fullscreen'}"
+        WindowStyle="None" WindowState="Maximized" Topmost="True" Background="Black"
+        ResizeMode="NoResize" ShowInTaskbar="False">
+
+    <Grid>
+        <Viewbox Stretch="Uniform" StretchDirection="Both">
+            <Border BorderBrush="Black" BorderThickness="0" Background="Black">
+                <Grid>
+                    <Image Source="{Binding ScreenImage}" 
+                           Width="{Binding ScreenWidth}" 
+                           Height="{Binding ScreenHeight}"
+                           RenderOptions.BitmapScalingMode="{Binding ScalingMode}"
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+                
+                    <!-- CRT Filter Overlay (Scanlines) -->
+                    <Rectangle Visibility="{Binding CrtFilterVisibility}" IsHitTestVisible="False" Width="{Binding ScreenWidth}" Height="{Binding ScreenHeight}" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.30">
+                        <Rectangle.CacheMode>
+                            <BitmapCache RenderAtScale="1.0" EnableClearType="False" SnapsToDevicePixels="True"/>
+                        </Rectangle.CacheMode>
+                        <Rectangle.Fill>
+                            <DrawingBrush Viewport="0,0,1,3" ViewportUnits="Absolute" TileMode="Tile" Stretch="None">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing Brush="Black">
+                                        <GeometryDrawing.Geometry>
+                                            <RectangleGeometry Rect="0,0,1,1"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    
+                    <!-- LCD Grid Filter Overlay -->
+                    <Rectangle Visibility="{Binding LcdFilterVisibility}" IsHitTestVisible="False" Width="{Binding ScreenWidth}" Height="{Binding ScreenHeight}" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3">
+                        <Rectangle.CacheMode>
+                            <BitmapCache RenderAtScale="1.0" EnableClearType="False" SnapsToDevicePixels="True"/>
+                        </Rectangle.CacheMode>
+                        <Rectangle.Fill>
+                            <DrawingBrush Viewport="0,0,3,3" ViewportUnits="Absolute" TileMode="Tile" Stretch="None">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing Brush="Black">
+                                        <GeometryDrawing.Geometry>
+                                            <GeometryGroup>
+                                                <LineGeometry StartPoint="0,0" EndPoint="3,0"/>
+                                                <LineGeometry StartPoint="0,0" EndPoint="0,3"/>
+                                            </GeometryGroup>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- 3D Tube TV Overlay (Vignette, Curved Bezel, Glass Reflection) -->
+                    <Grid Visibility="{Binding TubeTvFilterVisibility}" IsHitTestVisible="False" Width="{Binding ScreenWidth}" Height="{Binding ScreenHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Grid.CacheMode>
+                            <BitmapCache RenderAtScale="1.0" EnableClearType="False" SnapsToDevicePixels="True"/>
+                        </Grid.CacheMode>
+                        <!-- Vignette / Bulge Shadow Effect -->
+                        <Rectangle>
+                            <Rectangle.Fill>
+                                <RadialGradientBrush GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.65" RadiusY="0.75">
+                                    <GradientStop Color="#00000000" Offset="0.5" />
+                                    <GradientStop Color="#AA000000" Offset="0.95" />
+                                    <GradientStop Color="#FF000000" Offset="1.0" />
+                                </RadialGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        
+                        <!-- Curved Bezel -->
+                        <Border BorderBrush="Black" BorderThickness="20" CornerRadius="60"/>
+                        
+                        <!-- Subtle Glass Reflection -->
+                        <Rectangle Margin="20" Opacity="0.06">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="White" Offset="0.0"/>
+                                    <GradientStop Color="#00FFFFFF" Offset="0.4"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Viewbox>
+
+        <!-- Yükleniyor / Durduruldu Mesajı -->
+        <TextBlock Text="{DynamicResource Text_GamePaused}" 
+                   Foreground="LightGray" 
+                   FontSize="18" 
+                   TextAlignment="Center" 
+                   VerticalAlignment="Center"
+                   Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverted}"/>
+
+        <!-- Ekran İçi FPS (YALNIZCA Tam Ekran İçin) -->
+        <TextBlock Text="{Binding FpsText}" 
+                   Foreground="#00C896" 
+                   FontWeight="Bold" 
+                   FontSize="18"
+                   HorizontalAlignment="Right" 
+                   VerticalAlignment="Bottom" 
+                   Margin="0,0,16,16">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="1" BlurRadius="2" Color="Black"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding FpsText}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Tam Ekran Bilgi Mesajı (Popup) -->
+        <Border HorizontalAlignment="Left" VerticalAlignment="Top" 
+                Margin="16,16,0,0" Background="#99000000" 
+                CornerRadius="6" Padding="12,8" IsHitTestVisible="False"
+                Opacity="0">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" BeginTime="0:0:3.0" Duration="0:0:0.5"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ℹ" Foreground="#007ACC" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource Text_ExitFullscreenInfo}" Foreground="White" FontSize="14" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Sistem Bildirimi (Popup) -->
+        <Border HorizontalAlignment="Left" VerticalAlignment="Top" 
+                Margin="16,60,0,0" Background="#99000000" 
+                CornerRadius="6" Padding="12,8" IsHitTestVisible="False"
+                Opacity="0">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsNotificationVisible}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Name="SysPopupStoryboard">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ℹ" Foreground="#007ACC" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding NotificationText}" Foreground="White" FontSize="14" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

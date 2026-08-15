@@ -1,0 +1,184 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App / Main Window -->
+    <system:String x:Key="App_Title">YDrive Emulator</system:String>
+    <system:String x:Key="App_Subtitle">SEGA Consoles Emulator</system:String>
+
+    <system:String x:Key="Menu_File">_Dosya</system:String>
+    <system:String x:Key="Menu_AddRom">ROM _Ekle...</system:String>
+    <system:String x:Key="Menu_Settings">_Ayarlar...</system:String>
+    <system:String x:Key="Menu_Exit">Ç_ıkış</system:String>
+    
+    <system:String x:Key="Menu_View">_Görünüm</system:String>
+    <system:String x:Key="Menu_GridMode">_Grid Modu</system:String>
+    <system:String x:Key="Menu_ListMode">_Liste Modu</system:String>
+
+    <system:String x:Key="Text_SearchPlaceholder">Oyun ROM'u Arayın</system:String>
+    <system:String x:Key="Btn_Settings">⚙ Ayarlar</system:String>
+    <system:String x:Key="Btn_AddRom">➕ ROM Ekle</system:String>
+    <system:String x:Key="Btn_Grid">⊞ Grid</system:String>
+    <system:String x:Key="Btn_List">☰ Liste</system:String>
+
+    <!-- Context Menu -->
+    <system:String x:Key="Ctx_Start">▶ Başlat</system:String>
+    <system:String x:Key="Ctx_Rename">✏ Yeniden Adlandır</system:String>
+    <system:String x:Key="Ctx_ChangeCover">🖼 Kapak Resmini Değiştir...</system:String>
+    <system:String x:Key="Ctx_RemoveCover">❌ Kapak Resmini Kaldır</system:String>
+    <system:String x:Key="Ctx_Rescrape">🔄 İnternetten Yenile</system:String>
+    <system:String x:Key="Ctx_ShowAbout">ℹ Oyun Hakkında</system:String>
+    <system:String x:Key="Ctx_Delete">🗑 Kütüphaneden Sil</system:String>
+
+    <!-- Empty / Search State -->
+    <system:String x:Key="Text_EmptyTitle">Henüz oyun eklenmedi, ROM Ekle butonunu kullanın</system:String>
+    <system:String x:Key="Text_EmptyDesc">SEGA Genesis / Mega Drive ROM dosyalarınızı kütüphaneye ekleyerek başlatabilirsiniz.</system:String>
+    <system:String x:Key="Btn_SelectRom">➕ ROM Dosyası Seç</system:String>
+    <system:String x:Key="Text_EmptySearch">Aradığınız Kriterlere Uygun Oyun Bulunamadı</system:String>
+
+    <!-- Status Bar -->
+    <system:String x:Key="Text_StatusBarVersion">YDrive 1.1.0</system:String>
+    <system:String x:Key="Text_Library">Kütüphane: </system:String>
+    <system:String x:Key="Text_GamesCount"> Oyun</system:String>
+
+    <!-- Settings Window -->
+    <system:String x:Key="Title_Settings">Ayarlar - YDrive Emulator</system:String>
+    <system:String x:Key="Tab_Core">Genel</system:String>
+    <system:String x:Key="Tab_Video">Video Ayarları</system:String>
+    <system:String x:Key="Tab_Controls">Kontroller</system:String>
+    <system:String x:Key="Tab_About">Hakkında</system:String>
+
+    <system:String x:Key="Header_Core">Genel Ayarlar</system:String>
+    <system:String x:Key="Lbl_AudioSamplerate">Ses Kalitesi (Audio Samplerate)</system:String>
+    <system:String x:Key="Combo_Audio_22">22 kHz</system:String>
+    <system:String x:Key="Combo_Audio_44">44.1 kHz (CD Kalitesi)</system:String>
+    <system:String x:Key="Combo_Audio_48">48 kHz (Stüdyo Kalitesi)</system:String>
+    <system:String x:Key="Lbl_Ym2612">YM2612 FM Çip Emülasyonu</system:String>
+    <system:String x:Key="Combo_Ym_Fast">Düşük Kalite / Hızlı (mame)</system:String>
+    <system:String x:Key="Combo_Ym_High">Yüksek Kalite (nuked)</system:String>
+    <system:String x:Key="Chk_SixButton">6-Button Pad Otomatik Algılama</system:String>
+    <system:String x:Key="Chk_SvpSupport">SVP Çip Desteği (Virtua Racing)</system:String>
+    <system:String x:Key="Chk_ShowFps">Oyun İçi FPS Göster</system:String>
+
+    <system:String x:Key="Header_Video">Görüntüleme Seçenekleri</system:String>
+    <system:String x:Key="Lbl_ScreenFilter">Ekran Filtresi (Izgara/Çizgi)</system:String>
+    <system:String x:Key="Combo_Filter_Off">Kapalı</system:String>
+    <system:String x:Key="Combo_Filter_Crt">CRT Ekran Filtresi (Çizgiler)</system:String>
+    <system:String x:Key="Combo_Filter_Lcd">LCD Ekran Filtresi (Pikseller)</system:String>
+    <system:String x:Key="Chk_TubeTv">3D Tüplü Televizyon Efekti</system:String>
+
+    <system:String x:Key="Text_ControlsInfo">Yeni bir tuş atamak için butona tıklayın, ardından atamak istediğiniz tuşa basın.</system:String>
+    <system:String x:Key="Tab_Player1">Player 1</system:String>
+    <system:String x:Key="Tab_Player2">Player 2</system:String>
+
+    <system:String x:Key="Text_VersionInfo">Versiyon 1.1.0</system:String>
+    <system:String x:Key="Text_CoreInfo">Çekirdek: Genesis Plus GX</system:String>
+    <system:String x:Key="Text_DevInfo">Geliştirici: Yigit4451</system:String>
+
+    <system:String x:Key="Btn_Cancel">İptal</system:String>
+    <system:String x:Key="Btn_Save">Kaydet</system:String>
+
+    <!-- Rename Dialog -->
+    <system:String x:Key="Title_Rename">Yeniden Adlandır</system:String>
+    <system:String x:Key="Lbl_NewName">Yeni Oyun Adı:</system:String>
+
+    <!-- Game Details -->
+    <system:String x:Key="Title_GameDetails">Oyun Hakkında</system:String>
+    <system:String x:Key="Lbl_Developer">Geliştirici:</system:String>
+    <system:String x:Key="Lbl_Publisher">Yayıncı:</system:String>
+    <system:String x:Key="Lbl_ReleaseYear">Çıkış Yılı:</system:String>
+    <system:String x:Key="Lbl_HasRom">ROM Dosyası Var</system:String>
+    <system:String x:Key="Lbl_RomStatus">ROM Durumu:</system:String>
+    <system:String x:Key="Lbl_Genre">Tür:</system:String>
+    <system:String x:Key="Lbl_Description">Açıklama:</system:String>
+    <system:String x:Key="Btn_Close">Kapat</system:String>
+
+    <!-- Messages / Dialogs -->
+    <system:String x:Key="Msg_Error">Hata</system:String>
+    <system:String x:Key="Msg_Warning">Uyarı</system:String>
+    <system:String x:Key="Msg_Information">Bilgi</system:String>
+    <system:String x:Key="Msg_DeleteAllBiosTitle">BIOS Dosyalarını Sil</system:String>
+    <system:String x:Key="Msg_DeleteAllBiosConfirm">SEGA CD BIOS Dosyalarını silmek mi istiyorsunuz?</system:String>
+    <system:String x:Key="Msg_RomAddError">ROM eklenirken bir hata oluştu: </system:String>
+    <system:String x:Key="Msg_SelectRom">ROM Dosyalarını Seçin</system:String>
+    <system:String x:Key="Msg_DeleteConfirm">'{0}' oyununu kütüphaneden kaldırmak istediğinize emin misiniz?</system:String>
+    
+    <system:String x:Key="Msg_RomExists">Bu ROM zaten kütüphanenizde ekli:&#x0a;{0}</system:String>
+    <system:String x:Key="Msg_LoadError">Oyun başlatılırken hata oluştu:&#x0a;{0}</system:String>
+    <system:String x:Key="Msg_DeleteTitle">Oyunu Sil</system:String>
+    <system:String x:Key="Msg_DeleteConfirmTitle">Silme Onayı</system:String>
+    <system:String x:Key="Msg_CoreNotFound">Emülasyon çekirdeği bulunamadı!&#x0a;Dosya: {0}</system:String>
+    <system:String x:Key="Msg_RomLoadError">ROM yüklenemedi. Dosya formatını veya dosya yolunu kontrol edin.</system:String>
+    <system:String x:Key="Msg_RomLoadErrorTitle">ROM Yükleme Hatası</system:String>
+    <system:String x:Key="Msg_LaunchError">Emülatör başlatılırken hata oluştu:&#x0a;{0}</system:String>
+    <system:String x:Key="Msg_LaunchErrorTitle">Başlatma Hatası</system:String>
+    <system:String x:Key="Msg_AboutInfo">YDrive v1.0 — Oyun Kütüphanesi &amp; SEGA Consoles Emulator&#x0a;&#x0a;Tüm hakları saklıdır.</system:String>
+    <system:String x:Key="Msg_AboutTitle">YDrive Hakkında</system:String>
+
+    <system:String x:Key="Msg_RemoveCoverConfirm">'{0}' oyununun kapak resmini kaldırmak istediğinize emin misiniz?</system:String>
+    <system:String x:Key="Msg_Preparing">Hazırlanıyor...</system:String>
+    <system:String x:Key="Msg_CoreMissing">⚠ Çekirdek Yok</system:String>
+    <system:String x:Key="Msg_GameStarted">▶ Oyun Başlatıldı...</system:String>
+    <system:String x:Key="Msg_InvalidRom">⚠ Geçerli ROM dosyası bulunamadı</system:String>
+    <system:String x:Key="Msg_Stopped">Durduruldu</system:String>
+    <system:String x:Key="Msg_StateSaved">✓ State kaydedildi: {0}</system:String>
+    <system:String x:Key="Msg_StateSaveFailed">✗ State kaydetme başarısız</system:String>
+    <system:String x:Key="Msg_StateLoaded">✓ State yüklendi: {0}</system:String>
+    <system:String x:Key="Msg_StateLoadFailed">✗ State yükleme başarısız</system:String>
+    <system:String x:Key="Msg_StateMismatch">❌ Bu kayıt farklı bir oyuna ait!</system:String>
+    <system:String x:Key="Msg_Running">▶ Çalışıyor</system:String>
+    <system:String x:Key="Msg_Paused">⏸ Duraklatıldı</system:String>
+    <system:String x:Key="Msg_SaveStateTitle">Save State Kaydet</system:String>
+    <system:String x:Key="Msg_LoadStateTitle">Save State Yükle</system:String>
+    <system:String x:Key="Msg_ExitFullscreen">🗗 Küçült</system:String>
+    <system:String x:Key="Msg_EnterFullscreen">🖵 Tam Ekran</system:String>
+    
+    <system:String x:Key="Msg_SelectCover">Kapak Resmini Seç</system:String>
+    <system:String x:Key="Msg_RemoveCoverTitle">Kapak Resmini Kaldır</system:String>
+    <system:String x:Key="Msg_RemoveCoverConfirmSimple">Kapak resmini kaldırmak istediğinize emin misiniz?</system:String>
+    <system:String x:Key="Msg_CoverError">Kapak resmi seçilirken dosya erişim hatası oluştu. Varsayılan kapak gösterilecek.</system:String>
+    <system:String x:Key="Msg_CoverErrorTitle">Güvenlik Uyarısı</system:String>
+    <system:String x:Key="Msg_RomNotFoundAsk">'{0}' oyunu için geçerli bir ROM dosyası atanmamış veya dosya bulunamadı.&#x0a;&#x0a;Simdi bir ROM dosyası seçmek ister misiniz?</system:String>
+    <system:String x:Key="Msg_RomNotFoundTitle">ROM Dosyası Yok</system:String>
+    <system:String x:Key="Msg_UnsavedChanges">Değişiklikleri kaydetmeden çıkmak istediğinize emin misiniz?</system:String>
+    <system:String x:Key="Msg_WarningTitle">Uyarı</system:String>
+    <system:String x:Key="Msg_InvalidGameName">Lütfen geçerli bir oyun adı girin.</system:String>
+    <system:String x:Key="Msg_PressKey">Tuşa Basın...</system:String>
+
+    <!-- Game Window -->
+    <system:String x:Key="Btn_Pause">⏸ Duraklat</system:String>
+    <system:String x:Key="Btn_Resume">▶ Devam Et</system:String>
+    <system:String x:Key="Btn_Reset">🔄 Yeniden Başlat</system:String>
+    <system:String x:Key="Btn_SaveState">💾 Oyunu Kaydet</system:String>
+    <system:String x:Key="Btn_LoadState">📂 Kaydı Yükle</system:String>
+    <system:String x:Key="Btn_Screenshot">📷 Ekran Görüntüsü</system:String>
+    <system:String x:Key="Btn_Change">Değiştir</system:String>
+
+    <system:String x:Key="Title_ScreenshotPreview">Ekran Görüntüsü Önizleme</system:String>
+    <system:String x:Key="Lbl_SavePath">Kaydedilecek Konum:</system:String>
+    <system:String x:Key="Msg_ScreenshotSaved">✓ Ekran görüntüsü başarıyla kaydedildi!</system:String>
+    <system:String x:Key="Btn_Fullscreen">🖵 Tam Ekran</system:String>
+    <system:String x:Key="Text_GamePaused">Oyun Durduruldu</system:String>
+    <system:String x:Key="Text_ExitFullscreenInfo">Tam ekrandan çıkmak için F11 düğmesine basın</system:String>
+
+    <!-- App Errors -->
+    <system:String x:Key="Msg_AppError">Uygulama Başlatma / Çalışma Hatası:&#x0a;&#x0a;{0}&#x0a;&#x0a;Detay:&#x0a;{1}</system:String>
+    <system:String x:Key="Msg_AppErrorTitle">YDrive Hata</system:String>
+    <system:String x:Key="Msg_AppCriticalError">Uygulama Kritik Hatası:&#x0a;&#x0a;{0}&#x0a;&#x0a;Detay:&#x0a;{1}</system:String>
+    <system:String x:Key="Msg_AppCriticalErrorTitle">YDrive Kritik Hata</system:String>
+
+    <!-- Sega CD BIOS -->
+    <system:String x:Key="Header_SegaCdBios">SEGA CD BIOS Ayarları</system:String>
+    <system:String x:Key="Btn_Upload">Yükle...</system:String>
+    <system:String x:Key="Text_Loaded">✓ Yüklendi</system:String>
+    <system:String x:Key="Text_Missing">✗ Eksik</system:String>
+    <system:String x:Key="Tooltip_DeleteBiosUSA">USA BIOS Dosyasını Sil</system:String>
+    <system:String x:Key="Tooltip_DeleteBiosEurope">Europe BIOS Dosyasını Sil</system:String>
+    <system:String x:Key="Tooltip_DeleteBiosJapan">Japan BIOS Dosyasını Sil</system:String>
+    
+    <system:String x:Key="Msg_DeleteBiosTitle">BIOS Sil</system:String>
+    <system:String x:Key="Msg_DeleteBiosConfirm">{0} Dosyasını silmek istediğinize emin misiniz?</system:String>
+
+    <system:String x:Key="Label_AudioQuality">Ses Kalitesi (Örnekleme Hızı)</system:String>
+    
+</ResourceDictionary>
