@@ -42,7 +42,7 @@ Featuring an automated API scraper, mapping, and an optimized Genesis Plus GX co
 
 - [ ] In-game Save/Load State UI
 - [ ] Shader / CRT Scanline visual filters
-- [ ] Custom Keybinding / Gamepad configuration panel
+
 
 ---
 ## 📸 Screenshots
