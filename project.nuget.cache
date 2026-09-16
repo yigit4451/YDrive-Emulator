@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "nhZ9DRouD/k5kRpVeMzTwv1OONGv5F09bh2slelyGpCU88JIRen/hKJ5j70qYJtgLvZlVONkCnl29GdVAQAwog==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Yiğit\\Desktop\\YDrive first\\src\\YDrive\\SegaEmulator.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Yiğit\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.29\\microsoft.net.illink.tasks.8.0.29.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio\\2.3.0\\naudio.2.3.0.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio.asio\\2.3.0\\naudio.asio.2.3.0.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio.core\\2.3.0\\naudio.core.2.3.0.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio.midi\\2.3.0\\naudio.midi.2.3.0.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio.wasapi\\2.3.0\\naudio.wasapi.2.3.0.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio.winforms\\2.3.0\\naudio.winforms.2.3.0.nupkg.sha512",
+    "C:\\Users\\Yiğit\\.nuget\\packages\\naudio.winmm\\2.3.0\\naudio.winmm.2.3.0.nupkg.sha512"
+  ],
+  "logs": []
+}

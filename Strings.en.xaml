@@ -1,0 +1,183 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- App / Main Window -->
+    <system:String x:Key="App_Title">YDrive Emulator</system:String>
+    <system:String x:Key="App_Subtitle">SEGA Consoles Emulator</system:String>
+
+    <system:String x:Key="Menu_File">_File</system:String>
+    <system:String x:Key="Menu_AddRom">Add _ROM...</system:String>
+    <system:String x:Key="Menu_Settings">_Settings...</system:String>
+    <system:String x:Key="Menu_Exit">E_xit</system:String>
+    
+    <system:String x:Key="Menu_View">_View</system:String>
+    <system:String x:Key="Menu_GridMode">_Grid Mode</system:String>
+    <system:String x:Key="Menu_ListMode">_List Mode</system:String>
+
+    <system:String x:Key="Text_SearchPlaceholder">Search for a ROM</system:String>
+    <system:String x:Key="Btn_Settings">⚙ Settings</system:String>
+    <system:String x:Key="Btn_AddRom">➕ Add ROM</system:String>
+    <system:String x:Key="Btn_Grid">⊞ Grid</system:String>
+    <system:String x:Key="Btn_List">☰ List</system:String>
+
+    <!-- Context Menu -->
+    <system:String x:Key="Ctx_Start">▶ Start</system:String>
+    <system:String x:Key="Ctx_Rename">✏ Rename</system:String>
+    <system:String x:Key="Ctx_ChangeCover">🖼 Change Cover Image...</system:String>
+    <system:String x:Key="Ctx_RemoveCover">❌ Remove Cover Image</system:String>
+    <system:String x:Key="Ctx_Rescrape">🔄 Refresh Data</system:String>
+    <system:String x:Key="Ctx_ShowAbout">ℹ About Game</system:String>
+    <system:String x:Key="Ctx_Delete">🗑 Delete from Library</system:String>
+
+    <!-- Empty / Search State -->
+    <system:String x:Key="Text_EmptyTitle">No games added yet, use the Add ROM button</system:String>
+    <system:String x:Key="Text_EmptyDesc">You can start by adding SEGA Genesis / Mega Drive ROM files to your library.</system:String>
+    <system:String x:Key="Btn_SelectRom">➕ Select ROM File</system:String>
+    <system:String x:Key="Text_EmptySearch">No Games Found Matching Your Criteria</system:String>
+
+    <!-- Status Bar -->
+    <system:String x:Key="Text_StatusBarVersion">YDrive 1.1.0</system:String>
+    <system:String x:Key="Text_Library">Library: </system:String>
+    <system:String x:Key="Text_GamesCount"> Games</system:String>
+
+    <!-- Settings Window -->
+    <system:String x:Key="Title_Settings">Settings - YDrive Emulator</system:String>
+    <system:String x:Key="Tab_Core">General</system:String>
+    <system:String x:Key="Tab_Video">Video Settings</system:String>
+    <system:String x:Key="Tab_Controls">Controls</system:String>
+    <system:String x:Key="Tab_About">About</system:String>
+
+    <system:String x:Key="Header_Core">General Settings</system:String>
+    <system:String x:Key="Lbl_AudioSamplerate">Audio Quality (Samplerate)</system:String>
+    <system:String x:Key="Combo_Audio_22">22 kHz</system:String>
+    <system:String x:Key="Combo_Audio_44">44.1 kHz (CD Quality)</system:String>
+    <system:String x:Key="Combo_Audio_48">48 kHz (Studio Quality)</system:String>
+    <system:String x:Key="Lbl_Ym2612">YM2612 FM Chip Emulation</system:String>
+    <system:String x:Key="Combo_Ym_Fast">Low Quality / Fast (mame)</system:String>
+    <system:String x:Key="Combo_Ym_High">High Quality (nuked)</system:String>
+    <system:String x:Key="Chk_SixButton">6-Button Pad Auto Detect</system:String>
+    <system:String x:Key="Chk_SvpSupport">SVP Chip Support (Virtua Racing)</system:String>
+    <system:String x:Key="Chk_ShowFps">Show In-Game FPS</system:String>
+
+    <system:String x:Key="Header_Video">Display Options</system:String>
+    <system:String x:Key="Lbl_ScreenFilter">Screen Filter (Grid/Lines)</system:String>
+    <system:String x:Key="Combo_Filter_Off">Off</system:String>
+    <system:String x:Key="Combo_Filter_Crt">CRT Screen Filter (Lines)</system:String>
+    <system:String x:Key="Combo_Filter_Lcd">LCD Screen Filter (Pixels)</system:String>
+    <system:String x:Key="Chk_TubeTv">3D Tube TV Effect</system:String>
+
+    <system:String x:Key="Text_ControlsInfo">Click a button to assign a new key, then press the key you want to assign.</system:String>
+    <system:String x:Key="Tab_Player1">Player 1</system:String>
+    <system:String x:Key="Tab_Player2">Player 2</system:String>
+
+    <system:String x:Key="Text_VersionInfo">Version 1.1.0</system:String>
+    <system:String x:Key="Text_CoreInfo">Core: Genesis Plus GX</system:String>
+    <system:String x:Key="Text_DevInfo">Developer: Yigit4451</system:String>
+
+    <system:String x:Key="Btn_Cancel">Cancel</system:String>
+    <system:String x:Key="Btn_Save">Save</system:String>
+
+    <!-- Rename Dialog -->
+    <system:String x:Key="Title_Rename">Rename Game</system:String>
+    <system:String x:Key="Lbl_NewName">New Game Name:</system:String>
+
+    <!-- Game Details -->
+    <system:String x:Key="Title_GameDetails">Game Info</system:String>
+    <system:String x:Key="Lbl_Developer">Developer:</system:String>
+    <system:String x:Key="Lbl_Publisher">Publisher:</system:String>
+    <system:String x:Key="Lbl_ReleaseYear">Release Year:</system:String>
+    <system:String x:Key="Lbl_HasRom">Has ROM File</system:String>
+    <system:String x:Key="Lbl_RomStatus">ROM Status:</system:String>
+    <system:String x:Key="Lbl_Description">Description:</system:String>
+    <system:String x:Key="Btn_Close">Close</system:String>
+
+    <!-- Messages / Dialogs -->
+    <system:String x:Key="Msg_Error">Error</system:String>
+    <system:String x:Key="Msg_Warning">Warning</system:String>
+    <system:String x:Key="Msg_Information">Information</system:String>
+    <system:String x:Key="Msg_DeleteAllBiosTitle">Delete BIOS Files</system:String>
+    <system:String x:Key="Msg_DeleteAllBiosConfirm">Are you sure you want to delete all SEGA CD BIOS files?</system:String>
+    <system:String x:Key="Msg_RomAddError">An error occurred while adding the ROM: </system:String>
+    <system:String x:Key="Msg_SelectRom">Select ROM Files</system:String>
+    <system:String x:Key="Msg_DeleteConfirm">Are you sure you want to remove '{0}' from the library?</system:String>
+    
+    <system:String x:Key="Msg_RomExists">This ROM is already in your library:&#x0a;{0}</system:String>
+    <system:String x:Key="Msg_LoadError">Error launching game:&#x0a;{0}</system:String>
+    <system:String x:Key="Msg_DeleteTitle">Delete Game</system:String>
+    <system:String x:Key="Msg_DeleteConfirmTitle">Confirm Deletion</system:String>
+    <system:String x:Key="Msg_CoreNotFound">Emulation core not found!&#x0a;File: {0}</system:String>
+    <system:String x:Key="Msg_RomLoadError">ROM failed to load. Check the file format or path.</system:String>
+    <system:String x:Key="Msg_RomLoadErrorTitle">ROM Load Error</system:String>
+    <system:String x:Key="Msg_LaunchError">Error launching emulator:&#x0a;{0}</system:String>
+    <system:String x:Key="Msg_LaunchErrorTitle">Launch Error</system:String>
+    <system:String x:Key="Msg_AboutInfo">YDrive v1.0 — Game Library &amp; SEGA Consoles Emulator&#x0a;&#x0a;All rights reserved.</system:String>
+    <system:String x:Key="Msg_AboutTitle">About YDrive</system:String>
+
+    <system:String x:Key="Msg_RemoveCoverConfirm">Are you sure you want to remove the cover image for '{0}'?</system:String>
+    <system:String x:Key="Msg_Preparing">Preparing Emulation...</system:String>
+    <system:String x:Key="Msg_CoreMissing">⚠ Core Missing</system:String>
+    <system:String x:Key="Msg_GameStarted">▶ Game Started...</system:String>
+    <system:String x:Key="Msg_InvalidRom">⚠ Invalid ROM file</system:String>
+    <system:String x:Key="Msg_Stopped">Stopped</system:String>
+    <system:String x:Key="Msg_StateSaved">✓ State saved: {0}</system:String>
+    <system:String x:Key="Msg_StateSaveFailed">✗ State save failed</system:String>
+    <system:String x:Key="Msg_StateLoaded">✓ State loaded: {0}</system:String>
+    <system:String x:Key="Msg_StateLoadFailed">✗ State load failed</system:String>
+    <system:String x:Key="Msg_StateMismatch">❌ This save belongs to a different game!</system:String>
+    <system:String x:Key="Msg_Running">▶ Running</system:String>
+    <system:String x:Key="Msg_Paused">⏸ Paused</system:String>
+    <system:String x:Key="Msg_SaveStateTitle">Save State</system:String>
+    <system:String x:Key="Msg_LoadStateTitle">Load State</system:String>
+    <system:String x:Key="Msg_ExitFullscreen">🗗 Exit Fullscreen</system:String>
+    <system:String x:Key="Msg_EnterFullscreen">🖵 Fullscreen</system:String>
+    
+    <system:String x:Key="Msg_SelectCover">Select Cover Image</system:String>
+    <system:String x:Key="Msg_RemoveCoverTitle">Remove Cover Image</system:String>
+    <system:String x:Key="Msg_RemoveCoverConfirmSimple">Are you sure you want to remove the cover image?</system:String>
+    <system:String x:Key="Msg_CoverError">A file access error occurred while selecting the cover image. The default cover will be shown.</system:String>
+    <system:String x:Key="Msg_CoverErrorTitle">Security Warning</system:String>
+    <system:String x:Key="Msg_RomNotFoundAsk">A valid ROM file is not assigned or not found for '{0}'.&#x0a;&#x0a;Would you like to select a ROM file now?</system:String>
+    <system:String x:Key="Msg_RomNotFoundTitle">ROM File Missing</system:String>
+    <system:String x:Key="Msg_UnsavedChanges">Are you sure you want to exit without saving your changes?</system:String>
+    <system:String x:Key="Msg_WarningTitle">Warning</system:String>
+    <system:String x:Key="Msg_InvalidGameName">Please enter a valid game name.</system:String>
+    <system:String x:Key="Msg_PressKey">Press a key...</system:String>
+
+    <!-- Game Window -->
+    <system:String x:Key="Btn_Pause">⏸ Pause</system:String>
+    <system:String x:Key="Btn_Resume">▶ Resume</system:String>
+    <system:String x:Key="Btn_Reset">🔄 Restart</system:String>
+    <system:String x:Key="Btn_SaveState">💾 Save State</system:String>
+    <system:String x:Key="Btn_LoadState">📂 Load State</system:String>
+    <system:String x:Key="Btn_Screenshot">📷 Screenshot</system:String>
+    <system:String x:Key="Btn_Change">Change</system:String>
+
+    <system:String x:Key="Title_ScreenshotPreview">Screenshot Preview</system:String>
+    <system:String x:Key="Lbl_SavePath">Save Location:</system:String>
+    <system:String x:Key="Msg_ScreenshotSaved">✓ Screenshot saved successfully!</system:String>
+    <system:String x:Key="Btn_Fullscreen">🖵 Fullscreen</system:String>
+    <system:String x:Key="Text_GamePaused">Game Paused</system:String>
+    <system:String x:Key="Text_ExitFullscreenInfo">Press F11 to exit full screen</system:String>
+
+    <!-- App Errors -->
+    <system:String x:Key="Msg_AppError">Application Startup / Runtime Error:&#x0a;&#x0a;{0}&#x0a;&#x0a;Details:&#x0a;{1}</system:String>
+    <system:String x:Key="Msg_AppErrorTitle">YDrive Error</system:String>
+    <system:String x:Key="Msg_AppCriticalError">Application Critical Error:&#x0a;&#x0a;{0}&#x0a;&#x0a;Details:&#x0a;{1}</system:String>
+    <system:String x:Key="Msg_AppCriticalErrorTitle">YDrive Critical Error</system:String>
+
+    <!-- Sega CD BIOS -->
+    <system:String x:Key="Header_SegaCdBios">SEGA CD BIOS Settings</system:String>
+    <system:String x:Key="Btn_Upload">Upload...</system:String>
+    <system:String x:Key="Text_Loaded">✓ Loaded</system:String>
+    <system:String x:Key="Text_Missing">✗ Missing</system:String>
+    <system:String x:Key="Tooltip_DeleteBiosUSA">Delete USA BIOS File</system:String>
+    <system:String x:Key="Tooltip_DeleteBiosEurope">Delete Europe BIOS File</system:String>
+    <system:String x:Key="Tooltip_DeleteBiosJapan">Delete Japan BIOS File</system:String>
+    
+    <system:String x:Key="Msg_DeleteBiosTitle">Delete BIOS</system:String>
+    <system:String x:Key="Msg_DeleteBiosConfirm">Are you sure you want to delete the {0} file?</system:String>
+
+    <system:String x:Key="Label_AudioQuality">Audio Quality (Samplerate)</system:String>
+    
+</ResourceDictionary>

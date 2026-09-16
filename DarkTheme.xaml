@@ -1,0 +1,523 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:SegaEmulator.ViewModels"
+                    xmlns:conv="clr-namespace:SegaEmulator.Converters">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         YDrive — Modern Koyu Tema
+         SEGA mavi vurgu rengi ile premium dark mode tasarım
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- ─── Dönüştürücüler (Converters) ─── -->
+    <vm:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    <vm:StatusColorConverter x:Key="StatusColorConverter"/>
+    <vm:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+    <vm:ImagePathToBitmapConverter x:Key="ImagePathToBitmapConverter"/>
+    <conv:FilePathToImageConverter x:Key="FilePathToImageConverter"/>
+
+    <!-- ─── Renk Paleti ─── -->
+    <Color x:Key="PrimaryBg">#FF0D0D12</Color>
+    <Color x:Key="SecondaryBg">#FF16161E</Color>
+    <Color x:Key="TertiaryBg">#FF1E1E2A</Color>
+    <Color x:Key="SurfaceBg">#FF252535</Color>
+    <Color x:Key="HoverBg">#FF2A2A3C</Color>
+    <Color x:Key="BorderColor">#FF3A3A50</Color>
+    <Color x:Key="SegaBlue">#FF0060A8</Color>
+    <Color x:Key="SegaBlueBright">#FF1A8CFF</Color>
+    <Color x:Key="SegaBlueGlow">#400060A8</Color>
+    <Color x:Key="AccentGreen">#FF00C896</Color>
+    <Color x:Key="AccentRed">#FFFF3B5C</Color>
+    <Color x:Key="AccentYellow">#FFFFC107</Color>
+    <Color x:Key="TextPrimary">#FFE8E8F0</Color>
+    <Color x:Key="TextSecondary">#FF8888A0</Color>
+    <Color x:Key="TextMuted">#FF555570</Color>
+
+    <!-- ─── Fırçalar ─── -->
+    <SolidColorBrush x:Key="PrimaryBgBrush" Color="{StaticResource PrimaryBg}"/>
+    <SolidColorBrush x:Key="SecondaryBgBrush" Color="{StaticResource SecondaryBg}"/>
+    <SolidColorBrush x:Key="TertiaryBgBrush" Color="{StaticResource TertiaryBg}"/>
+    <SolidColorBrush x:Key="SurfaceBgBrush" Color="{StaticResource SurfaceBg}"/>
+    <SolidColorBrush x:Key="HoverBgBrush" Color="{StaticResource HoverBg}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="SegaBlueBrush" Color="{StaticResource SegaBlue}"/>
+    <SolidColorBrush x:Key="SegaBlueBrightBrush" Color="{StaticResource SegaBlueBright}"/>
+    <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
+    <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRed}"/>
+    <SolidColorBrush x:Key="AccentYellowBrush" Color="{StaticResource AccentYellow}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
+
+    <!-- Gradyan arka plan -->
+    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FF08080E" Offset="0"/>
+        <GradientStop Color="#FF0D0D18" Offset="0.5"/>
+        <GradientStop Color="#FF0A0A14" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="SegaBlueGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FF004080" Offset="0"/>
+        <GradientStop Color="#FF0070C0" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="MenuBarGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FF14141C" Offset="0"/>
+        <GradientStop Color="#FF101018" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="StatusBarGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FF101018" Offset="0"/>
+        <GradientStop Color="#FF0C0C12" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- ─── Pencere Stili ─── -->
+    <Style x:Key="EmulatorWindow" TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource AppBackgroundGradient}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontFamily" Value="Segoe UI, Inter, sans-serif"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <!-- ─── Menü Stili ─── -->
+    <Style TargetType="Menu">
+        <Setter Property="Background" Value="{StaticResource MenuBarGradient}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="Padding" Value="4,2"/>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="Padding" Value="8,5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Border"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="4"
+                            Margin="2,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Icon"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ContentPresenter x:Name="Icon"
+                                              Grid.Column="0"
+                                              ContentSource="Icon"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,6,0"/>
+
+                            <ContentPresenter Grid.Column="1"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       Margin="20,0,0,0"
+                                       VerticalAlignment="Center"/>
+
+                            <Path x:Name="SubMenuArrow"
+                                  Grid.Column="3"
+                                  Data="M 0 0 L 4 4 L 0 8 Z"
+                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  VerticalAlignment="Center"
+                                  Margin="8,0,0,0"
+                                  Visibility="Collapsed"/>
+
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{StaticResource SecondaryBgBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="4"
+                                        Margin="0,2,0,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="16" ShadowDepth="4"
+                                                          Opacity="0.5" Color="Black"/>
+                                    </Border.Effect>
+                                    <StackPanel IsItemsHost="True"
+                                                KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="SubMenuArrow" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Role" Value="SubmenuHeader">
+                            <Setter TargetName="SubMenuArrow" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_Popup" Property="Placement" Value="Right"/>
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Border" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource HoverBg}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Separator -->
+    <Style TargetType="Separator">
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="8,4"/>
+        <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="4,4"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Görünüm Değiştirici Butonları ─── -->
+    <Style x:Key="ViewToggleRadioButtonStyle" TargetType="RadioButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SegaBlueBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsChecked" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Bd" Property="Background" Value="#1AFFFFFF"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Araç Çubuğu Butonu ─── -->
+    <Style x:Key="ToolbarButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}"
+                            BorderThickness="1"
+                            BorderBrush="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{StaticResource HoverBgBrush}"/>
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource TextPrimaryBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush"
+                                    Value="{StaticResource BorderBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{StaticResource SurfaceBgBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Vurgulu Buton (SEGA Mavi) ─── -->
+    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+        <Setter Property="Background" Value="{StaticResource SegaBlueGradient}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource SegaBlue}"
+                                              BlurRadius="12" ShadowDepth="0" Opacity="0.4"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#FF0050A0" Offset="0"/>
+                                        <GradientStop Color="#FF0080D8" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="#FF003870"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Görünüm Değiştirici RadioButton Stili (ViewModeRadioButtonStyle) ─── -->
+    <Style x:Key="ViewModeRadioButtonStyle" TargetType="RadioButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBgBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SegaBlueBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource SegaBlueBrightBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Durum Çubuğu ─── -->
+    <Style x:Key="AppStatusBarStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource StatusBarGradient}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Padding" Value="12,5"/>
+    </Style>
+
+    <!-- ─── Durum Göstergesi (Yeşil/Kırmızı nokta) ─── -->
+    <Style x:Key="StatusDot" TargetType="Ellipse">
+        <Setter Property="Width" Value="8"/>
+        <Setter Property="Height" Value="8"/>
+        <Setter Property="Margin" Value="0,0,6,0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ─── Ekran Kenarlığı ─── -->
+    <Style x:Key="ScreenBorder" TargetType="Border">
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FF2A2A40" Offset="0"/>
+                    <GradientStop Color="#FF1A1A2C" Offset="0.5"/>
+                    <GradientStop Color="#FF2A2A40" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#FF000820" BlurRadius="24"
+                                  ShadowDepth="0" Opacity="0.6"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Arama Kutusu Stili (SearchTextBoxStyle) ─── -->
+    <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource SecondaryBgBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CaretBrush" Value="{StaticResource SegaBlueBrightBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <TextBlock Text="{TemplateBinding Tag}" 
+                                           Foreground="{StaticResource TextMutedBrush}" 
+                                           FontSize="{TemplateBinding FontSize}"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           Margin="2,0,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource SegaBlueBrightBrush}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceBgBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource SegaBlueBrightBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Üç Nokta (...) Menü Butonu Stili ─── -->
+    <Style x:Key="OverflowButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#A016161E"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="14"
+                            BorderThickness="1"
+                            BorderBrush="#40FFFFFF">
+                        <TextBlock Text="⋮" 
+                                   Foreground="{TemplateBinding Foreground}" 
+                                   FontSize="16" 
+                                   FontWeight="Bold" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SegaBlueBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#FF004080"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Context Menu (Pop-up Menü) Stili ─── -->
+    <Style x:Key="CardContextMenuStyle" TargetType="ContextMenu">
+        <Setter Property="Background" Value="{StaticResource SecondaryBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.6" Color="Black"/>
+                        </Border.Effect>
+                        <StackPanel IsItemsHost="True"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ─── Header & Toolbar Border Stili ─── -->
+    <Style x:Key="AppHeaderBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SecondaryBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="Padding" Value="16,12"/>
+    </Style>
+
+</ResourceDictionary>
