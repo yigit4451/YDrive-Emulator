@@ -1,3 +1,4 @@
+
 name: YDrive iOS Build
 
 on:
@@ -27,7 +28,7 @@ jobs:
       run: dotnet restore YDrive.CrossPlatform/YDrive.iOS/YDrive.iOS.csproj
 
     - name: Publish iOS App
-      run: dotnet publish YDrive.CrossPlatform/YDrive.iOS/YDrive.iOS.csproj -f net8.0-ios -c Release -p:ArchiveOnBuild=true -p:ServerAddress=
+      run: dotnet publish YDrive.CrossPlatform/YDrive.iOS/YDrive.iOS.csproj -f net8.0-ios -c Release -p:ArchiveOnBuild=true -p:ServerAddress= -p:EnableCodeSigning=false -p:CodesignRequireProvisioningProfile=false
 
     - name: Create IPA Package
       run: |
