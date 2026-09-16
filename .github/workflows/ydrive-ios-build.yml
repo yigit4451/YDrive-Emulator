@@ -1,4 +1,3 @@
-
 name: YDrive iOS Build
 
 on:
@@ -32,12 +31,10 @@ jobs:
 
     - name: Create IPA Package
       run: |
-        mkdir -p Payload
-        if [ -d "YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios/ios-arm64/YDrive.iOS.app" ]; then
-          cp -r YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios/ios-arm64/YDrive.iOS.app Payload/
-        else
-          cp -r YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios/YDrive.iOS.app Payload/
-        fi
+        rm -rf Payload YDrive.ipa
+        mkdir Payload
+        APP_PATH=$(find YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios -name "*.app" -type d | head -n 1)
+        cp -R "$APP_PATH" Payload/
         zip -r YDrive.ipa Payload
 
     - name: Upload Artifact
