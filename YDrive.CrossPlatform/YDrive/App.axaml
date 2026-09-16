@@ -1,0 +1,60 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:YDrive"
+             x:Class="YDrive.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <!-- Cobalt Blue Accent Colors -->
+        <Color x:Key="SystemAccentColor">#0047AB</Color>
+        <Color x:Key="SystemAccentColorDark1">#003A8C</Color>
+        <Color x:Key="SystemAccentColorDark2">#002D6D</Color>
+        <Color x:Key="SystemAccentColorDark3">#00204E</Color>
+        <Color x:Key="SystemAccentColorLight1">#2662B7</Color>
+        <Color x:Key="SystemAccentColorLight2">#4D7DC3</Color>
+        <Color x:Key="SystemAccentColorLight3">#7398CF</Color>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        
+        <Style Selector="Button">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Liquid Glass Styles -->
+        <Style Selector="Border.LiquidGlassCard">
+            <Setter Property="Background" Value="#331A1F2C"/>
+            <Setter Property="BorderBrush" Value="#4DFFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="BoxShadow" Value="0 8 32 0 #40000000"/>
+        </Style>
+
+        <Style Selector="Button.LiquidGlassButton">
+            <Setter Property="Background" Value="#1AFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+        </Style>
+
+        <Style Selector="Button.LiquidGlassButton:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3300A2FF"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+            <Setter Property="BoxShadow" Value="0 0 10 0 #38BDF8"/>
+        </Style>
+
+        <Style Selector="Button.LiquidGlassButton:pressed /template/ ContentPresenter">
+            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+        </Style>
+
+    </Application.Styles>
+</Application>

@@ -1,0 +1,3 @@
+C:\Users\Yiğit\Desktop\YDrive 1.0.1\cores\genesis_plus_gx_libretro.dll
+C:\Users\Yiğit\Desktop\YDrive 1.0.1\YDrive.pdb
+C:\Users\Yiğit\Desktop\YDrive 1.0.1\YDrive.exe

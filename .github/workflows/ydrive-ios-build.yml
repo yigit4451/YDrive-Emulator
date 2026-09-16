@@ -1,0 +1,46 @@
+name: YDrive iOS Build
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Install iOS Workload
+      run: dotnet workload install ios
+
+    - name: Restore dependencies
+      run: dotnet restore YDrive.CrossPlatform/YDrive.iOS/YDrive.iOS.csproj
+
+    - name: Publish iOS App
+      run: dotnet publish YDrive.CrossPlatform/YDrive.iOS/YDrive.iOS.csproj -f net8.0-ios -c Release -p:ArchiveOnBuild=true -p:ServerAddress=
+
+    - name: Create IPA Package
+      run: |
+        mkdir -p Payload
+        if [ -d "YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios/ios-arm64/YDrive.iOS.app" ]; then
+          cp -r YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios/ios-arm64/YDrive.iOS.app Payload/
+        else
+          cp -r YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios/YDrive.iOS.app Payload/
+        fi
+        zip -r YDrive.ipa Payload
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: YDrive-iOS-IPA
+        path: YDrive.ipa

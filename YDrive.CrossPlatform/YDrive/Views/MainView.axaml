@@ -1,0 +1,660 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:YDrive.ViewModels"
+             xmlns:views="using:YDrive.Views"
+             x:Class="YDrive.Views.MainView"
+             x:DataType="vm:MainViewModel"
+             UseLayoutRounding="True"
+             RenderOptions.TextRenderingMode="SubpixelAntialias"
+             RenderOptions.EdgeMode="Antialias"
+             RenderOptions.BitmapInterpolationMode="HighQuality"
+             TextElement.FontFamily="avares://YDrive/Assets/Fonts#Roboto, Segoe UI, sans-serif"
+             Background="#141218">
+
+    <UserControl.Styles>
+        <!-- Material 3 MenuFlyoutPresenter for Context Menus -->
+        <Style Selector="MenuFlyoutPresenter">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="0,8"/>
+            <Setter Property="MinWidth" Value="260"/>
+        </Style>
+
+        <!-- Material Design 3 Pill Button (Primary) -->
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#0047AB"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.Primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#005A9C"/>
+        </Style>
+
+        <!-- Material Design 3 Pill Button (Secondary/Tonal) -->
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="#333036"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.Secondary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4A4458"/>
+        </Style>
+
+        <!-- Material Design 3 Extended FAB (Floating Action Button) -->
+        <Style Selector="Button.FAB">
+            <Setter Property="Background" Value="#0047AB"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="CornerRadius" Value="28"/>
+            <Setter Property="Padding" Value="20,16"/>
+            <Setter Property="MinHeight" Value="56"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.FAB:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#005A9C"/>
+        </Style>
+
+        <!-- Material Design 3 ROM Card -->
+        <Style Selector="Border.RomCard">
+            <Setter Property="Background" Value="#1C1D22"/>
+            <Setter Property="BorderBrush" Value="#333036"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+        <Style Selector="Border.RomCard:pointerover">
+            <Setter Property="BorderBrush" Value="#4D7DC3"/>
+        </Style>
+
+        <!-- ROM Card Button Micro-interaction -->
+        <Style Selector="Button.RomCardBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.RomCardBtn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.97)"/>
+        </Style>
+        <Style Selector="Button.RomCardBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Button.RomCardBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ListBoxItem Selection Override (Remove default Avalonia grey background) -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+
+
+        <!-- 3-Dots Button -->
+        <Style Selector="Button.ThreeDotsBtn">
+            <Setter Property="Background" Value="#801D1B20"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.ThreeDotsBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#CC333036"/>
+        </Style>
+
+        <!-- About Button (Rectangle with rounded corners) -->
+        <Style Selector="Button.TopBarBtn">
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <!-- Settings Button (Circle) -->
+
+
+
+        <!-- Search Bar Focus (Using focus-within on the border) -->
+        <Style Selector="Border.SearchBar:focus-within">
+            <Setter Property="BorderBrush" Value="#A8C7FA"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="TextBox.SearchBox:focus">
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Root Panel: allows overlays to sit on top -->
+    <Panel>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <Grid RowDefinitions="Auto,*" Classes.overlayOpen="{Binding IsAnyOverlayVisible}" IsEnabled="{Binding !IsAnyOverlayVisible}">
+            <Grid.Styles>
+                <Style Selector="Grid.overlayOpen">
+                    <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                </Style>
+                <Style Selector="Grid:not(.overlayOpen)">
+                    <Setter Property="KeyboardNavigation.TabNavigation" Value="Local"/>
+                    <Setter Property="IsHitTestVisible" Value="True"/>
+                </Style>
+            </Grid.Styles>
+
+            <!-- MD3 Top App Bar -->
+            <Border Grid.Row="0" Background="#141218" Padding="16,10">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                    <!-- Logo & Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="44" Height="44" CornerRadius="22" Background="#1D1B20">
+                            <Image Source="avares://YDrive/Assets/hedgehog.png"
+                                   Stretch="Uniform" Width="30" Height="30"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="YDrive" FontSize="20" FontWeight="Bold" Foreground="#E6E1E5"/>
+                            <TextBlock Text="SEGA Consoles emulator" FontSize="11" Foreground="#4D7DC3"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Search (Centered, MD3 style search bar) -->
+                    <Border Grid.Column="1" Classes="SearchBar" Background="#1D1B20" CornerRadius="28" Height="56" MaxWidth="550"
+                            HorizontalAlignment="Stretch" Margin="16,0" BorderBrush="#333036" BorderThickness="1">
+                        <TextBox x:Name="SearchTextBox" Classes="SearchBox" Focusable="True" IsTabStop="True" Text="{Binding SearchText}"
+                                 Watermark="Oyun ara..."
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="#E6E1E5" VerticalAlignment="Stretch"
+                                 VerticalContentAlignment="Center" Margin="0">
+                            <TextBox.InnerLeftContent>
+                                <PathIcon Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" 
+                                          Width="20" Height="20" Foreground="#CAC4D0" Margin="16,0,8,0"/>
+                            </TextBox.InnerLeftContent>
+                        </TextBox>
+                    </Border>
+
+                    <!-- Settings Button -->
+                    <Button Grid.Column="2" x:Name="SettingsButton" Classes="SettingsBtn" Focusable="True" IsTabStop="True"
+                            Command="{Binding OpenSettingsCommand}"
+                            Background="#1D1B20" BorderBrush="#333036" BorderThickness="1"
+                            Width="48" Height="48" CornerRadius="24"
+                            ToolTip.Tip="Ayarlar">
+                        <TextBlock Text="⚙" FontSize="22" Foreground="#CAC4D0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Game Library Area -->
+            <Grid Grid.Row="1" Margin="16,4,16,16">
+
+                <!-- 1. Empty State (When no games exist) -->
+                <StackPanel IsVisible="{Binding !HasGames}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                    <Border Width="96" Height="96" CornerRadius="48" Background="#1D1B20" HorizontalAlignment="Center"
+                            BorderBrush="#333036" BorderThickness="1">
+                        <Viewbox Width="44" Height="44" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="#4D7DC3" Data="M7,6H17A6,6 0 0,1 23,12A6,6 0 0,1 17,18C15.22,18 13.63,17.23 12.53,16H11.47C10.37,17.23 8.78,18 7,18A6,6 0 0,1 1,12A6,6 0 0,1 7,6M6,9V11H4V13H6V15H8V13H10V11H8V9H6M15.5,12A1.5,1.5 0 0,0 14,13.5A1.5,1.5 0 0,0 15.5,15A1.5,1.5 0 0,0 17,13.5A1.5,1.5 0 0,0 15.5,12M18.5,9A1.5,1.5 0 0,0 17,10.5A1.5,1.5 0 0,0 18.5,12A1.5,1.5 0 0,0 20,10.5A1.5,1.5 0 0,0 18.5,9Z" />
+                            </Canvas>
+                        </Viewbox>
+                    </Border>
+                    <TextBlock Text="Kütüphanede Oyun Yok" FontSize="22" FontWeight="Bold"
+                               Foreground="#E6E1E5" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Oynamak için Genesis / Mega Drive ROM dosyası (.md, .bin, .gen, .zip) ekleyin."
+                               FontSize="14" Foreground="#CAC4D0" HorizontalAlignment="Center"
+                               TextAlignment="Center" MaxWidth="340" TextWrapping="Wrap"/>
+                    <Button Classes="Primary"
+                            x:Name="AddRomEmptyBtn"
+                            Focusable="True" IsTabStop="True"
+                            Command="{Binding AddRomCommand}"
+                            HorizontalAlignment="Center" MinWidth="180" MinHeight="52" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Fill="#FFFFFF" Width="20" Height="20" Stretch="Uniform"/>
+                            <TextBlock Text="ROM Ekle" Foreground="#FFFFFF" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- 2. Games Grid (Material 3 Cards) -->
+                <ListBox x:Name="GamesList" ItemsSource="{Binding FilteredGames}" Background="Transparent" BorderThickness="0"
+                         ScrollViewer.IsScrollInertiaEnabled="True"
+                         Focusable="False" IsTabStop="False"
+                         SelectedIndex="{Binding SelectedIndex}"
+                         IsVisible="{Binding HasGames}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="8"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GameItemViewModel">
+                                <Border Classes="RomCard" Width="180" MinHeight="330" Margin="8">
+                                    <Border.ContextFlyout>
+                                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                            <MenuItem Command="{Binding RenameCommand}" MinHeight="52" Padding="16,10">
+                                                <MenuItem.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Path Fill="#E6E1E5" Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="Yeniden Adlandır" VerticalAlignment="Center" FontSize="15"/>
+                                                    </StackPanel>
+                                                </MenuItem.Header>
+                                            </MenuItem>
+                                            <MenuItem Command="{Binding RefreshMetadataCommand}" MinHeight="52" Padding="16,10">
+                                                <MenuItem.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Path Fill="#E6E1E5" Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="İnternetten Yenile" VerticalAlignment="Center" FontSize="15"/>
+                                                    </StackPanel>
+                                                </MenuItem.Header>
+                                            </MenuItem>
+                                            <MenuItem Command="{Binding ShowAboutCommand}" MinHeight="52" Padding="16,10">
+                                                <MenuItem.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Path Fill="#E6E1E5" Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="Oyun Hakkında" VerticalAlignment="Center" FontSize="15"/>
+                                                    </StackPanel>
+                                                </MenuItem.Header>
+                                            </MenuItem>
+                                            
+                                            <Separator Margin="0,6"/>
+                                            
+                                            <MenuItem Command="{Binding DeleteCommand}" MinHeight="52" Padding="16,10">
+                                                <MenuItem.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Path Fill="#FF5252" Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="ROM'u Sil" Foreground="#FF5252" VerticalAlignment="Center" FontSize="15" FontWeight="Medium"/>
+                                                    </StackPanel>
+                                                </MenuItem.Header>
+                                            </MenuItem>
+                                        </MenuFlyout>
+                                    </Border.ContextFlyout>
+                                    <Button Classes="RomCardBtn" x:Name="CardButton" Focusable="True" IsTabStop="True" KeyboardNavigation.TabIndex="10" Command="{Binding OpenGameCommand}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                        <Grid RowDefinitions="170,Auto,Auto,*">
+                                            
+                                            <!-- Cover / Thumbnail -->
+                                            <Border Grid.Row="0" CornerRadius="12" Background="#141218" Margin="0,0,0,10" ClipToBounds="True">
+                                                <Panel>
+                                                    <!-- Cover image / Placeholder -->
+                                                    <Grid>
+                                                        <!-- Placeholder: Kirpi Logosu -->
+                                                        <Image Source="avares://YDrive/Assets/hedgehog.png"
+                                                               Stretch="Uniform" Width="64" Height="64" Opacity="0.3"
+                                                               IsVisible="{Binding !HasCover}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        
+                                                        <Image Source="{Binding CoverImage}"
+                                                               IsVisible="{Binding HasCover}"
+                                                               Stretch="UniformToFill"/>
+                                                    </Grid>
+                                                    
+                                                    <!-- Three-dot Menu Button -->
+                                                    <Button Classes="ThreeDotsBtn" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" Width="36" Height="36" CornerRadius="18" Background="#99000000" Padding="0" BorderThickness="0">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                                                <Setter Property="Background" Value="#CC000000"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                        <Button.Flyout>
+                                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                                <MenuItem Command="{Binding RenameCommand}" MinHeight="52" Padding="16,10">
+                                                                    <MenuItem.Header>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Path Fill="#E6E1E5" Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                                            <TextBlock Text="Yeniden Adlandır" VerticalAlignment="Center" FontSize="15"/>
+                                                                        </StackPanel>
+                                                                    </MenuItem.Header>
+                                                                </MenuItem>
+                                                                <MenuItem Command="{Binding RefreshMetadataCommand}" MinHeight="52" Padding="16,10">
+                                                                    <MenuItem.Header>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Path Fill="#E6E1E5" Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                                            <TextBlock Text="İnternetten Yenile" VerticalAlignment="Center" FontSize="15"/>
+                                                                        </StackPanel>
+                                                                    </MenuItem.Header>
+                                                                </MenuItem>
+                                                                <MenuItem Command="{Binding ShowAboutCommand}" MinHeight="52" Padding="16,10">
+                                                                    <MenuItem.Header>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Path Fill="#E6E1E5" Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                                            <TextBlock Text="Oyun Hakkında" VerticalAlignment="Center" FontSize="15"/>
+                                                                        </StackPanel>
+                                                                    </MenuItem.Header>
+                                                                </MenuItem>
+                                                                <Separator Margin="0,6"/>
+                                                                <MenuItem Command="{Binding DeleteCommand}" MinHeight="52" Padding="16,10">
+                                                                    <MenuItem.Header>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Path Fill="#FF5252" Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                                            <TextBlock Text="ROM'u Sil" Foreground="#FF5252" VerticalAlignment="Center" FontSize="15" FontWeight="Medium"/>
+                                                                        </StackPanel>
+                                                                    </MenuItem.Header>
+                                                                </MenuItem>
+                                                            </MenuFlyout>
+                                                        </Button.Flyout>
+                                                        <TextBlock Text="⋮" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-4,0,0"/>
+                                                    </Button>
+                                                </Panel>
+                                            </Border>
+
+                                        <!-- Title -->
+                                        <TextBlock Grid.Row="1" Text="{Binding Title}"
+                                                   FontSize="15" FontWeight="Bold"
+                                                   Foreground="#E6E1E5"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,0,0,4"/>
+
+                                        <!-- Console / Metadata -->
+                                        <StackPanel Grid.Row="2" Spacing="2" Margin="0,0,0,12">
+                                            <TextBlock Text="{Binding ConsoleName}"
+                                                       FontSize="12" Foreground="#4D7DC3"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding LastPlayedText}"
+                                                       FontSize="11" Foreground="#938F99"/>
+                                        </StackPanel>
+
+                                        <!-- Big Play Button (MD3 Pill Button, min 48dp) -->
+                                        <Button Grid.Row="3" Classes="Primary"
+                                                Content="▶ Oyna"
+                                                Command="{Binding OpenGameCommand}"
+                                                HorizontalAlignment="Stretch"
+                                                MinHeight="48"
+                                                VerticalAlignment="Bottom"/>
+                                        </Grid>
+                                    </Button>
+                                </Border>
+                            </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+
+        <!-- Floating Action Button (FAB) (Always on bottom right, min 56dp) -->
+        <Button Classes="FAB"
+                Focusable="True" IsTabStop="True" KeyboardNavigation.TabIndex="2"
+                Command="{Binding AddRomCommand}"
+                IsVisible="{Binding HasGames}"
+                IsEnabled="{Binding !IsAnyOverlayVisible}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,24,24"
+                ToolTip.Tip="ROM Ekle">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Fill="#FFFFFF" Width="20" Height="20" Stretch="Uniform"/>
+                <TextBlock Text="ROM Ekle" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+
+        <!-- ===== SETTINGS OVERLAY (Android/Mobile only) ===== -->
+        <!-- ===== SETTINGS FULLSCREEN OVERLAY ===== -->
+        <Border Classes="overlay" Classes.open="{Binding IsSettingsVisible}" IsEnabled="{Binding IsSettingsVisible}" Background="#1E1F22" ZIndex="140" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                KeyboardNavigation.TabNavigation="Cycle">
+            <Border.Styles>
+                <Style Selector="Border.overlay">
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                    <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="RenderTransform" Value="translateY(2000px)"/>
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="Border.overlay.open">
+                    <Setter Property="IsHitTestVisible" Value="True"/>
+                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="RenderTransform" Value="translateY(0px)"/>
+                </Style>
+            </Border.Styles>
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- MD3 Top App Bar for Settings -->
+                <Border Grid.Row="0" Background="#1E1F22" Padding="16,12" BorderBrush="#333036" BorderThickness="0,0,0,1"
+                        IsVisible="{Binding !SettingsVM.IsHudEditorOpen}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Button Grid.Column="0" x:Name="SettingsCancelBtn" Command="{Binding CloseSettingsCommand}"
+                                Background="Transparent" BorderThickness="0" CornerRadius="18" Width="36" Height="36" Padding="0" VerticalAlignment="Center" Focusable="True">
+                            <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="#E6E1E5" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <TextBlock Grid.Column="1" Text="Ayarlar" FontSize="20" FontWeight="Bold"
+                                   Foreground="#E6E1E5" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Embedded Settings View -->
+                <views:SettingsView Grid.Row="1" DataContext="{Binding SettingsVM}"/>
+
+                <!-- Bottom Bar (Save) - Only visible in Settings tabs, hidden during HUD editing -->
+                <Border Grid.Row="2" Background="#141218" Padding="16,12" BorderBrush="#333036" BorderThickness="0,1,0,0"
+                        IsVisible="{Binding !SettingsVM.IsHudEditorOpen}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                        <Button Content="İptal" Command="{Binding CloseSettingsCommand}" Classes="Secondary"/>
+                        <Button Content="Kaydet" Command="{Binding SaveSettingsCommand}" Classes="Primary"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ===== ABOUT FULLSCREEN OVERLAY ===== -->
+        <Border Classes="overlay" Classes.open="{Binding IsAboutVisible}" IsEnabled="{Binding IsAboutVisible}" Background="#1E1F22" ZIndex="150" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                KeyboardNavigation.TabNavigation="Cycle">
+            <Border.Styles>
+                <Style Selector="Border.overlay">
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                    <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="RenderTransform" Value="translateY(1000px)"/>
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="Border.overlay.open">
+                    <Setter Property="IsHitTestVisible" Value="True"/>
+                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="RenderTransform" Value="translateY(0px)"/>
+                </Style>
+            </Border.Styles>
+            
+            <Grid RowDefinitions="Auto,*">
+                <!-- Top App Bar -->
+                <Border Grid.Row="0" Background="#1E1F22" Padding="16,12" BorderBrush="#333036" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Button Grid.Column="0" Command="{Binding CloseAboutCommand}"
+                                Background="Transparent" BorderThickness="0" CornerRadius="18" Width="36" Height="36" Padding="0" VerticalAlignment="Center">
+                            <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="#E6E1E5" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <TextBlock Grid.Column="1" Text="Oyun Hakkında" FontSize="20" FontWeight="Bold" Foreground="#E6E1E5" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                </Border>
+                
+                <ScrollViewer Grid.Row="1" Margin="24">
+                    <Grid ColumnDefinitions="Auto, *" MaxWidth="800" HorizontalAlignment="Center">
+                        <!-- SOL SÜTUN -->
+                        <StackPanel Grid.Column="0" Width="250" Spacing="12">
+                            <Border Width="160" Height="200" CornerRadius="12" Background="#141218" ClipToBounds="True" HorizontalAlignment="Center">
+                                <Panel>
+                                    <Image Source="avares://YDrive/Assets/hedgehog.png" Stretch="Uniform" Width="48" Height="48" Opacity="0.3" IsVisible="{Binding !SelectedGame.HasCover}"/>
+                                    <Image Source="{Binding SelectedGame.CoverImage}" Stretch="UniformToFill" IsVisible="{Binding SelectedGame.HasCover}"/>
+                                </Panel>
+                            </Border>
+                            
+                            <!-- Action Buttons -->
+                            <!-- Ana Buton -->
+                            <Button x:Name="AboutStartBtn" Command="{Binding SelectedGame.OpenGameCommand}" Width="180" Height="52" CornerRadius="26" Background="#1976D2" HorizontalAlignment="Center" Focusable="True">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                        <Setter Property="Background" Value="#1E88E5"/>
+                                    </Style>
+                                    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                                        <Setter Property="Background" Value="#1565C0"/>
+                                    </Style>
+                                </Button.Styles>
+                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="▶" Foreground="White" FontSize="18" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Oyunu Başlat" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- İkincil İkon Butonları -->
+                            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,12,0,0" HorizontalAlignment="Center">
+                                <!-- Refresh -->
+                                <Button Command="{Binding SelectedGame.RefreshMetadataCommand}" ToolTip.Tip="İnternetten Yenile" Width="52" Height="52" CornerRadius="26" Background="#25272E" BorderBrush="#383B44" BorderThickness="1">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="#32343D"/>
+                                            <Setter Property="BorderBrush" Value="#4A4E5A"/>
+                                        </Style>
+                                    </Button.Styles>
+                                    <!-- Sync Icon Path -->
+                                    <Path Fill="#FFFFFF" Data="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
+                                
+                                <!-- Change Cover -->
+                                <Button Command="{Binding SelectedGame.ChangeCoverCommand}" ToolTip.Tip="Kapağı Değiştir" Width="52" Height="52" CornerRadius="26" Background="#25272E" BorderBrush="#383B44" BorderThickness="1">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="#32343D"/>
+                                            <Setter Property="BorderBrush" Value="#4A4E5A"/>
+                                        </Style>
+                                    </Button.Styles>
+                                    <!-- Image Icon Path -->
+                                    <Path Fill="#FFFFFF" Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
+                                
+                                <!-- Clear Cover -->
+                                <Button Command="{Binding SelectedGame.ClearCoverCommand}" IsVisible="{Binding SelectedGame.HasCover}" ToolTip.Tip="Kapağı Kaldır" Width="52" Height="52" CornerRadius="26" Background="#25272E" BorderBrush="#383B44" BorderThickness="1">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="#32343D"/>
+                                            <Setter Property="BorderBrush" Value="#FF5252"/>
+                                        </Style>
+                                    </Button.Styles>
+                                    <!-- Image Remove Icon Path (Image with cross) -->
+                                    <Path Fill="#FF5252" Data="M22.54,3.88L21.12,2.46L19,4.59L16.88,2.46L15.47,3.88L17.59,6L15.47,8.12L16.88,9.54L19,7.41L21.12,9.54L22.54,8.12L20.41,6L22.54,3.88M4,5H13V7H4V19H20V11H22V19A2,2 0 0,1 20,21H4A2,2 0 0,1 2,19V7A2,2 0 0,1 4,5M8.5,13.5L11,16.5L14.5,12L19,18H5L8.5,13.5Z" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
+                                
+                                <!-- Remove ROM -->
+                                <Button Command="{Binding SelectedGame.DeleteCommand}" ToolTip.Tip="ROM'u Kaldır" Width="52" Height="52" CornerRadius="26" Background="#25272E" BorderBrush="#383B44" BorderThickness="1">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="#32343D"/>
+                                            <Setter Property="BorderBrush" Value="#FF5252"/>
+                                        </Style>
+                                    </Button.Styles>
+                                    <!-- Trash Icon Path -->
+                                    <Path Fill="#FF5252" Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <!-- SAĞ SÜTUN -->
+                        <StackPanel Grid.Column="1" Margin="24,0,0,0" Spacing="12">
+                            <TextBlock Text="{Binding SelectedGame.Title, FallbackValue='Oyun Adı'}" FontSize="24" FontWeight="Bold" Foreground="#E6E1E5" TextWrapping="Wrap" MaxLines="2"/>
+                            
+                            <Border Background="#4A4458" CornerRadius="12" Padding="12,6" HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding SelectedGame.ConsoleName, FallbackValue='Konsol'}" Foreground="#D0BCFF" FontSize="14" FontWeight="Medium"/>
+                            </Border>
+                            
+                            <Border Classes="LiquidGlassCard" Padding="16" Margin="0,4,0,8">
+                                <TextBlock Text="{Binding SelectedGame.Item.Summary, FallbackValue='Özet bulunamadı.'}" Foreground="#CAC4D0" FontSize="14" TextWrapping="Wrap" Opacity="0.9"/>
+                            </Border>
+                            
+                            <Border Classes="LiquidGlassCard" Padding="16">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <Path Fill="#CAC4D0" Data="M12,12C14.21,12 16,10.21 16,8C16,5.79 14.21,4 12,4C9.79,4 8,5.79 8,8C8,10.21 9.79,12 12,12M12,14C9.33,14 4,15.34 4,18V20H20V18C20,15.34 14.67,14 12,14Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SelectedGame.Developer, StringFormat='Yapımcı: {0}', FallbackValue='Yapımcı: Bilinmiyor'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <Path Fill="#CAC4D0" Data="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20C3,21.1 3.9,22 5,22H19C20.1,22 21,21.1 21,20V6C21,4.9 20.1,4 19,4M19,20H5V10H19V20M19,8H5V6H19V8Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SelectedGame.ReleaseDate, StringFormat='Çıkış Yılı: {0}', FallbackValue='Çıkış Yılı: Bilinmiyor'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <Path Fill="#CAC4D0" Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SelectedGame.Item.FileName, FallbackValue='dosya.bin'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ===== GAME OVERLAY (Android/Mobile only) ===== -->
+        <Border Classes="gameOverlay" Classes.open="{Binding IsGameVisible}" ZIndex="100" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border.Styles>
+                <Style Selector="Border.gameOverlay">
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                    <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="RenderTransform" Value="translateY(2000px)"/>
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="Border.gameOverlay.open">
+                    <Setter Property="IsHitTestVisible" Value="True"/>
+                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="RenderTransform" Value="translateY(0px)"/>
+                </Style>
+            </Border.Styles>
+            <!-- GameWindowView is conditionally loaded but now animates in/out using CSS-like transitions -->
+            <views:GameWindowView DataContext="{Binding CurrentGameVM}"/>
+        </Border>
+
+        <Border IsVisible="{Binding IsRenameVisible}" Background="#99000000" ZIndex="200" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Width="380" Classes="LiquidGlassCard" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="20">
+                    <TextBlock Text="Yeniden Adlandır" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
+                    <TextBox Text="{Binding RenameText}" Watermark="Yeni Oyun Adı" Foreground="#FFFFFF" Background="#25272E" BorderBrush="#383B44" BorderThickness="1" CornerRadius="12" Padding="16,14" FontSize="16"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,8,0,0">
+                        <Button Content="İptal" Classes="LiquidGlassButton" Command="{Binding CancelRenameCommand}" Foreground="#FFFFFF" Padding="24,12" FontSize="15" FontWeight="Medium"/>
+                        <Button Content="Kaydet" Classes="LiquidGlassButton" Command="{Binding SaveRenameCommand}" Foreground="#FFFFFF" Padding="24,12" FontSize="15" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+    </Panel>
+</UserControl>

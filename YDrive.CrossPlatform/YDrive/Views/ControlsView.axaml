@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:YDrive.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="YDrive.Views.ControlsView"
+             x:DataType="vm:ControlsViewModel">
+
+    <Grid Margin="20" RowDefinitions="Auto,*">
+        <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,0,0,20">
+            <TextBlock Text="Kontroller" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+            <CheckBox Content="Player 2 Aktif" IsChecked="{Binding IsPlayer2Enabled}" Foreground="White" VerticalAlignment="Center" />
+        </StackPanel>
+        
+        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem Header="Player 1">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Player1Bindings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="200,*,Auto" Margin="0,5">
+                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" Foreground="White" />
+                                    <TextBox Grid.Column="1" Text="{Binding BoundKey}" IsReadOnly="True" Margin="10,0" />
+                                    <Button Grid.Column="2" Content="Değiştir" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Player 2" IsVisible="{Binding IsPlayer2Enabled}">
+                <ScrollViewer>
+                    <!-- Player 2 bindings go here -->
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

@@ -1,0 +1,34 @@
+[11:47:33.959] +00:00.009 [SYSTEM      ] ═══════════════════════════════════════
+[11:47:33.959] +00:00.012 [SYSTEM      ] YDrive — Oturum Başladı
+[11:47:33.959] +00:00.012 [SYSTEM      ] Zaman       : 2026-08-02 11:47:33
+[11:47:33.960] +00:00.012 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Debug\logs\diag_20260802_114733.log
+[11:47:33.960] +00:00.012 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[11:47:33.960] +00:00.012 [SYSTEM      ] 64-bit      : True
+[11:47:33.960] +00:00.012 [SYSTEM      ] .NET Sürümü : 8.0.29
+[11:47:33.960] +00:00.012 [SYSTEM      ] ═══════════════════════════════════════
+[11:47:33.960] +00:00.012 [ERROR/App   ] Unhandled Dispatcher Exception: System.ArgumentException: An item with the same key has already been added. Key: Select
+   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)
+   at System.Collections.Generic.Dictionary`2.Add(TKey key, TValue value)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector)
+   at SegaEmulator.ViewModels.ControlsViewModel.LoadBindings(ObservableCollection`1 collection, Dictionary`2 map) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\ControlsViewModel.cs:line 45
+   at SegaEmulator.ViewModels.ControlsViewModel..ctor(InputManager inputManager, Action closeAction) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\ControlsViewModel.cs:line 29
+   at SegaEmulator.ViewModels.MainViewModel.ShowControls() in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\MainViewModel.cs:line 296
+   at SegaEmulator.ViewModels.MainViewModel.<.ctor>b__44_3(Object _) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\MainViewModel.cs:line 96
+   at SegaEmulator.ViewModels.RelayCommand.Execute(Object parameter) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\RelayCommand.cs:line 21
+   at System.Windows.Controls.MenuItem.InvokeClickAfterRender(Object arg)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+[11:47:41.688] +00:07.741 [ERROR/App   ] Unhandled Dispatcher Exception: System.ArgumentException: An item with the same key has already been added. Key: Select
+   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)
+   at System.Collections.Generic.Dictionary`2.Add(TKey key, TValue value)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector)
+   at SegaEmulator.ViewModels.ControlsViewModel.LoadBindings(ObservableCollection`1 collection, Dictionary`2 map) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\ControlsViewModel.cs:line 45
+   at SegaEmulator.ViewModels.ControlsViewModel..ctor(InputManager inputManager, Action closeAction) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\ControlsViewModel.cs:line 29
+   at SegaEmulator.ViewModels.MainViewModel.ShowControls() in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\MainViewModel.cs:line 296
+   at SegaEmulator.ViewModels.MainViewModel.<.ctor>b__44_3(Object _) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\MainViewModel.cs:line 96
+   at SegaEmulator.ViewModels.RelayCommand.Execute(Object parameter) in C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\ViewModels\RelayCommand.cs:line 21
+   at System.Windows.Controls.MenuItem.InvokeClickAfterRender(Object arg)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)

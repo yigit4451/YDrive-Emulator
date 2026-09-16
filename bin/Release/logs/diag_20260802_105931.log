@@ -1,0 +1,17 @@
+[10:59:31.711] +00:00.006 [SYSTEM      ] ═══════════════════════════════════════
+[10:59:31.711] +00:00.007 [SYSTEM      ] YDrive — Oturum Başladı
+[10:59:31.711] +00:00.007 [SYSTEM      ] Zaman       : 2026-08-02 10:59:31
+[10:59:31.711] +00:00.007 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Release\logs\diag_20260802_105931.log
+[10:59:31.711] +00:00.007 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[10:59:31.711] +00:00.007 [SYSTEM      ] 64-bit      : True
+[10:59:31.711] +00:00.007 [SYSTEM      ] .NET Sürümü : 8.0.29
+[10:59:31.711] +00:00.007 [SYSTEM      ] ═══════════════════════════════════════
+[10:59:31.711] +00:00.007 [CORE        ] Callback'ler kaydedildi (Init öncesi) — Environment, Video, AudioSample, AudioBatch, Input
+[10:59:31.711] +00:00.007 [ENV         ] GET_LOG_INTERFACE → log callback kaydedildi
+[10:59:31.711] +00:00.007 [CORE        ] retro_init() tamamlandı
+[10:59:31.712] +00:00.008 [CORE        ] Yüklendi: Genesis Plus GX vv1.7.4 ca93fec | NeedFullPath: True
+[10:59:33.536] +00:01.832 [AUDIO       ] Dispose — calls=0, frames=0, nonZero=0
+[10:59:33.557] +00:01.853 [SYSTEM      ] ═══════════════════════════════════════
+[10:59:33.557] +00:01.853 [SYSTEM      ] Oturum Sonu — Toplam Süre: 00:00:01.853
+[10:59:33.557] +00:01.853 [SYSTEM      ] Exit Code: 0
+[10:59:33.557] +00:01.853 [SYSTEM      ] ═══════════════════════════════════════

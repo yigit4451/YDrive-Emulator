@@ -1,0 +1,13 @@
+[15:40:51.376] +00:00.004 [SYSTEM      ] ═══════════════════════════════════════
+[15:40:51.376] +00:00.005 [SYSTEM      ] YDrive — Oturum Başladı
+[15:40:51.376] +00:00.005 [SYSTEM      ] Zaman       : 2026-08-02 15:40:51
+[15:40:51.376] +00:00.005 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Debug\logs\diag_20260802_154051.log
+[15:40:51.376] +00:00.005 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[15:40:51.376] +00:00.005 [SYSTEM      ] 64-bit      : True
+[15:40:51.376] +00:00.005 [SYSTEM      ] .NET Sürümü : 8.0.29
+[15:40:51.376] +00:00.005 [SYSTEM      ] ═══════════════════════════════════════
+[15:40:51.376] +00:00.005 [ERROR/MetadataService] Görsel indirilemedi (https://raw.githubusercontent.com/libretro/libretro-database/master/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog.png): A task was canceled.
+[15:42:52.240] +02:00.869 [SYSTEM      ] ═══════════════════════════════════════
+[15:42:52.240] +02:00.869 [SYSTEM      ] Oturum Sonu — Toplam Süre: 00:02:00.869
+[15:42:52.240] +02:00.869 [SYSTEM      ] Exit Code: 0
+[15:42:52.240] +02:00.869 [SYSTEM      ] ═══════════════════════════════════════

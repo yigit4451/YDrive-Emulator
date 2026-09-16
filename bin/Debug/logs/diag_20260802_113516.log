@@ -1,0 +1,31 @@
+[11:35:16.522] +00:00.004 [SYSTEM      ] ═══════════════════════════════════════
+[11:35:16.523] +00:00.006 [SYSTEM      ] YDrive — Oturum Başladı
+[11:35:16.523] +00:00.006 [SYSTEM      ] Zaman       : 2026-08-02 11:35:16
+[11:35:16.523] +00:00.006 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Debug\logs\diag_20260802_113516.log
+[11:35:16.523] +00:00.006 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[11:35:16.523] +00:00.006 [SYSTEM      ] 64-bit      : True
+[11:35:16.523] +00:00.006 [SYSTEM      ] .NET Sürümü : 8.0.29
+[11:35:16.523] +00:00.006 [SYSTEM      ] ═══════════════════════════════════════
+[11:35:16.523] +00:00.006 [ERROR/App   ] Unhandled Dispatcher Exception: System.Windows.Markup.XamlParseException: ''System.Windows.Controls.Primitives.ToggleButton.IsChecked' özelliğini ayarlama işlemi özel durum döndürdü.' Satır numarası '72' ve satır konumu '52'.
+ ---> System.InvalidOperationException: 'SegaEmulator.ViewModels.MainViewModel' türünde 'IsListView' salt okunur özelliğinde TwoWay veya OneWayToSource bağlama çalışamaz.
+   at MS.Internal.Data.PropertyPathWorker.CheckReadOnly(Object item, Object info)
+   at MS.Internal.Data.PropertyPathWorker.ReplaceItem(Int32 k, Object newO, Object parent)
+   at MS.Internal.Data.PropertyPathWorker.UpdateSourceValueState(Int32 k, ICollectionView collectionView, Object newValue, Boolean isASubPropertyChange)
+   at MS.Internal.Data.ClrBindingWorker.AttachDataItem()
+   at System.Windows.Data.BindingExpression.Activate(Object item)
+   at System.Windows.Data.BindingExpression.AttachToContext(AttachAttempt attempt)
+   at System.Windows.Data.BindingExpression.AttachOverride(DependencyObject target, DependencyProperty dp)
+   at System.Windows.Data.BindingExpressionBase.Attach(DependencyObject target, DependencyProperty dp)
+   at System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   at System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   at MS.Internal.Xaml.Runtime.ClrObjectRuntime.SetValue(Object inst, XamlMember property, Object value)
+   --- End of inner exception stack trace ---
+   at System.Windows.Markup.XamlReader.RewrapException(Exception e, IXamlLineInfo lineInfo, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.Load(XamlReader xamlReader, IXamlObjectWriterFactory writerFactory, Boolean skipJournaledProperties, Object rootObject, XamlObjectWriterSettings settings, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.LoadBaml(XamlReader xamlReader, Boolean skipJournaledProperties, Object rootObject, XamlAccessLevel accessLevel, Uri baseUri)
+   at System.Windows.Markup.XamlReader.LoadBaml(Stream stream, ParserContext parserContext, Object parent, Boolean closeStream)
+   at System.Windows.Application.LoadBamlStreamWithSyncInfo(Stream stream, ParserContext pc)
+   at System.Windows.Application.DoStartup()
+   at System.Windows.Application.<.ctor>b__1_0(Object unused)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)

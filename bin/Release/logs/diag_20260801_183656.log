@@ -1,0 +1,12 @@
+[18:36:56.554] +00:00.006 [SYSTEM      ] ═══════════════════════════════════════
+[18:36:56.555] +00:00.007 [SYSTEM      ] YDrive — Oturum Başladı
+[18:36:56.555] +00:00.007 [SYSTEM      ] Zaman       : 2026-08-01 18:36:56
+[18:36:56.555] +00:00.007 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Release\logs\diag_20260801_183656.log
+[18:36:56.555] +00:00.007 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[18:36:56.555] +00:00.007 [SYSTEM      ] 64-bit      : True
+[18:36:56.555] +00:00.007 [SYSTEM      ] .NET Sürümü : 8.0.29
+[18:36:56.555] +00:00.007 [SYSTEM      ] ═══════════════════════════════════════
+[18:36:56.555] +00:00.008 [CORE        ] Callback'ler kaydedildi (Init öncesi) — Environment, Video, AudioSample, AudioBatch, Input
+[18:36:56.555] +00:00.008 [ENV         ] GET_LOG_INTERFACE → log callback kaydedildi
+[18:36:56.555] +00:00.008 [CORE        ] retro_init() tamamlandı
+[18:36:56.555] +00:00.008 [CORE        ] Yüklendi: Genesis Plus GX vv1.7.4 ca93fec | NeedFullPath: True

@@ -1,0 +1,138 @@
+[15:09:42.811] +00:00.003 [SYSTEM      ] ═══════════════════════════════════════
+[15:09:42.811] +00:00.004 [SYSTEM      ] YDrive — Oturum Başladı
+[15:09:42.811] +00:00.004 [SYSTEM      ] Zaman       : 2026-08-02 15:09:42
+[15:09:42.811] +00:00.004 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Debug\logs\diag_20260802_150942.log
+[15:09:42.812] +00:00.004 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[15:09:42.812] +00:00.004 [SYSTEM      ] 64-bit      : True
+[15:09:42.812] +00:00.004 [SYSTEM      ] .NET Sürümü : 8.0.29
+[15:09:42.812] +00:00.004 [SYSTEM      ] ═══════════════════════════════════════
+[15:09:42.812] +00:00.004 [CORE        ] Callback'ler kaydedildi (Init öncesi) — Environment, Video, AudioSample, AudioBatch, Input
+[15:09:42.812] +00:00.004 [ENV         ] GET_LOG_INTERFACE → log callback kaydedildi
+[15:09:42.812] +00:00.004 [CORE        ] retro_init() tamamlandı
+[15:09:42.812] +00:00.005 [CORE        ] Yüklendi: Genesis Plus GX vv1.7.4 ca93fec | NeedFullPath: True
+[15:09:42.816] +00:00.008 [AUDIO       ] ══ Initialize sampleRate=44100 ══
+[15:09:42.816] +00:00.009 [AUDIO       ] BufferedWaveProvider: 44100Hz 16bit 2ch, bufLen=352800
+[15:09:43.293] +00:00.485 [AUDIO       ] ✓ WaveOutEvent başlatıldı, PlaybackState=Playing
+[15:09:43.294] +00:00.486 [AUDIO       ] Volume başlangıç seviyesi: 1,000
+[15:09:43.298] +00:00.490 [CORE        ] Kısa yol üretildi: C:\Users\YIIT~1\DOWNLO~1\MORTAL~1\MORTAL~1.MD
+[15:09:43.298] +00:00.490 [CORE        ] Tüm callback'ler yeniden kaydedildi — Env=True, Video=True, AudioSample=True, AudioBatch=True, InputPoll=True, InputState=True
+[15:09:43.298] +00:00.490 [CORE        ] retro_load_game çağrılıyor — NeedFullPath=True, Size=2097152 bytes
+[15:09:43.299] +00:00.491 [CORE_INFO   ] Frontend supports RGB565 - will use that instead of XRGB1555.
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_system_bram → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_cart_size → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_cart_bram → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_system_hw → auto
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_bios → disabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_region_detect → auto
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_vdp_mode → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_force_dtack → enabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_addr_error → enabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_cd_latency → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_cd_precache → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_add_on → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_lock_on → null
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_ym2413 → VALUE=enabled
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_ym2413_core → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_sound_output → VALUE=stereo
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_psg_preamp → VALUE=150
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_fm_preamp → VALUE=150
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_cdda_volume → 100
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_pcm_volume → 100
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_audio_filter → VALUE=disabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_lowpass_range → 60
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_audio_eq_low → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_audio_eq_mid → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_audio_eq_high → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_ym2612 → VALUE=nuked
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_frameskip → disabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_frameskip_threshold → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_blargg_ntsc_filter → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_lcd_filter → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_overscan → disabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_gg_extra → disabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_aspect_ratio → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_render → single field
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_gun_cursor → no
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_gun_input → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_invert_mouse → no
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_left_border → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_overclock → 100%
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_no_sprite_limit → disabled
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_enhanced_vscroll → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_enhanced_vscroll_limit → null
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_psg_channel_0_volume → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_psg_channel_1_volume → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_psg_channel_2_volume → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_psg_channel_3_volume → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_md_channel_0_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_md_channel_1_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_md_channel_2_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_md_channel_3_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_md_channel_4_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_md_channel_5_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_0_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_1_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_2_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_3_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_4_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_5_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_6_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_7_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR     ] Key: genesis_plus_gx_sms_fm_channel_8_volume → null
+[15:09:43.299] +00:00.492 [GET_VAR_AUDIO] KEY=genesis_plus_gx_show_advanced_audio_settings → VALUE=null (unhandled!)
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Game Genie ROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\ggenie.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Action Replay (Pro) ROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\areplay.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Sonic & Knuckles (2 MB) ROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\sk.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Sonic & Knuckles UPMEM (256 KB) ROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\sk2chip.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Mega Drive TMSS BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_MD.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Game Gear TMSS BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios.gg
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Master System (PAL) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_E.sms
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Master System (NTSC-U) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_U.sms
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Master System (NTSC-J) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_J.sms
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Mega CD (PAL) BIOS should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_CD_E.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Sega CD (NTSC-U) BIOS should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_CD_U.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Mega CD (NTSC-J) BIOS should be located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\system\bios_CD_J.bin
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Mega CD (PAL) BRAM is located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\saves\scd_E.brm
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Sega CD (NTSC-U) BRAM is located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\saves\scd_U.brm
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Mega CD (NTSC-J) BRAM is located at: C:\Users\YiÄŸit\Desktop\YDrive first\bin\saves\scd_J.brm
+[15:09:43.299] +00:00.492 [CORE_DEBUG  ] Sega/Mega CD RAM CART is located at: 
+[15:09:43.300] +00:00.492 [CORE_INFO   ] Loading 2097152 bytes ...
+[15:09:43.307] +00:00.499 [CORE        ] AV Bilgisi — FPS: 59,92, SampleRate: 44100, Çözünürlük: 256x192, AspectRatio: 1,524
+[15:09:43.319] +00:00.511 [BATCH_RAW   ] #1: frames=735, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.320] +00:00.512 [AUDIO_RAW   ] WriteSamples #1: frames=735, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.321] +00:00.513 [AUDIO       ] ⚡ WaveOut durmuştu → Play() çağrıldı
+[15:09:43.322] +00:00.514 [AUDIO       ] WriteSamples #1: frames=735, sampleCount=1470, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=2940, playState=Playing
+[15:09:43.342] +00:00.535 [BATCH_RAW   ] #2: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.342] +00:00.535 [AUDIO_RAW   ] WriteSamples #2: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.342] +00:00.535 [AUDIO       ] WriteSamples #2: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=5884, playState=Playing
+[15:09:43.344] +00:00.537 [BATCH_RAW   ] #3: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.344] +00:00.537 [AUDIO_RAW   ] WriteSamples #3: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.344] +00:00.537 [AUDIO       ] WriteSamples #3: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=4064, playState=Playing
+[15:09:43.361] +00:00.553 [BATCH_RAW   ] #4: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.361] +00:00.553 [AUDIO_RAW   ] WriteSamples #4: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.361] +00:00.553 [AUDIO       ] WriteSamples #4: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=2944, playState=Playing
+[15:09:43.377] +00:00.570 [BATCH_RAW   ] #5: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.377] +00:00.570 [AUDIO_RAW   ] WriteSamples #5: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.377] +00:00.570 [AUDIO       ] WriteSamples #5: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=5888, playState=Playing
+[15:09:43.394] +00:00.586 [AUDIO_RAW   ] WriteSamples #6: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.394] +00:00.586 [AUDIO       ] WriteSamples #6: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=8832, playState=Playing
+[15:09:43.411] +00:00.603 [AUDIO_RAW   ] WriteSamples #7: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.411] +00:00.603 [AUDIO       ] WriteSamples #7: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=11776, playState=Playing
+[15:09:43.427] +00:00.620 [AUDIO_RAW   ] WriteSamples #8: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.428] +00:00.620 [AUDIO       ] WriteSamples #8: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=5192, playState=Playing
+[15:09:43.444] +00:00.636 [AUDIO_RAW   ] WriteSamples #9: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.444] +00:00.636 [AUDIO       ] WriteSamples #9: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=3372, playState=Playing
+[15:09:43.461] +00:00.653 [BATCH_RAW   ] #10: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.461] +00:00.653 [AUDIO_RAW   ] WriteSamples #10: frames=736, rawNonZero=False, rawHex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+[15:09:43.461] +00:00.653 [AUDIO       ] WriteSamples #10: frames=736, sampleCount=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, volume=1,00, buffered=6316, playState=Playing
+[15:09:43.544] +00:00.737 [BATCH_RAW   ] #15: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.628] +00:00.820 [BATCH_RAW   ] #20: frames=735, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.711] +00:00.904 [BATCH_RAW   ] #25: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:43.794] +00:00.987 [BATCH_RAW   ] #30: frames=736, rawNonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, ptr=0x7FFA53A4DD40, subscribers=1
+[15:09:44.295] +00:01.487 [CALLBACK    ] AudioBatch #60: totalSingle=0, totalBatch=60
+[15:09:44.599] +00:01.791 [AUDIO       ] Dispose — calls=77, frames=56667, nonZero=0
+[15:09:44.599] +00:01.791 [AUDIO       ] Shutdown, PlaybackState=Playing
+[15:38:46.821] +29:04.013 [SYSTEM      ] ═══════════════════════════════════════
+[15:38:46.821] +29:04.013 [SYSTEM      ] Oturum Sonu — Toplam Süre: 00:29:04.013
+[15:38:46.821] +29:04.013 [SYSTEM      ] Exit Code: 0
+[15:38:46.821] +29:04.013 [SYSTEM      ] ═══════════════════════════════════════

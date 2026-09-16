@@ -1,0 +1,57 @@
+[23:06:04.199] [SYSTEM] Tanılama başladı — Log: C:\Users\Yiğit\Desktop\SEGA Console Emulatıor\bin\Release\logs\diag_20260730_230604.log
+[23:06:04.202] [SYSTEM] OS: Microsoft Windows NT 10.0.26200.0, 64-bit: True
+[23:06:04.203] [CORE] AV Bilgisi — FPS: 59,92, SampleRate: 44100, Çözünürlük: 256x192, AspectRatio: 1,524
+[23:06:04.208] [AUDIO] ══ Initialize başladı ══ sampleRate: 44100
+[23:06:04.208] [AUDIO] WaveFormat: 44100Hz, 16bit, 2ch
+[23:06:04.208] [AUDIO] BufferedWaveProvider oluşturuldu — BufferLength: 705600
+[23:06:04.708] [AUDIO] Volume ayarlandı: 1
+[23:06:04.710] [AUDIO] ✓ WaveOutEvent başlatıldı — PlaybackState: Playing, Volume: 1
+[23:06:04.719] [CALLBACK] AudioBatch #1: frames=735, data=True, subscriberCount=1
+[23:06:04.722] [AUDIO] WriteSamples #1: frames=735, bytes=2940, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=0
+[23:06:04.736] [CALLBACK] AudioBatch #2: frames=736, data=True, subscriberCount=1
+[23:06:04.736] [AUDIO] WriteSamples #2: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=2940
+[23:06:04.746] [CALLBACK] AudioBatch #3: frames=736, data=True, subscriberCount=1
+[23:06:04.746] [AUDIO] WriteSamples #3: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=5884
+[23:06:04.762] [CALLBACK] AudioBatch #4: frames=736, data=True, subscriberCount=1
+[23:06:04.762] [AUDIO] WriteSamples #4: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=8828
+[23:06:04.779] [CALLBACK] AudioBatch #5: frames=736, data=True, subscriberCount=1
+[23:06:04.779] [AUDIO] WriteSamples #5: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=11772
+[23:06:04.796] [AUDIO] WriteSamples #6: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=14716
+[23:06:04.812] [AUDIO] WriteSamples #7: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=17660
+[23:06:04.829] [AUDIO] WriteSamples #8: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=20604
+[23:06:04.846] [AUDIO] WriteSamples #9: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=23548
+[23:06:04.862] [AUDIO] WriteSamples #10: frames=736, bytes=2944, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=26492
+[23:06:05.697] [CALLBACK] AudioBatch #60: totalSingle=0, totalBatch=60
+[23:06:05.697] [AUDIO] WriteSamples #60: totalFrames=43420, nonZeroRatio=0/60, buffered=67792, playState=Playing
+[23:06:06.698] [CALLBACK] AudioBatch #120: totalSingle=0, totalBatch=120
+[23:06:06.698] [AUDIO] WriteSamples #120: totalFrames=87577, nonZeroRatio=0/120, buffered=67940, playState=Playing
+[23:06:07.700] [CALLBACK] AudioBatch #180: totalSingle=0, totalBatch=180
+[23:06:07.700] [AUDIO] WriteSamples #180: totalFrames=131734, nonZeroRatio=0/180, buffered=68088, playState=Playing
+[23:06:08.701] [CALLBACK] AudioBatch #240: totalSingle=0, totalBatch=240
+[23:06:08.701] [AUDIO] WriteSamples #240: totalFrames=175891, nonZeroRatio=0/240, buffered=68236, playState=Playing
+[23:06:09.702] [CALLBACK] AudioBatch #300: totalSingle=0, totalBatch=300
+[23:06:09.702] [AUDIO] WriteSamples #300: totalFrames=220048, nonZeroRatio=0/300, buffered=68384, playState=Playing
+[23:06:10.733] [CALLBACK] AudioBatch #360: totalSingle=0, totalBatch=360
+[23:06:10.733] [AUDIO] WriteSamples #360: totalFrames=264205, nonZeroRatio=0/360, buffered=64120, playState=Playing
+[23:06:11.705] [CALLBACK] AudioBatch #420: totalSingle=0, totalBatch=420
+[23:06:11.705] [AUDIO] WriteSamples #420: totalFrames=308362, nonZeroRatio=0/420, buffered=68680, playState=Playing
+[23:06:12.706] [CALLBACK] AudioBatch #480: totalSingle=0, totalBatch=480
+[23:06:12.706] [AUDIO] WriteSamples #480: totalFrames=352518, nonZeroRatio=0/480, buffered=68824, playState=Playing
+[23:06:13.707] [CALLBACK] AudioBatch #540: totalSingle=0, totalBatch=540
+[23:06:13.708] [AUDIO] WriteSamples #540: totalFrames=396675, nonZeroRatio=0/540, buffered=68972, playState=Playing
+[23:06:14.709] [CALLBACK] AudioBatch #600: totalSingle=0, totalBatch=600
+[23:06:14.709] [AUDIO] WriteSamples #600: totalFrames=440832, nonZeroRatio=0/600, buffered=69120, playState=Playing
+[23:06:15.710] [CALLBACK] AudioBatch #660: totalSingle=0, totalBatch=660
+[23:06:15.710] [AUDIO] WriteSamples #660: totalFrames=484989, nonZeroRatio=0/660, buffered=69268, playState=Playing
+[23:06:16.711] [CALLBACK] AudioBatch #720: totalSingle=0, totalBatch=720
+[23:06:16.711] [AUDIO] WriteSamples #720: totalFrames=529146, nonZeroRatio=0/720, buffered=69416, playState=Playing
+[23:06:17.713] [CALLBACK] AudioBatch #780: totalSingle=0, totalBatch=780
+[23:06:17.713] [AUDIO] WriteSamples #780: totalFrames=573303, nonZeroRatio=0/780, buffered=69564, playState=Playing
+[23:06:18.714] [CALLBACK] AudioBatch #840: totalSingle=0, totalBatch=840
+[23:06:18.714] [AUDIO] WriteSamples #840: totalFrames=617460, nonZeroRatio=0/840, buffered=65300, playState=Playing
+[23:06:19.715] [CALLBACK] AudioBatch #900: totalSingle=0, totalBatch=900
+[23:06:19.715] [AUDIO] WriteSamples #900: totalFrames=661616, nonZeroRatio=0/900, buffered=65444, playState=Playing
+[23:06:20.717] [CALLBACK] AudioBatch #960: totalSingle=0, totalBatch=960
+[23:06:20.717] [AUDIO] WriteSamples #960: totalFrames=705773, nonZeroRatio=0/960, buffered=65592, playState=Playing
+[23:06:21.718] [CALLBACK] AudioBatch #1020: totalSingle=0, totalBatch=1020
+[23:06:21.718] [AUDIO] WriteSamples #1020: totalFrames=749930, nonZeroRatio=0/1020, buffered=65740, playState=Playing

@@ -1,0 +1,26 @@
+{
+  "Player1Map": {
+    "Up": 4,
+    "Down": 5,
+    "Left": 6,
+    "Right": 7,
+    "Z": 1,
+    "X": 0,
+    "C": 8,
+    "A": 10,
+    "S": 9,
+    "D": 11,
+    "Return": 3,
+    "RightShift": 2
+  },
+  "Player2Map": {
+    "NumPad8": 4,
+    "NumPad2": 5,
+    "NumPad4": 6,
+    "NumPad6": 7,
+    "NumPad1": 1,
+    "NumPad3": 0,
+    "NumPad5": 8,
+    "NumPad0": 3
+  }
+}

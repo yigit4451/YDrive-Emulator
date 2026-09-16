@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:YDrive.ViewModels"
+        xmlns:views="using:YDrive.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="YDrive.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="YDrive – Settings"
+        Width="700" Height="650"
+        MinWidth="600" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="#141218"
+        CanResize="True">
+
+    <Window.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#A8C7FA"/>
+            <Setter Property="Foreground" Value="#062E6F"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.Primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D3E3FD"/>
+        </Style>
+
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="#333036"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.Secondary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4A4458"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*,Auto">
+        
+        <!-- Embedded Settings View -->
+        <views:SettingsView Grid.Row="0" DataContext="{Binding}" Margin="16,16,16,0"/>
+
+        <!-- Bottom Bar (Save/Cancel) -->
+        <Border Grid.Row="1" Background="#1D1B20" Padding="24,16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Classes="Secondary"/>
+                <Button Content="Save" Command="{Binding SaveCommand}" Classes="Primary"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.ydrive.android"
+          android:installLocation="auto">
+
+    <!-- Storage permissions for ROM access -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    <!-- Android 13+ uses granular permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Hardware feature declarations for gamepad recognition -->
+    <uses-feature android:name="android.hardware.gamepad" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:label="YDrive"
+        android:icon="@drawable/icon"
+        android:requestLegacyExternalStorage="true"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:appCategory="game">
+        
+        <!-- BlueStacks/Android game category flag -->
+        <meta-data android:name="isGame" android:value="true" />
+    </application>
+</manifest>

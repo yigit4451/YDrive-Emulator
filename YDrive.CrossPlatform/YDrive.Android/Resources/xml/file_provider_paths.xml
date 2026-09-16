@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internal files dir -->
+    <files-path name="internal_files" path="." />
+    <!-- Cache dir (where SAF copies are stored) -->
+    <cache-path name="cache" path="." />
+    <!-- External storage (for legacy access) -->
+    <external-path name="external" path="." />
+    <external-files-path name="external_files" path="." />
+</paths>

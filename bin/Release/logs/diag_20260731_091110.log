@@ -1,0 +1,84 @@
+[09:11:10.279] [SYSTEM] Tanılama başladı — Log: C:\Users\Yiğit\Desktop\SEGA Console Emulatıor\bin\Release\logs\diag_20260731_091110.log
+[09:11:10.281] [SYSTEM] OS: Microsoft Windows NT 10.0.26200.0, 64-bit: True
+[09:11:10.281] [ENV] GET_LOG_INTERFACE → log callback kaydedildi
+[09:11:40.516] [CORE] retro_load_game çağrılıyor — Path: C:\Users\Yiğit\Downloads\Sonic The Hedgehog (USA, Europe) (1)\Sonic The Hedgehog (USA, Europe).md, Size: 524288 bytes
+[09:11:40.517] [CORE_INFO] Frontend supports RGB565 - will use that instead of XRGB1555.
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_system_bram → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_cart_size → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_cart_bram → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_system_hw → Returned: auto
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_bios → Returned: disabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_region_detect → Returned: auto
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_vdp_mode → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_force_dtack → Returned: enabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_addr_error → Returned: enabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_cd_latency → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_cd_precache → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_add_on → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_lock_on → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_ym2413 → Returned: auto
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_ym2413_core → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sound_output → Returned: stereo
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_psg_preamp → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_fm_preamp → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_cdda_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_pcm_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_audio_filter → Returned: disabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_lowpass_range → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_audio_eq_low → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_audio_eq_mid → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_audio_eq_high → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_ym2612 → Returned: nuked
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_frameskip → Returned: disabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_frameskip_threshold → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_blargg_ntsc_filter → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_lcd_filter → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_overscan → Returned: disabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_gg_extra → Returned: disabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_aspect_ratio → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_render → Returned: single field
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_gun_cursor → Returned: no
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_gun_input → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_invert_mouse → Returned: no
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_left_border → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_overclock → Returned: 100%
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_no_sprite_limit → Returned: disabled
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_enhanced_vscroll → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_enhanced_vscroll_limit → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_psg_channel_0_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_psg_channel_1_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_psg_channel_2_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_psg_channel_3_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_md_channel_0_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_md_channel_1_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_md_channel_2_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_md_channel_3_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_md_channel_4_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_md_channel_5_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_0_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_1_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_2_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_3_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_4_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_5_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_6_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_7_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_8_volume → Returned: null
+[09:11:40.518] [GET_VAR] Key: genesis_plus_gx_show_advanced_audio_settings → Returned: null
+[09:11:40.518] [CORE_DEBUG] Game Genie ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\ggenie.bin
+[09:11:40.518] [CORE_DEBUG] Action Replay (Pro) ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\areplay.bin
+[09:11:40.518] [CORE_DEBUG] Sonic & Knuckles (2 MB) ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\sk.bin
+[09:11:40.518] [CORE_DEBUG] Sonic & Knuckles UPMEM (256 KB) ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\sk2chip.bin
+[09:11:40.518] [CORE_DEBUG] Mega Drive TMSS BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_MD.bin
+[09:11:40.518] [CORE_DEBUG] Game Gear TMSS BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios.gg
+[09:11:40.518] [CORE_DEBUG] Master System (PAL) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_E.sms
+[09:11:40.518] [CORE_DEBUG] Master System (NTSC-U) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_U.sms
+[09:11:40.518] [CORE_DEBUG] Master System (NTSC-J) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_J.sms
+[09:11:40.518] [CORE_DEBUG] Mega CD (PAL) BIOS should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_CD_E.bin
+[09:11:40.518] [CORE_DEBUG] Sega CD (NTSC-U) BIOS should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_CD_U.bin
+[09:11:40.518] [CORE_DEBUG] Mega CD (NTSC-J) BIOS should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_CD_J.bin
+[09:11:40.518] [CORE_DEBUG] Mega CD (PAL) BRAM is located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\saves\scd_E.brm
+[09:11:40.518] [CORE_DEBUG] Sega CD (NTSC-U) BRAM is located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\saves\scd_U.brm
+[09:11:40.518] [CORE_DEBUG] Mega CD (NTSC-J) BRAM is located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\saves\scd_J.brm
+[09:11:40.518] [CORE_DEBUG] Sega/Mega CD RAM CART is located at: 
+[09:11:40.519] [CORE_ERROR] Unable to open file.

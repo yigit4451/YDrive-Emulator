@@ -1,0 +1,18 @@
+[15:02:56.972] +00:00.004 [SYSTEM      ] ═══════════════════════════════════════
+[15:02:56.972] +00:00.005 [SYSTEM      ] YDrive — Oturum Başladı
+[15:02:56.972] +00:00.005 [SYSTEM      ] Zaman       : 2026-08-02 15:02:56
+[15:02:56.972] +00:00.005 [SYSTEM      ] Log Dosyası : C:\Users\Yiğit\Desktop\YDrive first\bin\Release\logs\diag_20260802_150256.log
+[15:02:56.972] +00:00.005 [SYSTEM      ] OS          : Microsoft Windows NT 10.0.26200.0
+[15:02:56.972] +00:00.005 [SYSTEM      ] 64-bit      : True
+[15:02:56.972] +00:00.005 [SYSTEM      ] .NET Sürümü : 8.0.29
+[15:02:56.972] +00:00.005 [SYSTEM      ] ═══════════════════════════════════════
+[15:02:56.973] +00:00.005 [ERROR/MetadataService] Görsel indirilemedi (https://cdn.libretro.com/assets/frontend/bundle/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog%20%28USA%2C%20Europe%29.png): Bilinen böyle bir ana bilgisayar yok. (cdn.libretro.com:443)
+[15:02:57.030] +00:00.063 [ERROR/MetadataService] Görsel indirilemedi (https://cdn.libretro.com/assets/frontend/bundle/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog%20%28USA%2C%20Europe%29.png): Bilinen böyle bir ana bilgisayar yok. (cdn.libretro.com:443)
+[15:02:57.332] +00:00.364 [ERROR/MetadataService] Görsel indirilemedi (https://cdn.libretro.com/assets/frontend/bundle/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog%20%28USA%29.png): Bilinen böyle bir ana bilgisayar yok. (cdn.libretro.com:443)
+[15:02:57.640] +00:00.672 [ERROR/MetadataService] Görsel indirilemedi (https://cdn.libretro.com/assets/frontend/bundle/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog%20%28Europe%29.png): Bilinen böyle bir ana bilgisayar yok. (cdn.libretro.com:443)
+[15:02:57.954] +00:00.987 [ERROR/MetadataService] Görsel indirilemedi (https://cdn.libretro.com/assets/frontend/bundle/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog%20%28Japan%29.png): Bilinen böyle bir ana bilgisayar yok. (cdn.libretro.com:443)
+[15:02:58.254] +00:01.287 [ERROR/MetadataService] Görsel indirilemedi (https://cdn.libretro.com/assets/frontend/bundle/thumbnails/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Sonic%20The%20Hedgehog.png): Bilinen böyle bir ana bilgisayar yok. (cdn.libretro.com:443)
+[15:03:17.191] +00:20.223 [SYSTEM      ] ═══════════════════════════════════════
+[15:03:17.191] +00:20.223 [SYSTEM      ] Oturum Sonu — Toplam Süre: 00:00:20.223
+[15:03:17.191] +00:20.223 [SYSTEM      ] Exit Code: 0
+[15:03:17.191] +00:20.223 [SYSTEM      ] ═══════════════════════════════════════

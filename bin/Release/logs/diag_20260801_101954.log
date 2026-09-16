@@ -1,0 +1,112 @@
+[10:19:54.540] [SYSTEM] Tanılama başladı — Log: C:\Users\Yiğit\Desktop\SEGA Console Emulatıor\bin\Release\logs\diag_20260801_101954.log
+[10:19:54.541] [SYSTEM] OS: Microsoft Windows NT 10.0.26200.0, 64-bit: True
+[10:19:54.541] [ENV] GET_LOG_INTERFACE → log callback kaydedildi
+[10:19:57.520] [CORE] retro_load_game çağrılıyor — Path: C:\Users\Public\Sonic The Hedgehog (USA, Europe) (1)\Sonic The Hedgehog (USA, Europe).md, Size: 524288 bytes
+[10:19:57.520] [CORE_INFO] Frontend supports RGB565 - will use that instead of XRGB1555.
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_system_bram → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_cart_size → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_cart_bram → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_system_hw → Returned: auto
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_bios → Returned: disabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_region_detect → Returned: auto
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_vdp_mode → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_force_dtack → Returned: enabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_addr_error → Returned: enabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_cd_latency → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_cd_precache → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_add_on → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_lock_on → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_ym2413 → Returned: auto
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_ym2413_core → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sound_output → Returned: stereo
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_psg_preamp → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_fm_preamp → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_cdda_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_pcm_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_audio_filter → Returned: disabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_lowpass_range → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_audio_eq_low → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_audio_eq_mid → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_audio_eq_high → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_ym2612 → Returned: nuked
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_frameskip → Returned: disabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_frameskip_threshold → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_blargg_ntsc_filter → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_lcd_filter → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_overscan → Returned: disabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_gg_extra → Returned: disabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_aspect_ratio → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_render → Returned: single field
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_gun_cursor → Returned: no
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_gun_input → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_invert_mouse → Returned: no
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_left_border → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_overclock → Returned: 100%
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_no_sprite_limit → Returned: disabled
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_enhanced_vscroll → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_enhanced_vscroll_limit → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_psg_channel_0_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_psg_channel_1_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_psg_channel_2_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_psg_channel_3_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_md_channel_0_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_md_channel_1_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_md_channel_2_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_md_channel_3_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_md_channel_4_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_md_channel_5_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_0_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_1_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_2_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_3_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_4_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_5_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_6_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_7_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_sms_fm_channel_8_volume → Returned: null
+[10:19:57.521] [GET_VAR] Key: genesis_plus_gx_show_advanced_audio_settings → Returned: null
+[10:19:57.521] [CORE_DEBUG] Game Genie ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\ggenie.bin
+[10:19:57.521] [CORE_DEBUG] Action Replay (Pro) ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\areplay.bin
+[10:19:57.521] [CORE_DEBUG] Sonic & Knuckles (2 MB) ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\sk.bin
+[10:19:57.521] [CORE_DEBUG] Sonic & Knuckles UPMEM (256 KB) ROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\sk2chip.bin
+[10:19:57.521] [CORE_DEBUG] Mega Drive TMSS BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_MD.bin
+[10:19:57.521] [CORE_DEBUG] Game Gear TMSS BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios.gg
+[10:19:57.521] [CORE_DEBUG] Master System (PAL) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_E.sms
+[10:19:57.521] [CORE_DEBUG] Master System (NTSC-U) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_U.sms
+[10:19:57.521] [CORE_DEBUG] Master System (NTSC-J) BOOTROM should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_J.sms
+[10:19:57.521] [CORE_DEBUG] Mega CD (PAL) BIOS should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_CD_E.bin
+[10:19:57.521] [CORE_DEBUG] Sega CD (NTSC-U) BIOS should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_CD_U.bin
+[10:19:57.521] [CORE_DEBUG] Mega CD (NTSC-J) BIOS should be located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\system\bios_CD_J.bin
+[10:19:57.521] [CORE_DEBUG] Mega CD (PAL) BRAM is located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\saves\scd_E.brm
+[10:19:57.521] [CORE_DEBUG] Sega CD (NTSC-U) BRAM is located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\saves\scd_U.brm
+[10:19:57.521] [CORE_DEBUG] Mega CD (NTSC-J) BRAM is located at: C:\Users\YiÄŸit\Desktop\SEGA Console EmulatÄ±or\saves\scd_J.brm
+[10:19:57.521] [CORE_DEBUG] Sega/Mega CD RAM CART is located at: 
+[10:19:57.521] [CORE_INFO] Loading 524288 bytes ...
+[10:19:57.526] [CORE] AV Bilgisi — FPS: 59,92, SampleRate: 44100, Çözünürlük: 256x192, AspectRatio: 1,524
+[10:19:57.531] [AUDIO] ══ Initialize başladı ══ sampleRate: 44100
+[10:19:57.531] [AUDIO] WaveFormat: 44100Hz, 16bit, 2ch
+[10:19:57.531] [AUDIO] BufferedWaveProvider oluşturuldu — BufferLength: 705600
+[10:19:57.956] [AUDIO] ✓ WaveOutEvent başlatıldı (Sistem sesine dokunulmadı) — PlaybackState: Playing, Yazılımsal Volume: 0,3
+[10:19:57.960] [CALLBACK] AudioBatch #1: frames=735, data=True, subscriberCount=1
+[10:19:57.961] [AUDIO] WriteSamples #1: frames=735, samples=1470, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=0
+[10:19:57.975] [CALLBACK] AudioBatch #2: frames=736, data=True, subscriberCount=1
+[10:19:57.975] [AUDIO] WriteSamples #2: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=2940
+[10:19:57.992] [CALLBACK] AudioBatch #3: frames=736, data=True, subscriberCount=1
+[10:19:57.992] [AUDIO] WriteSamples #3: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=5884
+[10:19:58.009] [CALLBACK] AudioBatch #4: frames=736, data=True, subscriberCount=1
+[10:19:58.009] [AUDIO] WriteSamples #4: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=8828
+[10:19:58.025] [CALLBACK] AudioBatch #5: frames=736, data=True, subscriberCount=1
+[10:19:58.025] [AUDIO] WriteSamples #5: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=7360
+[10:19:58.042] [AUDIO] WriteSamples #6: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=5892
+[10:19:58.059] [AUDIO] WriteSamples #7: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=8836
+[10:19:58.075] [AUDIO] WriteSamples #8: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=7368
+[10:19:58.092] [AUDIO] WriteSamples #9: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=5900
+[10:19:58.112] [AUDIO] WriteSamples #10: frames=736, samples=1472, nonZero=False, hex=00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00, playState=Playing, buffered=4432
+[10:19:58.943] [CALLBACK] AudioBatch #60: totalSingle=0, totalBatch=60
+[10:19:58.943] [AUDIO] WriteSamples #60: totalFrames=43420, nonZeroRatio=0/60, buffered=6024, playState=Playing
+[10:19:59.944] [CALLBACK] AudioBatch #120: totalSingle=0, totalBatch=120
+[10:19:59.944] [AUDIO] WriteSamples #120: totalFrames=87577, nonZeroRatio=0/120, buffered=6172, playState=Playing
+[10:20:00.945] [CALLBACK] AudioBatch #180: totalSingle=0, totalBatch=180
+[10:20:00.945] [AUDIO] WriteSamples #180: totalFrames=131734, nonZeroRatio=0/180, buffered=6320, playState=Playing
+[10:20:01.946] [CALLBACK] AudioBatch #240: totalSingle=0, totalBatch=240
+[10:20:01.946] [AUDIO] WriteSamples #240: totalFrames=175891, nonZeroRatio=0/240, buffered=6468, playState=Playing

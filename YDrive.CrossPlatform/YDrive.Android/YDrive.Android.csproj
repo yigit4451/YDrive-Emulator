@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <!-- Support ARM (real devices) + x86_64/x86 (BlueStacks / emulators) -->
+    <RuntimeIdentifiers>android-arm64;android-arm;android-x64;android-x86</RuntimeIdentifiers>
+    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
+    <AndroidTargetSdkVersion>34</AndroidTargetSdkVersion>
+    <Nullable>enable</Nullable>
+    <ApplicationId>com.ydrive.android</ApplicationId>
+    <ApplicationVersion>50</ApplicationVersion>
+    <ApplicationDisplayVersion>1.4.4</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <PublishTrimmed>false</PublishTrimmed>
+    <AndroidUseAapt2>true</AndroidUseAapt2>
+    
+    <!-- Fast Deployment Fixes for Standalone APK -->
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AndroidFastDeploymentType>None</AndroidFastDeploymentType>
+    <AndroidEnablePreloadAssemblies>true</AndroidEnablePreloadAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>ydrive.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>ydrive</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>ydrive123</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>ydrive123</AndroidSigningStorePass>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YDrive\YDrive.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Gerekli Libretro çekirdekleri (PicoDrive, Genesis Plus GX vs.) lib/ altına konmalıdır. -->
+    <AndroidNativeLibrary Include="lib\**\*.so" />
+  </ItemGroup>
+</Project>

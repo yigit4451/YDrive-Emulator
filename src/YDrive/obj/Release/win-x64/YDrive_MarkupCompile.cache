@@ -1,0 +1,20 @@
+﻿YDrive
+
+
+winexe
+C#
+.cs
+C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\obj\Release\win-x64\
+YDrive
+none
+false
+TRACE;RELEASE;NET;NET8_0;NETCOREAPP
+C:\Users\Yiğit\Desktop\YDrive first\src\YDrive\App.xaml
+10480247799
+2-818358651
+32-1010861195
+21338683822
+Resources\Strings.en.xaml;Resources\Strings.tr.xaml;Themes\DarkTheme.xaml;Views\FullscreenWindow.xaml;Views\GameDetailsWindow.xaml;Views\GameWindow.xaml;Views\MainWindow.xaml;Views\RenameGameDialog.xaml;Views\ScreenshotPreviewWindow.xaml;Views\SettingsWindow.xaml;
+
+False
+

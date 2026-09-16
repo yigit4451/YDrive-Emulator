@@ -1,0 +1,765 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:YDrive.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="600"
+             x:Class="YDrive.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             Background="Transparent">
+
+    <UserControl.Styles>
+        <Style Selector="TabItem">
+            <Setter Property="Foreground" Value="#9E9E9E"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="16,10,16,10"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#0047AB"/>
+        </Style>
+        <Style Selector="TabItem:selected Path">
+            <Setter Property="Fill" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="TabItem /template/ Border#PART_SelectedPipe, TabItem:selected /template/ Border#PART_SelectedPipe">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Height" Value="0"/>
+        </Style>
+        <Style Selector="TabControl">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid RowDefinitions="Auto,*">
+                        <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                          ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </ScrollViewer>
+                        <ContentPresenter Name="PART_SelectedContentHost"
+                                          Grid.Row="1"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="TextBlock.Header">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+        <Style Selector="TextBlock.Label">
+            <Setter Property="Foreground" Value="#CAC4D0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#1D1B20"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="BorderBrush" Value="#4A4458"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="MinHeight" Value="48"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#1D1B20"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="BorderBrush" Value="#4A4458"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="MinHeight" Value="48"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="Margin" Value="0,6,0,14"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        
+        <!-- MD3 Button Styles -->
+        <Style Selector="Button.Ghost">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#4D7DC3"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        <Style Selector="Button.Ghost:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1A1C29"/>
+        </Style>
+
+        <Style Selector="Button.CtrlBtn">
+            <Setter Property="Background" Value="#2B2930"/>
+            <Setter Property="Foreground" Value="#E6E1E5"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="60"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.CtrlBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4A4458"/>
+        </Style>
+        
+        <!-- Setting Card -->
+        <Style Selector="Border.SettingCard">
+            <Setter Property="Background" Value="#1D1B20"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="BorderBrush" Value="#333036"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- SEGA Genesis 6-Button Touch Buttons (Arcade Glass Style - Uniform 64x64px) -->
+        <Style Selector="Border.HudTouchBtnA, Border.HudTouchBtnB, Border.HudTouchBtnC">
+            <Setter Property="Background" Value="#990047AB"/>
+            <Setter Property="BorderBrush" Value="#FF64B5F6"/>
+            <Setter Property="BorderThickness" Value="2.5"/>
+            <Setter Property="CornerRadius" Value="34"/>
+        </Style>
+
+        <Style Selector="Border.HudTouchBtnXYZ">
+            <Setter Property="Background" Value="#990047AB"/>
+            <Setter Property="BorderBrush" Value="#FF64B5F6"/>
+            <Setter Property="BorderThickness" Value="2.5"/>
+            <Setter Property="CornerRadius" Value="26"/>
+        </Style>
+
+        <Style Selector="Border.HudTouchBtnStart">
+            <Setter Property="Background" Value="#AA212121"/>
+            <Setter Property="BorderBrush" Value="#FF757575"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="20"/>
+        </Style>
+
+        <Style Selector="Border.HudDPad">
+            <Setter Property="Background" Value="#AA1E1E26"/>
+            <Setter Property="BorderBrush" Value="#FF4A4458"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="80"/>
+        </Style>
+
+        <Style Selector="Border.HudDPad, Border.HudTouchBtnA, Border.HudTouchBtnB, Border.HudTouchBtnC, Border.HudTouchBtnXYZ, Border.HudTouchBtnStart">
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+        </Style>
+
+
+
+    </UserControl.Styles>
+
+    <Panel>
+        <!-- Standard Settings Tabs -->
+        <TabControl Background="Transparent" BorderThickness="0" Margin="0">
+            
+            <!-- ===== 1. GENERAL TAB ===== -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <!-- Settings Cog Vector Icon -->
+                        <Path Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                              Fill="#CAC4D0" Width="16" Height="16" Stretch="Uniform"/>
+                        <TextBlock Text="Genel"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Classes="Header" Text="Genel Sistem &amp; Ses Ayarları"/>
+
+                        <!-- General & Performance Options -->
+                        <Border Classes="SettingCard">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,8" VerticalAlignment="Center">
+                                    <Path Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"
+                                          Fill="#4D7DC3" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Sistem &amp; Performans" FontSize="15" FontWeight="Bold" Foreground="#4D7DC3" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                    <TextBlock Grid.Column="0" Text="FPS Sayacını Göster" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowFps}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                    <TextBlock Grid.Column="0" Text="Oyun Sırasında Ekranı Açık Tut" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding KeepScreenOn}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                    <TextBlock Grid.Column="0" Text="Oyundan Çıkarken Otomatik Kaydet (Auto-Save)" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoSaveEnabled}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Audio Controls -->
+                        <Border Classes="SettingCard">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,8" VerticalAlignment="Center">
+                                    <Path Data="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"
+                                          Fill="#4D7DC3" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Ses Ayarları" FontSize="15" FontWeight="Bold" Foreground="#4D7DC3" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <!-- Volume Slider -->
+                                <TextBlock Classes="Label" Text="Ana Ses Seviyesi" Margin="0,4,0,0"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Slider Grid.Column="0" Minimum="0.0" Maximum="1.0" 
+                                            Value="{Binding AudioVolume, Mode=TwoWay}"
+                                            TickFrequency="0.05" IsSnapToTickEnabled="True"/>
+                                    <TextBlock Grid.Column="1" 
+                                               Text="{Binding AudioVolume, StringFormat='{}{0:P0}'}"
+                                               Foreground="#CAC4D0" FontSize="14" Width="45"
+                                               VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                </Grid>
+
+                                <!-- Audio Sample Rate -->
+                                <TextBlock Classes="Label" Text="Ses Örnekleme Hızı (Sample Rate)" Margin="0,8,0,0"/>
+                                <ComboBox SelectedItem="{Binding AudioSamplerate}" ItemsSource="{Binding AudioRates}" Margin="0,0,0,8"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SEGA CD BIOS Management -->
+                        <Border Classes="SettingCard">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,8" VerticalAlignment="Center">
+                                    <Path Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z"
+                                          Fill="#4D7DC3" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="SEGA CD BIOS Dosyaları" FontSize="15" FontWeight="Bold" Foreground="#4D7DC3" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <TextBlock Text="SEGA CD oyunlarını oynayabilmek için BIOS dosyalarını cihaza eklemelisiniz. Dosya adı önemsizdir, içerik otomatik analiz edilir." Foreground="#CAC4D0" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                <!-- ABD (NTSC-U) -->
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="40">
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="ABD (NTSC-U)" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding UsStatusText}" FontSize="12" Foreground="{Binding UsStatusColor}"/>
+                                    </StackPanel>
+                                    <Panel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="#FF5252" Width="20" Height="20" Stretch="Uniform" IsVisible="{Binding IsUsBiosMissing}"/>
+                                        <Path Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" Fill="#4CAF50" Width="20" Height="20" Stretch="Uniform" IsVisible="{Binding IsUsBiosLoaded}"/>
+                                    </Panel>
+                                </Grid>
+
+                                <!-- Avrupa (PAL) -->
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="40">
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="Avrupa (PAL)" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding EuStatusText}" FontSize="12" Foreground="{Binding EuStatusColor}"/>
+                                    </StackPanel>
+                                    <Panel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="#FF5252" Width="20" Height="20" Stretch="Uniform" IsVisible="{Binding IsEuBiosMissing}"/>
+                                        <Path Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" Fill="#4CAF50" Width="20" Height="20" Stretch="Uniform" IsVisible="{Binding IsEuBiosLoaded}"/>
+                                    </Panel>
+                                </Grid>
+
+                                <!-- Japonya (NTSC-J) -->
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="40">
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="Japonya (NTSC-J)" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding JpStatusText}" FontSize="12" Foreground="{Binding JpStatusColor}"/>
+                                    </StackPanel>
+                                    <Panel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="#FF5252" Width="20" Height="20" Stretch="Uniform" IsVisible="{Binding IsJpBiosMissing}"/>
+                                        <Path Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" Fill="#4CAF50" Width="20" Height="20" Stretch="Uniform" IsVisible="{Binding IsJpBiosLoaded}"/>
+                                    </Panel>
+                                </Grid>
+
+                                <!-- Butonlar: Ekle + Sil -->
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                    <Button Command="{Binding AddBiosCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="12,8" Classes="Primary" IsVisible="{Binding CanAddBios}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                                            <TextBlock Text="BIOS Dosyalarını Ekle" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Command="{Binding DeleteBiosCommand}" 
+                                            Width="42" Height="42" 
+                                            CornerRadius="21"
+                                            Background="#3D1E22"
+                                            Padding="0"
+                                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                            IsVisible="{Binding IsAnyBiosLoaded}">
+                                        <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="#FF5252" Width="20" Height="20" Stretch="Uniform"/>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Desktop-only advanced options -->
+                        <Border Classes="SettingCard" IsVisible="{Binding IsDesktop}">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Masaüstü Ek Ayarları" FontSize="15" FontWeight="Bold" Foreground="#4D7DC3"/>
+                                
+                                <TextBlock Classes="Label" Text="BIOS Yolu (İsteğe Bağlı)"/>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                    <TextBox Grid.Column="0" Text="{Binding BiosPath}" Watermark="BIOS dosyası seçilmedi..."/>
+                                    <Button Grid.Column="1" Content="Gözat" Command="{Binding BrowseBiosCommand}" Classes="Ghost" Margin="8,0,0,0"/>
+                                </Grid>
+                                
+                                <TextBlock Classes="Label" Text="YM2612 Ses Emülasyonu"/>
+                                <ComboBox SelectedItem="{Binding Ym2612Emulation}" ItemsSource="{Binding Ym2612Options}" Margin="0,0,0,8"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                    <TextBlock Grid.Column="0" Text="SVP Desteği (Virtua Racing)" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SvpSupport}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===== 2. DISPLAY & VIDEO TAB ===== -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <!-- Monitor / Display Vector Icon -->
+                        <Path Data="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z"
+                              Fill="#CAC4D0" Width="16" Height="16" Stretch="Uniform"/>
+                        <TextBlock Text="Görüntü"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Classes="Header" Text="Ekran &amp; Video Ayarları"/>
+
+                        <Border Classes="SettingCard">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,8" VerticalAlignment="Center">
+                                    <Path Data="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z"
+                                          Fill="#4D7DC3" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Ekran Oranı (Aspect Ratio)" FontSize="15" FontWeight="Bold" Foreground="#4D7DC3" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="Mobil ve tablet ekranlarına en uygun en-boy oranını belirleyin:" FontSize="13" Foreground="#CAC4D0"/>
+                                <ComboBox SelectedItem="{Binding AspectRatio}" ItemsSource="{Binding AspectRatioOptions}" Margin="0,4,0,16"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                    <TextBlock Grid.Column="0" Text="Kütüphanede Izgara Görünümü (Grid View)" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsGridView}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Desktop-only filters -->
+                        <Border Classes="SettingCard" IsVisible="{Binding IsDesktop}">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Video Filtreleri" FontSize="15" FontWeight="Bold" Foreground="#4D7DC3"/>
+                                <TextBlock Classes="Label" Text="Ekran Filtresi"/>
+                                <ComboBox SelectedItem="{Binding ScreenFilter}" ItemsSource="{Binding ScreenFilters}" Margin="0,0,0,8"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                    <TextBlock Grid.Column="0" Text="Tüplü TV / CRT Efekti" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding TubeTvEffectEnabled}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===== 3. CONTROLS TAB ===== -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image Source="avares://YDrive/Assets/controller.png" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" Margin="0,2,8,0"/>
+                        <TextBlock Text="Kontroller" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Classes="Header" Text="Kontrolcü &amp; Dokunmatik HUD"/>
+
+                        <!-- Touch HUD Layout Editor & Live Preview Card -->
+                        <Border Classes="SettingCard">
+                            <StackPanel Spacing="12">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
+                                    <Path Data="M7,6H17A6,6 0 0,1 23,12A6,6 0 0,1 17,18C15.22,18 13.63,17.23 12.53,16H11.47C10.37,17.23 8.78,18 7,18A6,6 0 0,1 1,12A6,6 0 0,1 7,6M6,9V11H4V13H6V15H8V13H10V11H8V9H6M15.5,12A1.5,1.5 0 0,0 14,13.5A1.5,1.5 0 0,0 15.5,15A1.5,1.5 0 0,0 17,13.5A1.5,1.5 0 0,0 15.5,12M18.5,9A1.5,1.5 0 0,0 17,10.5A1.5,1.5 0 0,0 18.5,12A1.5,1.5 0 0,0 20,10.5A1.5,1.5 0 0,0 18.5,9Z"
+                                          Fill="#4D7DC3" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Dokunmatik HUD Yapılandırması" FontSize="16" FontWeight="Bold" Foreground="#4D7DC3" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="Sanal butonların yerleşimini canlı önizlemeden görebilir veya 'Butonları Düzenle' butonu ile oyun ekranında serbestçe sürükleyerek yerlerini ayarlayabilirsiniz."
+                                           FontSize="13" Foreground="#CAC4D0" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                                    <Path Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                                          Fill="#8E9297" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                                    <TextBlock Text="CANLI HUD ÖNİZLEME" FontSize="13" FontWeight="SemiBold" Foreground="#8E9297" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Live Visual Mini Viewport (Önizleme) -->
+                                <Border Height="360" HorizontalAlignment="Center" Background="#1C1D22" CornerRadius="12" BorderBrush="#2D3038" BorderThickness="1.5" ClipToBounds="True" Margin="0,0,0,16">
+                                    <Viewbox Stretch="Uniform">
+                                        <Canvas Width="{Binding ScreenWidth}" Height="{Binding ScreenHeight}" Background="Transparent">
+                                            <!-- Sega Genesis D-Pad -->
+                                            <Border Classes="HudDPad" Width="160" Height="160" Canvas.Left="{Binding TouchDPadX}" Canvas.Top="{Binding TouchDPadY}" Opacity="{Binding TouchDPadOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchDPadScale}" ScaleY="{Binding TouchDPadScale}"/>
+                                                </Border.RenderTransform>
+                                                <Panel>
+                                                    <Border Width="50" Height="50" CornerRadius="25" Background="#30FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,*,*">
+                                                        <Path Fill="#F0F4F9" Data="M0,10 L10,0 L20,10 Z" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        <Path Fill="#F0F4F9" Data="M10,0 L0,10 L10,20 Z" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        <Path Fill="#F0F4F9" Data="M0,0 L10,10 L0,20 Z" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        <Path Fill="#F0F4F9" Data="M0,0 L20,0 L10,10 Z" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Panel>
+                                            </Border>
+
+                                            <!-- Start Button -->
+                                            <Border Classes="HudTouchBtnStart" Width="80" Height="40" Canvas.Left="{Binding TouchStartX}" Canvas.Top="{Binding TouchStartY}" Opacity="{Binding TouchStartOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchStartScale}" ScaleY="{Binding TouchStartScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="START" Foreground="#EEEEEE" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Lower Arc: A, B, C (Uniform 68x68px) -->
+                                            <Border Classes="HudTouchBtnA" Width="68" Height="68" Canvas.Left="{Binding TouchAX}" Canvas.Top="{Binding TouchAY}" Opacity="{Binding TouchAOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchAScale}" ScaleY="{Binding TouchAScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="A" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Border Classes="HudTouchBtnB" Width="68" Height="68" Canvas.Left="{Binding TouchBX}" Canvas.Top="{Binding TouchBY}" Opacity="{Binding TouchBOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchBScale}" ScaleY="{Binding TouchBScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="B" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Border Classes="HudTouchBtnC" Width="68" Height="68" Canvas.Left="{Binding TouchCX}" Canvas.Top="{Binding TouchCY}" Opacity="{Binding TouchCOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchCScale}" ScaleY="{Binding TouchCScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="C" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Upper Arc: X, Y, Z (Uniform 52x52px) -->
+                                            <Border Classes="HudTouchBtnXYZ" Width="52" Height="52" Canvas.Left="{Binding TouchXX}" Canvas.Top="{Binding TouchXY}" Opacity="{Binding TouchXOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchXScale}" ScaleY="{Binding TouchXScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="X" Foreground="#EDE7F6" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Border Classes="HudTouchBtnXYZ" Width="52" Height="52" Canvas.Left="{Binding TouchYX}" Canvas.Top="{Binding TouchYY}" Opacity="{Binding TouchYOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchYScale}" ScaleY="{Binding TouchYScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="Y" Foreground="#EDE7F6" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Border Classes="HudTouchBtnXYZ" Width="52" Height="52" Canvas.Left="{Binding TouchZX}" Canvas.Top="{Binding TouchZY}" Opacity="{Binding TouchZOpacity}">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding TouchZScale}" ScaleY="{Binding TouchZScale}"/>
+                                                </Border.RenderTransform>
+                                                <TextBlock Text="Z" Foreground="#EDE7F6" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+
+                                <Button Classes="Primary" Background="#0047AB" Foreground="#FFFFFF"
+                                        Command="{Binding OpenHudEditorCommand}"
+                                        HorizontalAlignment="Stretch" CornerRadius="20" MinHeight="48" Margin="0,0,0,16">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                        <Path Data="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z"
+                                              Fill="#FFFFFF" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Butonları Düzenle" VerticalAlignment="Center" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Customization Controls (Sliders and Toggles) -->
+                                <Border Background="#141218" CornerRadius="12" Padding="16">
+                                    <StackPanel Spacing="12">
+                                        <Grid ColumnDefinitions="*,Auto" MinHeight="50">
+                                            <TextBlock Grid.Column="0" Text="Dokunmatik Titreşim (Haptic Feedback)" VerticalAlignment="Center"/>
+                                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding HapticFeedbackEnabled}" VerticalAlignment="Center" OnContent="{x:Null}" OffContent="{x:Null}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Keyboard / Gamepad Mapping (Desktop only) -->
+                        <Border Classes="SettingCard" IsVisible="{Binding IsDesktop}">
+                            <StackPanel>
+                                <TextBlock Classes="Label" Text="Gamepad / Klavye Tipi"/>
+                                <ComboBox SelectedItem="{Binding ControllerType}" ItemsSource="{Binding ControllerTypes}"/>
+
+                                <TextBlock Text="Tuş atamak için butona dokunun:" Foreground="#CAC4D0" FontSize="14" Margin="0,8,0,16"/>
+
+                                <!-- Visual Controller Layout -->
+                                <Border Background="#141218" CornerRadius="16" Padding="20" HorizontalAlignment="Center">
+                                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                                        <!-- Shoulder buttons row -->
+                                        <Button Grid.Row="0" Grid.Column="0" Classes="CtrlBtn" Content="{Binding P1C, StringFormat='C: {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="C"/>
+                                        <Button Grid.Row="0" Grid.Column="2" Classes="CtrlBtn" Content="{Binding P1Start, StringFormat='START: {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="Start" HorizontalAlignment="Right"/>
+
+                                        <!-- Spacer -->
+                                        <Border Grid.Row="1" Grid.ColumnSpan="3" Height="16"/>
+
+                                        <!-- D-Pad (Left) -->
+                                        <Grid Grid.Row="2" Grid.Column="0" Width="150" HorizontalAlignment="Left">
+                                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                                                <Button Grid.Row="0" Grid.Column="1" Classes="CtrlBtn" Content="{Binding P1Up, StringFormat='▲ {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="Up"/>
+                                                <Button Grid.Row="1" Grid.Column="0" Classes="CtrlBtn" Content="{Binding P1Left, StringFormat='◄ {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="Left"/>
+                                                <Border Grid.Row="1" Grid.Column="1" Width="48" Height="44" Background="#1D1B20" CornerRadius="8" Margin="4"/>
+                                                <Button Grid.Row="1" Grid.Column="2" Classes="CtrlBtn" Content="{Binding P1Right, StringFormat='► {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="Right"/>
+                                                <Button Grid.Row="2" Grid.Column="1" Classes="CtrlBtn" Content="{Binding P1Down, StringFormat='▼ {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="Down"/>
+                                            </Grid>
+                                        </Grid>
+
+                                        <!-- Center divider -->
+                                        <Border Grid.Row="2" Grid.Column="1" Width="36" Height="36" Background="#1D1B20" CornerRadius="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12,0"/>
+
+                                        <!-- Action Buttons (Right) -->
+                                        <Grid Grid.Row="2" Grid.Column="2" Width="150" HorizontalAlignment="Right">
+                                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                                                <Button Grid.Row="0" Grid.Column="1" Classes="CtrlBtn" Content="{Binding P1B, StringFormat='B: {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="B"/>
+                                                <Button Grid.Row="1" Grid.Column="0" Classes="CtrlBtn" Content="{Binding P1A, StringFormat='A: {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="A"/>
+                                                <Border Grid.Row="1" Grid.Column="1" Width="48" Height="44" Background="#1D1B20" CornerRadius="8" Margin="4"/>
+                                                <Button Grid.Row="1" Grid.Column="2" Classes="CtrlBtn" Content="{Binding P1C, StringFormat='C: {0}'}" Command="{Binding AssignKeyCommand}" CommandParameter="C"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Awaiting key message -->
+                                <Border Background="#004A77" CornerRadius="12" Padding="16,12" Margin="0,20,0,0" IsVisible="{Binding IsAwaitingKey}">
+                                    <TextBlock Text="{Binding AwaitingKeyMessage}" Foreground="#C2E7FF" FontWeight="Medium" HorizontalAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!-- ===== 4. ABOUT TAB ===== -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Path Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
+                              Fill="#CAC4D0" Width="16" Height="16" Stretch="Uniform"/>
+                        <TextBlock Text="Hakkında"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Margin="0,12,0,0">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="0,32,0,0">
+                        <Border Width="72" Height="72" CornerRadius="36" Background="#141218" ClipToBounds="True" HorizontalAlignment="Center">
+                            <Image Source="avares://YDrive/Assets/hedgehog.png" Stretch="Uniform" Width="48" Height="48"/>
+                        </Border>
+                        <TextBlock Text="YDrive" FontSize="26" FontWeight="Bold" Foreground="#E6E1E5" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Cross-Platform SEGA Emulator – v1.2.6" Foreground="#CAC4D0" FontSize="14" HorizontalAlignment="Center"/>
+                        <Border Height="1" Background="#4A4458" Margin="24,8"/>
+                        <TextBlock Text="Geliştirici: Yigit4451" Foreground="#CAC4D0" FontSize="14" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Libretro · Genesis Plus GX · PicoDrive" Foreground="#938F99" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Avalonia UI · .NET 8 · Material Design 3" Foreground="#938F99" FontSize="12" HorizontalAlignment="Center"/>
+                        
+                        <Button Command="{Binding ExportLogsCommand}" Classes="Ghost" Margin="0,16,0,0" HorizontalAlignment="Center" ToolTip.Tip="Tanılama günlüklerini masaüstüne veya indirilenler klasörüne kaydeder">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Path Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z" Fill="#4D7DC3" Width="18" Height="18" Stretch="Uniform"/>
+                                <TextBlock Text="Hata Loglarını Dışa Aktar" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- ===== HUD CONTROL POSITION EDITOR OVERLAY (Full-screen interactive) ===== -->
+        <Panel IsVisible="{Binding IsHudEditorOpen}" Background="#1D1B20" ZIndex="100">
+            
+            <!-- 1. Interactive Draggable Canvas (Full-screen 1:1 with Game Screen) -->
+            <Canvas x:Name="HudEditorCanvas" ClipToBounds="True" Background="Transparent"
+                    SizeChanged="OnHudCanvasSizeChanged"
+                    PointerPressed="OnHudCanvasPointerPressed"
+                    PointerMoved="OnHudCanvasPointerMoved"
+                    PointerReleased="OnHudCanvasPointerReleased">
+
+                <!-- Sega Genesis D-Pad (160x160dp) -->
+                <Border Classes="HudDPad" Width="160" Height="160"
+                        Canvas.Left="{Binding TouchDPadX}"
+                        Canvas.Top="{Binding TouchDPadY}"
+                        Tag="DPad" Opacity="{Binding TouchDPadOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchDPadScale}" ScaleY="{Binding TouchDPadScale}"/>
+                    </Border.RenderTransform>
+                    <Panel>
+                        <!-- Center Thumb Hub -->
+                        <Border Width="50" Height="50" CornerRadius="25" Background="#30FFFFFF"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Directional Arrows -->
+                        <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,*,*" IsHitTestVisible="False">
+                            <!-- UP -->
+                            <Path Fill="#F0F4F9" Data="M0,10 L10,0 L20,10 Z" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <!-- LEFT (◄) -->
+                            <Path Fill="#F0F4F9" Data="M10,0 L0,10 L10,20 Z" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <!-- RIGHT (►) -->
+                            <Path Fill="#F0F4F9" Data="M0,0 L10,10 L0,20 Z" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <!-- DOWN -->
+                            <Path Fill="#F0F4F9" Data="M0,0 L20,0 L10,10 Z" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Panel>
+                </Border>
+
+                <!-- Lower Arc: SEGA Main Action Buttons (Uniform 68x68px) -->
+                <Border Classes="HudTouchBtnA" Width="68" Height="68"
+                        Canvas.Left="{Binding TouchAX}" Canvas.Top="{Binding TouchAY}"
+                        Tag="A" Opacity="{Binding TouchAOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchAScale}" ScaleY="{Binding TouchAScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="A" Foreground="White" FontSize="20" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                
+                <Border Classes="HudTouchBtnB" Width="68" Height="68"
+                        Canvas.Left="{Binding TouchBX}" Canvas.Top="{Binding TouchBY}"
+                        Tag="B" Opacity="{Binding TouchBOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchBScale}" ScaleY="{Binding TouchBScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="B" Foreground="White" FontSize="20" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                
+                <Border Classes="HudTouchBtnC" Width="68" Height="68"
+                        Canvas.Left="{Binding TouchCX}" Canvas.Top="{Binding TouchCY}"
+                        Tag="C" Opacity="{Binding TouchCOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchCScale}" ScaleY="{Binding TouchCScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="C" Foreground="White" FontSize="20" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                
+                <!-- Upper Arc: X, Y, Z -->
+                <Border Classes="HudTouchBtnXYZ" Width="52" Height="52"
+                        Canvas.Left="{Binding TouchXX}" Canvas.Top="{Binding TouchXY}"
+                        Tag="X" Opacity="{Binding TouchXOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchXScale}" ScaleY="{Binding TouchXScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="X" Foreground="#EDE7F6" FontSize="18" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                <Border Classes="HudTouchBtnXYZ" Width="52" Height="52"
+                        Canvas.Left="{Binding TouchYX}" Canvas.Top="{Binding TouchYY}"
+                        Tag="Y" Opacity="{Binding TouchYOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchYScale}" ScaleY="{Binding TouchYScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="Y" Foreground="#EDE7F6" FontSize="18" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                <Border Classes="HudTouchBtnXYZ" Width="52" Height="52"
+                        Canvas.Left="{Binding TouchZX}" Canvas.Top="{Binding TouchZY}"
+                        Tag="Z" Opacity="{Binding TouchZOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchZScale}" ScaleY="{Binding TouchZScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="Z" Foreground="#EDE7F6" FontSize="18" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                
+                <!-- Start Button -->
+                <Border Classes="HudTouchBtnStart" Width="80" Height="40"
+                        Canvas.Left="{Binding TouchStartX}" Canvas.Top="{Binding TouchStartY}"
+                        Tag="Start" Opacity="{Binding TouchStartOpacity}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding TouchStartScale}" ScaleY="{Binding TouchStartScale}"/>
+                    </Border.RenderTransform>
+                    <TextBlock Text="START" Foreground="#EEEEEE" FontSize="12" FontWeight="Bold"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                </Border>
+                
+                <!-- Independent Square Selection Box -->
+                <Border IsVisible="{Binding IsControlSelected}"
+                        Canvas.Left="{Binding SelectionBoxX}" Canvas.Top="{Binding SelectionBoxY}"
+                        Width="{Binding SelectionBoxWidth}" Height="{Binding SelectionBoxHeight}"
+                        BorderBrush="#E6A8C7FA" BorderThickness="2"
+                        Background="#204D7DC3" CornerRadius="0"
+                        RenderTransformOrigin="0.5,0.5"
+                        IsHitTestVisible="False">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding SelectedControlScale}" ScaleY="{Binding SelectedControlScale}"/>
+                    </Border.RenderTransform>
+                </Border>
+            </Canvas>
+
+            <!-- 2. Floating Top Header (Overlaid on top, does not squeeze canvas) -->
+            <Border VerticalAlignment="Top" Background="#E61D1B20" Padding="16,10"
+                    BorderBrush="#333036" BorderThickness="0,0,0,1" ZIndex="50">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Path Data="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z"
+                                  Fill="#4D7DC3" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                            <TextBlock Text="Butonları Düzenle" FontSize="16" FontWeight="Bold" Foreground="#4D7DC3" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsControlSelected}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="Boyut:" Foreground="#CAC4D0" FontSize="12" VerticalAlignment="Center"/>
+                            <Slider Width="110" Minimum="0.6" Maximum="2.0" Value="{Binding SelectedControlScale, Mode=TwoWay}" TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" Margin="0,-6,0,0"/>
+                            <TextBlock Text="{Binding SelectedControlScale, StringFormat='{}{0:F1}x'}" Foreground="#E6E1E5" FontSize="12" VerticalAlignment="Center" Width="28"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="Opak:" Foreground="#CAC4D0" FontSize="12" VerticalAlignment="Center"/>
+                            <Slider Width="110" Minimum="0.2" Maximum="1.0" Value="{Binding SelectedControlOpacity, Mode=TwoWay}" TickFrequency="0.05" IsSnapToTickEnabled="True" VerticalAlignment="Center" Margin="0,-6,0,0"/>
+                            <TextBlock Text="{Binding SelectedControlOpacity, StringFormat='{}{0:P0}'}" Foreground="#E6E1E5" FontSize="12" VerticalAlignment="Center" Width="32"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <Button Command="{Binding ResetTouchCoordinatesCommand}" Classes="Ghost" Background="#2B2930" Foreground="#E6E1E5" Padding="14,8">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                      Fill="#E6E1E5" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="Sıfırla" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding CancelHudEditorCommand}" Classes="Ghost" Background="#4A4453" Foreground="#FFFFFF" Padding="14,8">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                                      Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="İptal" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding CloseHudEditorCommand}" Classes="Ghost" Background="#0047AB" Foreground="#FFFFFF" FontWeight="Bold" Padding="14,8">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                      Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="Kaydet" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Panel>
+    </Panel>
+</UserControl>
