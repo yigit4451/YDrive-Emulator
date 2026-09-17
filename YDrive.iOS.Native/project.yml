@@ -2,7 +2,7 @@ name: YDrive
 options:
   bundleIdPrefix: com.yigit
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "16.0"
   generateEmptyDirectories: true
   defaultConfig: Release
 
@@ -20,7 +20,7 @@ targets:
   YDrive:
     type: application
     platform: iOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "16.0"
     sources:
       - Sources
     resources:
@@ -32,4 +32,4 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.yigit.ydrive
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_VERSION: "6.0"
-        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "16.0"

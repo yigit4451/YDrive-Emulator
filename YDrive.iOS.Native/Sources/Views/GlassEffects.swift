@@ -43,7 +43,7 @@ extension View {
 // MARK: - iOS 26 Glass Button Style
 
 struct GlassButtonStyle: ButtonStyle {
-    @Environment(\.tint) private var tintColor
+    private var tintColor: Color = .blue
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

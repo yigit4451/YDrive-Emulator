@@ -63,8 +63,10 @@ struct EmulatorView: View {
     }
 
     private func observeControllers() {
-        let check = { [self] in
-            isControllerConnected = !GCController.controllers().isEmpty
+        let check: @Sendable () -> Void = {
+            Task { @MainActor in
+                self.isControllerConnected = !GCController.controllers().isEmpty
+            }
         }
         check()
         NotificationCenter.default.addObserver(

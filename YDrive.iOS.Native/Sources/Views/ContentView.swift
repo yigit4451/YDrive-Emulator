@@ -11,8 +11,6 @@ struct ContentView: View {
                 SettingsView()
             }
         }
-        // iOS 26: glass tab bar
-        .tabBarMinimizeBehavior(.onScrollDown)
     }
 }
 
