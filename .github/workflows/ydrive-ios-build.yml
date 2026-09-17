@@ -58,11 +58,15 @@ jobs:
       run: |
         rm -rf Payload YDrive.ipa
         mkdir -p Payload
-        APP_PATH=$(find YDrive.iOS.Native/build -name "*.app" -type d \
-          | grep -v "Simulator" | head -n 1)
-        echo "Found .app: $APP_PATH"
+        # Çıkan .app paketini tüm repo altında ara
+        APP_PATH=$(find . -name "*.app" -type d | grep -v "Index.noindex" | head -n 1)
+        echo "Bulunan App Yolu: $APP_PATH"
+        if [ -z "$APP_PATH" ]; then
+          echo "HATA: .app paketi bulunamadı!"
+          exit 1
+        fi
         cp -R "$APP_PATH" Payload/
-        chmod -R 755 Payload/
+        chmod -R 755 Payload
         zip -r -y YDrive.ipa Payload
 
     - name: Upload IPA Artifact
