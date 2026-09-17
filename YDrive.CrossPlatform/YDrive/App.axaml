@@ -30,13 +30,15 @@
             </Setter>
         </Style>
 
-        <!-- Liquid Glass Styles -->
-        <Style Selector="Border.LiquidGlassCard">
-            <Setter Property="Background" Value="#331A1F2C"/>
-            <Setter Property="BorderBrush" Value="#4DFFFFFF"/>
-            <Setter Property="BorderThickness" Value="1"/>
+        <Style Selector="ExperimentalAcrylicBorder.LiquidGlassCard">
             <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="BoxShadow" Value="0 8 32 0 #40000000"/>
+            <Setter Property="Material">
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="#1A1F2C"
+                    TintOpacity="0.85"
+                    MaterialOpacity="0.65" />
+            </Setter>
         </Style>
 
         <Style Selector="Button.LiquidGlassButton">

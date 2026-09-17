@@ -593,26 +593,26 @@
                                 <TextBlock Text="{Binding SelectedGame.ConsoleName, FallbackValue='Konsol'}" Foreground="#D0BCFF" FontSize="14" FontWeight="Medium"/>
                             </Border>
                             
-                            <Border Classes="LiquidGlassCard" Padding="16" Margin="0,4,0,8">
+                            <ExperimentalAcrylicBorder Classes="LiquidGlassCard" Padding="16" Margin="0,4,0,8">
                                 <TextBlock Text="{Binding SelectedGame.Item.Summary, FallbackValue='Özet bulunamadı.'}" Foreground="#CAC4D0" FontSize="14" TextWrapping="Wrap" Opacity="0.9"/>
-                            </Border>
+                            </ExperimentalAcrylicBorder>
                             
-                            <Border Classes="LiquidGlassCard" Padding="16">
+                            <ExperimentalAcrylicBorder Classes="LiquidGlassCard" Padding="16">
                                 <StackPanel Spacing="12">
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <Path Fill="#CAC4D0" Data="M12,12C14.21,12 16,10.21 16,8C16,5.79 14.21,4 12,4C9.79,4 8,5.79 8,8C8,10.21 9.79,12 12,12M12,14C9.33,14 4,15.34 4,18V20H20V18C20,15.34 14.67,14 12,14Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SelectedGame.Developer, StringFormat='Yapımcı: {0}', FallbackValue='Yapımcı: Bilinmiyor'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding SelectedGame.Developer, StringFormat='Yapımcı: \{0\}', FallbackValue='Yapımcı: Bilinmiyor'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <Path Fill="#CAC4D0" Data="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20C3,21.1 3.9,22 5,22H19C20.1,22 21,21.1 21,20V6C21,4.9 20.1,4 19,4M19,20H5V10H19V20M19,8H5V6H19V8Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SelectedGame.ReleaseDate, StringFormat='Çıkış Yılı: {0}', FallbackValue='Çıkış Yılı: Bilinmiyor'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SelectedGame.ReleaseDate, StringFormat='Çıkış Yılı: \{0\}', FallbackValue='Çıkış Yılı: Bilinmiyor'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <Path Fill="#CAC4D0" Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding SelectedGame.Item.FileName, FallbackValue='dosya.bin'}" Foreground="#E6E1E5" FontSize="14" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                 </StackPanel>
-                            </Border>
+                            </ExperimentalAcrylicBorder>
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>
@@ -644,7 +644,7 @@
         </Border>
 
         <Border IsVisible="{Binding IsRenameVisible}" Background="#99000000" ZIndex="200" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Border Width="380" Classes="LiquidGlassCard" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ExperimentalAcrylicBorder Width="380" Classes="LiquidGlassCard" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="20">
                     <TextBlock Text="Yeniden Adlandır" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF"/>
                     <TextBox Text="{Binding RenameText}" Watermark="Yeni Oyun Adı" Foreground="#FFFFFF" Background="#25272E" BorderBrush="#383B44" BorderThickness="1" CornerRadius="12" Padding="16,14" FontSize="16"/>
@@ -653,7 +653,7 @@
                         <Button Content="Kaydet" Classes="LiquidGlassButton" Command="{Binding SaveRenameCommand}" Foreground="#FFFFFF" Padding="24,12" FontSize="15" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
-            </Border>
+            </ExperimentalAcrylicBorder>
         </Border>
 
     </Panel>

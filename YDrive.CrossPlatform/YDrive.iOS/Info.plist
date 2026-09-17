@@ -4,8 +4,12 @@
 <dict>
 	<key>CFBundleDisplayName</key>
 	<string>YDrive</string>
+	<key>CFBundleExecutable</key>
+	<string>YDrive.iOS</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.ydrive.ios</string>
+	<string>com.yigit.ydrive</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>

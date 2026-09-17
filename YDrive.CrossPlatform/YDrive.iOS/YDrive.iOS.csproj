@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ImageAsset Include="Resources\Assets.xcassets\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\YDrive\YDrive.csproj" />
   </ItemGroup>
 </Project>

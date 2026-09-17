@@ -32,10 +32,11 @@ jobs:
     - name: Create IPA Package
       run: |
         rm -rf Payload YDrive.ipa
-        mkdir Payload
+        mkdir -p Payload
         APP_PATH=$(find YDrive.CrossPlatform/YDrive.iOS/bin/Release/net8.0-ios -name "*.app" -type d | head -n 1)
         cp -R "$APP_PATH" Payload/
-        zip -r YDrive.ipa Payload
+        chmod -R 755 Payload/
+        zip -r -y YDrive.ipa Payload
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
