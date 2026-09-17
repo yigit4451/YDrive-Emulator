@@ -9,15 +9,14 @@ struct GameDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // MeshGradient background
-                MeshGradient(
-                    width: 2, height: 3,
-                    points: [[0,0],[1,0],[0,0.5],[1,0.5],[0,1],[1,1]],
+                LinearGradient(
                     colors: [
                         .black, Color(hex: "080E1C"),
                         Color(hex: "060B16"), Color(hex: "0B1428"),
                         .black, Color(hex: "06090F")
-                    ]
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
 

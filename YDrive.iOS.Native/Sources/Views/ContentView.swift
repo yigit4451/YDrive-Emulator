@@ -4,12 +4,15 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
-            Tab("Kütüphane", systemImage: "gamecontroller.fill") {
-                GameLibraryView()
-            }
-            Tab("Ayarlar", systemImage: "gearshape.fill") {
-                SettingsView()
-            }
+            GameLibraryView()
+                .tabItem {
+                    Label("Kütüphane", systemImage: "gamecontroller.fill")
+                }
+            
+            SettingsView()
+                .tabItem {
+                    Label("Ayarlar", systemImage: "gearshape.fill")
+                }
         }
     }
 }

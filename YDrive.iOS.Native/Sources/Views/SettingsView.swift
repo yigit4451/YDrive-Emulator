@@ -9,19 +9,14 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // iOS 26 MeshGradient background
-                MeshGradient(
-                    width: 3, height: 3,
-                    points: [
-                        [0.0, 0.0], [0.5, 0.0], [1.0, 0.0],
-                        [0.0, 0.5], [0.5, 0.5], [1.0, 0.5],
-                        [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
-                    ],
+                LinearGradient(
                     colors: [
                         Color(hex: "060A14"), .black,         Color(hex: "0D1830"),
                         .black,         Color(hex: "08101F"), .black,
                         Color(hex: "0A0E1A"), .black,         Color(hex: "050912")
-                    ]
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
 

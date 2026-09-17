@@ -10,13 +10,13 @@ struct GameCardView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
-                        MeshGradient(
-                            width: 2, height: 2,
-                            points: [[0,0],[1,0],[0,1],[1,1]],
+                        LinearGradient(
                             colors: [
                                 Color(hex: "0E1525"), Color(hex: "0A1020"),
                                 Color(hex: "080D1A"), Color(hex: "060A14")
-                            ]
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
                     )
                     .frame(height: 130)
