@@ -11,7 +11,7 @@
              RenderOptions.EdgeMode="Antialias"
              RenderOptions.BitmapInterpolationMode="HighQuality"
              TextElement.FontFamily="avares://YDrive/Assets/Fonts#Roboto, Segoe UI, sans-serif"
-             Background="#141218">
+             Background="Transparent">
 
     <UserControl.Styles>
         <!-- Material 3 MenuFlyoutPresenter for Context Menus -->
@@ -70,16 +70,18 @@
             <Setter Property="Background" Value="#005A9C"/>
         </Style>
 
-        <!-- Material Design 3 ROM Card -->
+        <!-- Liquid Glass ROM Card -->
         <Style Selector="Border.RomCard">
-            <Setter Property="Background" Value="#1C1D22"/>
-            <Setter Property="BorderBrush" Value="#333036"/>
+            <Setter Property="Background" Value="#1A1D22"/>
+            <Setter Property="BorderBrush" Value="#33FFFFFF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="12"/>
+            <Setter Property="BoxShadow" Value="0 4 24 0 #33000000"/>
         </Style>
         <Style Selector="Border.RomCard:pointerover">
             <Setter Property="BorderBrush" Value="#4D7DC3"/>
+            <Setter Property="BoxShadow" Value="0 0 12 0 #4D4D7DC3"/>
         </Style>
 
         <!-- ROM Card Button Micro-interaction -->
@@ -162,6 +164,19 @@
         </Style>
     </UserControl.Styles>
 
+    <!-- Root: Frosted Glass Acrylic base covering the full screen -->
+    <ExperimentalAcrylicBorder IsHitTestVisible="False"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch">
+        <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
+                BackgroundSource="Digger"
+                TintColor="#0D1117"
+                TintOpacity="0.90"
+                MaterialOpacity="0.85" />
+        </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+
     <!-- Root Panel: allows overlays to sit on top -->
     <Panel>
 
@@ -178,8 +193,15 @@
                 </Style>
             </Grid.Styles>
 
-            <!-- MD3 Top App Bar -->
-            <Border Grid.Row="0" Background="#141218" Padding="16,10">
+            <!-- Frosted Glass Top App Bar -->
+            <Border Grid.Row="0" Padding="16,10"
+                    BoxShadow="0 2 16 0 #33000000">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#CC141830" Offset="0"/>
+                        <GradientStop Color="#80141218" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
                     <!-- Logo & Title -->
@@ -210,10 +232,9 @@
                         </TextBox>
                     </Border>
 
-                    <!-- Settings Button -->
-                    <Button Grid.Column="2" x:Name="SettingsButton" Classes="SettingsBtn" Focusable="True" IsTabStop="True"
+                    <!-- Settings Button (Liquid Glass) -->
+                    <Button Grid.Column="2" x:Name="SettingsButton" Classes="SettingsBtn LiquidGlassButton" Focusable="True" IsTabStop="True"
                             Command="{Binding OpenSettingsCommand}"
-                            Background="#1D1B20" BorderBrush="#333036" BorderThickness="1"
                             Width="48" Height="48" CornerRadius="24"
                             ToolTip.Tip="Ayarlar">
                         <TextBlock Text="⚙" FontSize="22" Foreground="#CAC4D0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
