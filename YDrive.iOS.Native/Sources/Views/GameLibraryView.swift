@@ -23,14 +23,16 @@ struct GameLibraryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [
-                        .black,         Color(hex: "0A0E1A"), .black,
-                        Color(hex: "070B18"), Color(hex: "0D1830"), Color(hex: "050912"),
-                        .black,         Color(hex: "08101F"), .black
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                // ── True Liquid Glass Background: Bright center to light up the glass ──
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.4), // Bright deep blue center
+                        Color(red: 0.05, green: 0.08, blue: 0.15),
+                        Color.black
+                    ]),
+                    center: .center,
+                    startRadius: 10,
+                    endRadius: 500
                 )
                 .ignoresSafeArea()
 

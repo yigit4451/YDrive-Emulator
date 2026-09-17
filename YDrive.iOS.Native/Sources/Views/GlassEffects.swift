@@ -9,27 +9,20 @@ struct GlassEffectModifier<S: Shape>: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .background(
-                shape
-                    .fill(.ultraThinMaterial)
-                    .opacity(intensity)
-            )
-            .overlay(
-                shape
-                    .stroke(.white.opacity(0.15), lineWidth: 0.5)
-            )
+            .background(.ultraThinMaterial)
+            .clipShape(shape)
             .overlay(
                 shape
                     .stroke(
                         LinearGradient(
-                            colors: [.white.opacity(0.3), .clear, .white.opacity(0.1)],
+                            colors: [.white.opacity(0.35), .white.opacity(0.05), .clear],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
                         lineWidth: 1
                     )
             )
-            .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
+            .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 5)
     }
 }
 

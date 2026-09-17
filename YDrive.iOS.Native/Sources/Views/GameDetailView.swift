@@ -9,14 +9,15 @@ struct GameDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [
-                        .black, Color(hex: "080E1C"),
-                        Color(hex: "060B16"), Color(hex: "0B1428"),
-                        .black, Color(hex: "06090F")
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.4),
+                        Color(red: 0.05, green: 0.08, blue: 0.15),
+                        Color.black
+                    ]),
+                    center: .center,
+                    startRadius: 10,
+                    endRadius: 500
                 )
                 .ignoresSafeArea()
 
