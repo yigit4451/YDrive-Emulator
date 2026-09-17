@@ -2,19 +2,17 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+        // Using iOS 18/26+ Native Tab View
         TabView {
-            GameLibraryView()
-                .tabItem {
-                    Label("Kütüphane", systemImage: "gamecontroller.fill")
-                }
+            Tab("Kütüphane", systemImage: "gamecontroller.fill") {
+                GameLibraryView()
+            }
             
-            SettingsView()
-                .tabItem {
-                    Label("Ayarlar", systemImage: "gearshape.fill")
-                }
+            Tab("Ayarlar", systemImage: "gearshape.fill") {
+                SettingsView()
+            }
         }
-        // Use native iOS behaviors: 
-        // iOS will automatically apply material to the tab bar when scrolling behind it.
+        .tabViewStyle(.sidebarAdaptable) // Modern iOS/iPadOS 18+ Sidebar/Tab adaptable style
     }
 }
 

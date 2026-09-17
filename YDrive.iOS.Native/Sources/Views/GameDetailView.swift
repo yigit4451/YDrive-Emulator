@@ -9,8 +9,16 @@ struct GameDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(red: 0.04, green: 0.05, blue: 0.08)
-                    .ignoresSafeArea()
+                MeshGradient(
+                    width: 2, height: 3,
+                    points: [[0,0],[1,0],[0,0.5],[1,0.5],[0,1],[1,1]],
+                    colors: [
+                        Color(red: 0.0, green: 0.0, blue: 0.0), Color(red: 0.05, green: 0.1, blue: 0.2),
+                        Color(red: 0.02, green: 0.05, blue: 0.1), Color(red: 0.1, green: 0.2, blue: 0.4),
+                        Color(red: 0.0, green: 0.0, blue: 0.0), Color(red: 0.05, green: 0.1, blue: 0.2)
+                    ]
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 32) {
@@ -64,7 +72,7 @@ struct GameDetailView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
-                        .tint(.accentColor)
+                        .tint(Color.blue.opacity(0.8))
                         .padding(.horizontal, 24)
 
                         // ── Info panel ──
@@ -96,7 +104,7 @@ struct GameDetailView: View {
                             }
                         }
                         .padding(20)
-                        .background(.regularMaterial)
+                        .background(.ultraThinMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .padding(.horizontal, 24)
                         .padding(.bottom, 32)
@@ -104,6 +112,7 @@ struct GameDetailView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Kapat") {

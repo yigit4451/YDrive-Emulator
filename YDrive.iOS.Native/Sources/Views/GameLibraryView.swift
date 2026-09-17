@@ -23,9 +23,21 @@ struct GameLibraryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Subtle native background
-                Color(red: 0.04, green: 0.05, blue: 0.08)
-                    .ignoresSafeArea()
+                // Native Apple MeshGradient for iOS 18/26 liquid feeling
+                MeshGradient(
+                    width: 3, height: 3,
+                    points: [
+                        [0.0, 0.0], [0.5, 0.0], [1.0, 0.0],
+                        [0.0, 0.5], [0.5, 0.4], [1.0, 0.5],
+                        [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
+                    ],
+                    colors: [
+                        Color(red: 0.0, green: 0.0, blue: 0.0), Color(red: 0.05, green: 0.1, blue: 0.2), Color(red: 0.0, green: 0.0, blue: 0.0),
+                        Color(red: 0.02, green: 0.05, blue: 0.1), Color(red: 0.1, green: 0.2, blue: 0.4), Color(red: 0.02, green: 0.05, blue: 0.1),
+                        Color(red: 0.0, green: 0.0, blue: 0.0), Color(red: 0.05, green: 0.1, blue: 0.2), Color(red: 0.0, green: 0.0, blue: 0.0)
+                    ]
+                )
+                .ignoresSafeArea()
 
                 if viewModel.filteredGames.isEmpty {
                     emptyState
@@ -46,6 +58,7 @@ struct GameLibraryView: View {
                     }
                 }
             }
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
         .fileImporter(
             isPresented: $viewModel.isFilePickerPresented,
@@ -76,8 +89,9 @@ struct GameLibraryView: View {
             Spacer()
 
             Image(systemName: "gamecontroller.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.tertiary)
+                .font(.system(size: 72))
+                .foregroundStyle(.ultraThinMaterial)
+                .shadow(color: .white.opacity(0.1), radius: 10, x: 0, y: 5)
                 .padding(.bottom, 8)
 
             Text("Kütüphanede Oyun Yok")
@@ -97,7 +111,7 @@ struct GameLibraryView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(.accentColor)
+            .tint(Color.blue.opacity(0.8)) // Liquid glass prominent
             .padding(.top, 12)
 
             Spacer()
