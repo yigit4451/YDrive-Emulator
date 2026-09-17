@@ -17,24 +17,15 @@ struct GameLibraryView: View {
     @State private var selectedGame: GameItem?
 
     private let columns = [
-        GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 14)
+        GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
     ]
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // ── True Liquid Glass Background: Bright center to light up the glass ──
-                RadialGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.1, green: 0.2, blue: 0.4), // Bright deep blue center
-                        Color(red: 0.05, green: 0.08, blue: 0.15),
-                        Color.black
-                    ]),
-                    center: .center,
-                    startRadius: 10,
-                    endRadius: 500
-                )
-                .ignoresSafeArea()
+                // Subtle native background
+                Color(red: 0.04, green: 0.05, blue: 0.08)
+                    .ignoresSafeArea()
 
                 if viewModel.filteredGames.isEmpty {
                     emptyState
@@ -46,15 +37,13 @@ struct GameLibraryView: View {
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $viewModel.searchText, prompt: "Oyun ara...")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         viewModel.isFilePickerPresented = true
                     } label: {
                         Image(systemName: "plus")
-                            .fontWeight(.semibold)
+                            .fontWeight(.medium)
                     }
-                    // iOS 26: glass button style
-                    .buttonStyle(.glass)
                 }
             }
         }
@@ -86,17 +75,13 @@ struct GameLibraryView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            // iOS 26 glassEffect on the icon container
-            ZStack {
-                Image(systemName: "gamecontroller.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(.blue.gradient)
-            }
-            .padding(32)
-            .glassEffect(in: Circle())
+            Image(systemName: "gamecontroller.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(.tertiary)
+                .padding(.bottom, 8)
 
             Text("Kütüphanede Oyun Yok")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
             Text("Genesis / Mega Drive ROM dosyası\n(.md .bin .gen .zip) ekleyin")
@@ -108,13 +93,12 @@ struct GameLibraryView: View {
                 viewModel.isFilePickerPresented = true
             } label: {
                 Label("ROM Ekle", systemImage: "plus.circle.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 14)
+                    .font(.headline)
             }
-            // iOS 26 glass button
-            .buttonStyle(.glass)
-            .tint(.blue)
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(.accentColor)
+            .padding(.top, 12)
 
             Spacer()
         }
@@ -124,7 +108,7 @@ struct GameLibraryView: View {
     // MARK: – Game Grid
     private var gameGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 14) {
+            LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.filteredGames) { game in
                     Button {
                         selectedGame = game
@@ -151,20 +135,6 @@ struct GameLibraryView: View {
             }
             .padding(16)
         }
-        .scrollIndicators(.hidden)
-    }
-}
-
-// MARK: – Color hex helper
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let r = Double((int >> 16) & 0xFF) / 255
-        let g = Double((int >> 8)  & 0xFF) / 255
-        let b = Double(int         & 0xFF) / 255
-        self.init(red: r, green: g, blue: b)
     }
 }
 

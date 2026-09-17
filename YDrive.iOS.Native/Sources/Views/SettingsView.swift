@@ -8,108 +8,58 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                // True Liquid Glass Background
-                RadialGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.1, green: 0.2, blue: 0.4),
-                        Color(red: 0.05, green: 0.08, blue: 0.15),
-                        Color.black
-                    ]),
-                    center: .center,
-                    startRadius: 10,
-                    endRadius: 500
-                )
-                .ignoresSafeArea()
-
-                ScrollView {
-                    VStack(spacing: 24) {
-
-                        // ── Emulator Section ──
-                        settingsCard {
-                            sectionHeader("Emülatör")
-                            Toggle("Ses", isOn: $audioEnabled)
-                                .tint(.blue)
-                            Divider().background(.white.opacity(0.1))
-                            Toggle("FPS Göster", isOn: $showFPS)
-                                .tint(.blue)
-                            Divider().background(.white.opacity(0.1))
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Frame Skip: \(frameSkip)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary)
-                                Slider(value: Binding(
-                                    get: { Double(frameSkip) },
-                                    set: { frameSkip = Int($0) }
-                                ), in: 0...5, step: 1)
-                                .tint(.blue)
-                            }
-                        }
-
-                        // ── Controls Section ──
-                        settingsCard {
-                            sectionHeader("Kontrolcü")
-                            Toggle("Dokunsal Geri Bildirim", isOn: $hapticFeedback)
-                                .tint(.blue)
-                            Divider().background(.white.opacity(0.1))
-                            HStack {
-                                Text("MFi / GCController")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                Text("Otomatik")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        // ── About ──
-                        settingsCard {
-                            sectionHeader("Hakkında")
-                            infoRow("Versiyon", "2.0.0 (Liquid Glass)")
-                            Divider().background(.white.opacity(0.1))
-                            infoRow("Platform", "iOS 26+, SwiftUI")
-                            Divider().background(.white.opacity(0.1))
-                            infoRow("Çekirdek", "libretro / PicoDrive")
-                        }
+            Form {
+                Section(header: Text("Emülatör")) {
+                    Toggle("Ses", isOn: $audioEnabled)
+                        .tint(.accentColor)
+                    
+                    Toggle("FPS Göster", isOn: $showFPS)
+                        .tint(.accentColor)
+                    
+                    VStack(alignment: .leading) {
+                        Text("Frame Skip: \(frameSkip)")
+                        Slider(value: Binding(
+                            get: { Double(frameSkip) },
+                            set: { frameSkip = Int($0) }
+                        ), in: 0...5, step: 1)
+                        .tint(.accentColor)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 40)
-                    .padding(.top, 16)
+                }
+                
+                Section(header: Text("Kontrolcü")) {
+                    Toggle("Dokunsal Geri Bildirim", isOn: $hapticFeedback)
+                        .tint(.accentColor)
+                    
+                    HStack {
+                        Text("MFi / GCController")
+                        Spacer()
+                        Text("Otomatik")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Section(header: Text("Hakkında")) {
+                    HStack {
+                        Text("Versiyon")
+                        Spacer()
+                        Text("2.0.0 (Native)")
+                            .foregroundStyle(.secondary)
+                    }
+                    HStack {
+                        Text("Platform")
+                        Spacer()
+                        Text("iOS 16+, SwiftUI")
+                            .foregroundStyle(.secondary)
+                    }
+                    HStack {
+                        Text("Çekirdek")
+                        Spacer()
+                        Text("libretro / PicoDrive")
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .navigationTitle("Ayarlar")
-            .navigationBarTitleDisplayMode(.large)
-        }
-    }
-
-    private func settingsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            content()
-        }
-        .padding(18)
-        // iOS 26 glass effect
-        .glassEffect(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-    }
-
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-            .textCase(.uppercase)
-            .tracking(1.2)
-    }
-
-    private func infoRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-            Spacer()
-            Text(value)
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
 }

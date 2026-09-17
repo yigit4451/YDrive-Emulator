@@ -9,93 +9,82 @@ struct GameDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                RadialGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.1, green: 0.2, blue: 0.4),
-                        Color(red: 0.05, green: 0.08, blue: 0.15),
-                        Color.black
-                    ]),
-                    center: .center,
-                    startRadius: 10,
-                    endRadius: 500
-                )
-                .ignoresSafeArea()
+                Color(red: 0.04, green: 0.05, blue: 0.08)
+                    .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 28) {
-
+                    VStack(spacing: 32) {
+                        
                         // ── Cover art ──
                         ZStack {
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                .fill(Color(hex: "0C1220"))
-                                .frame(width: 210, height: 270)
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color(white: 0.15))
+                                .frame(width: 220, height: 290)
 
                             if let path = game.coverImagePath,
                                let img = UIImage(contentsOfFile: path) {
                                 Image(uiImage: img)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 210, height: 270)
-                                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                    .frame(width: 220, height: 290)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             } else {
                                 Image(systemName: "gamecontroller.fill")
-                                    .font(.system(size: 64))
-                                    .foregroundStyle(.blue.gradient.opacity(0.5))
+                                    .font(.system(size: 72))
+                                    .foregroundStyle(.tertiary)
                             }
                         }
-                        .shadow(color: .blue.opacity(0.25), radius: 30, y: 12)
-                        .padding(.top, 8)
+                        .shadow(color: .black.opacity(0.3), radius: 15, y: 8)
+                        .padding(.top, 24)
 
-                        // ── Title ──
-                        VStack(spacing: 10) {
+                        // ── Title & Console ──
+                        VStack(spacing: 8) {
                             Text(game.title)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .font(.title.weight(.bold))
                                 .foregroundStyle(.primary)
                                 .multilineTextAlignment(.center)
 
                             Text(game.consoleName)
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.blue)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 5)
-                                .glassEffect(in: Capsule())
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(.blue.opacity(0.15))
+                                .clipShape(Capsule())
                         }
+                        .padding(.horizontal)
 
-                        // ── Play button (iOS 26 prominent glass) ──
+                        // ── Play button ──
                         Button {
                             showingGame = true
                         } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "play.fill")
-                                Text("Oyna")
-                                    .fontWeight(.bold)
-                            }
-                            .font(.system(size: 18))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 18)
+                            Label("Oyna", systemImage: "play.fill")
+                                .font(.title3.weight(.bold))
+                                .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.glass)
-                        .tint(.blue)
-                        .padding(.horizontal, 16)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .tint(.accentColor)
+                        .padding(.horizontal, 24)
 
                         // ── Info panel ──
                         VStack(alignment: .leading, spacing: 16) {
                             infoRow(icon: "person.fill",
                                     label: "Yapımcı",
                                     value: game.developer ?? "Bilinmiyor")
-                            Divider().background(.white.opacity(0.08))
+                            Divider()
 
                             infoRow(icon: "calendar",
                                     label: "Çıkış Yılı",
                                     value: game.releaseYear ?? "Bilinmiyor")
-                            Divider().background(.white.opacity(0.08))
+                            Divider()
 
                             infoRow(icon: "doc.fill",
                                     label: "Dosya",
                                     value: game.fileName)
 
                             if let summary = game.summary {
-                                Divider().background(.white.opacity(0.08))
+                                Divider()
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text("Özet")
                                         .font(.caption)
@@ -106,24 +95,20 @@ struct GameDetailView: View {
                                 }
                             }
                         }
-                        .padding(18)
-                        // iOS 26: glass panel
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .padding(.horizontal, 16)
+                        .padding(20)
+                        .background(.regularMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.horizontal, 24)
                         .padding(.bottom, 32)
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Kapat") {
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .fontWeight(.semibold)
                     }
-                    .buttonStyle(.glass)
                 }
             }
         }
@@ -133,9 +118,10 @@ struct GameDetailView: View {
     }
 
     private func infoRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 16) {
             Image(systemName: icon)
-                .frame(width: 22)
+                .font(.body)
+                .frame(width: 24)
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)

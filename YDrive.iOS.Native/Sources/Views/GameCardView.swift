@@ -5,59 +5,56 @@ struct GameCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-
+            
             // ── Cover art ──
             ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(hex: "0E1525"), Color(hex: "0A1020"),
-                                Color(hex: "080D1A"), Color(hex: "060A14")
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(height: 130)
+                Rectangle()
+                    .fill(Color(white: 0.15))
+                    .frame(height: 140)
 
                 if let coverPath = game.coverImagePath,
                    let uiImage = UIImage(contentsOfFile: coverPath) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 130)
+                        .frame(height: 140)
                         .clipped()
                 } else {
                     Image(systemName: "gamecontroller.fill")
-                        .font(.system(size: 36))
-                        .foregroundStyle(.blue.opacity(0.35))
+                        .font(.largeTitle)
+                        .foregroundStyle(.tertiary)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .padding(.bottom, 10)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding([.horizontal, .top], 8)
+            .padding(.bottom, 12)
 
             // ── Title ──
             Text(game.title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.headline)
                 .foregroundStyle(.primary)
                 .lineLimit(2)
+                .padding(.horizontal, 12)
                 .padding(.bottom, 6)
 
             // ── Console badge ──
             Text(game.consoleName)
-                .font(.system(size: 10, weight: .medium))
+                .font(.caption2.weight(.medium))
                 .foregroundStyle(.blue)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .glassEffect(in: Capsule())  // iOS 26: glass capsule badge
+                .padding(.vertical, 4)
+                .background(.blue.opacity(0.15))
+                .clipShape(Capsule())
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
 
             Spacer(minLength: 0)
         }
-        .padding(12)
-        .frame(minHeight: 210)
-        // iOS 26: full-card liquid glass
-        .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .frame(minHeight: 230, alignment: .top)
+        // Native SwiftUI material for liquid glass effect
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -69,6 +66,6 @@ struct GameCardView: View {
     ))
     .frame(width: 175)
     .padding()
-    .background(.black)
+    .background(Color(red: 0.05, green: 0.05, blue: 0.1))
     .preferredColorScheme(.dark)
 }
