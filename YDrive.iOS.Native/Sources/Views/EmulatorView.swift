@@ -48,7 +48,7 @@ struct EmulatorView: View {
                         .foregroundStyle(.white.opacity(0.8))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .applyLiquidGlassCapsule()
                         .padding(.trailing, 64) // balance the layout
                     
                     Spacer()
@@ -123,7 +123,7 @@ struct OnScreenControlsView: View {
     ) -> some View {
         ZStack {
             Circle()
-                .fill(.ultraThinMaterial)
+                .applyLiquidGlassCircle()
                 .frame(width: size, height: size)
                 .overlay(
                     Circle().stroke(color.opacity(0.3), lineWidth: 1)
@@ -152,12 +152,12 @@ struct DPadView: View {
         ZStack {
             // Vertical bar
             Capsule()
-                .fill(.ultraThinMaterial)
+                .applyLiquidGlassCapsule()
                 .frame(width: 52, height: 160)
             
             // Horizontal bar
             Capsule()
-                .fill(.ultraThinMaterial)
+                .applyLiquidGlassCapsule()
                 .frame(width: 160, height: 52)
 
             // Arrows

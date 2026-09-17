@@ -104,8 +104,7 @@ struct GameDetailView: View {
                             }
                         }
                         .padding(20)
-                        .background(.ultraThinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .applyLiquidGlass(cornerRadius: 16)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 32)
                     }
