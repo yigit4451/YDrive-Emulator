@@ -40,7 +40,7 @@ jobs:
         echo "Generated project:"
         head -20 YDrive.xcodeproj/project.pbxproj | grep -E "objectVersion|compatibilityVersion"
 
-    - name: Build (no signing)
+    - name: Build iOS App with Xcode
       working-directory: YDrive.iOS.Native
       run: |
         xcodebuild \
@@ -48,25 +48,35 @@ jobs:
           -scheme YDrive \
           -sdk iphoneos \
           -configuration Release \
+          -derivedDataPath derived_data \
+          SYMROOT="$GITHUB_WORKSPACE/build" \
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGNING_REQUIRED=NO \
-          EXPANDED_CODE_SIGN_IDENTITY="" \
-          -derivedDataPath build \
-          | xcpretty --color || true
+          clean build
 
-    - name: Create IPA Package
+    - name: Create AltStore-Ready IPA Package
       run: |
         rm -rf Payload YDrive.ipa
         mkdir -p Payload
-        # Çıkan .app paketini tüm repo altında ara
-        APP_PATH=$(find . -name "*.app" -type d | grep -v "Index.noindex" | head -n 1)
+        APP_PATH=$(find "$GITHUB_WORKSPACE/build" -name "*.app" -type d | head -n 1)
         echo "Bulunan App Yolu: $APP_PATH"
         if [ -z "$APP_PATH" ]; then
-          echo "HATA: .app paketi bulunamadı!"
+          echo "HATA: .app paketi build klasöründe bulunamadı!"
           exit 1
         fi
+
+        # Dosyayı Payload içine kopyala
         cp -R "$APP_PATH" Payload/
-        chmod -R 755 Payload
+
+        # İzinleri düzenle
+        chmod -R 755 Payload/
+
+        # AltStore/SideStore için ad-hoc imza (ldid) uygula
+        brew install ldid || true
+        APP_DIR_NAME=$(basename "$APP_PATH")
+        ldid -S Payload/"$APP_DIR_NAME"/YDrive || true
+
+        # Symlinkleri koruyarak zip'le
         zip -r -y YDrive.ipa Payload
 
     - name: Upload IPA Artifact
