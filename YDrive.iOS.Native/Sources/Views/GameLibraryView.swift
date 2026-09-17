@@ -1,7 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-// Supported ROM file types for import
 let romUTTypes: [UTType] = [
     UTType(filenameExtension: "md"),
     UTType(filenameExtension: "bin"),
@@ -17,55 +16,61 @@ struct GameLibraryView: View {
     @State private var renameText = ""
     @State private var selectedGame: GameItem?
 
-    // 2-column adaptive grid
     private let columns = [
-        GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 16)
+        GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 14)
     ]
 
     var body: some View {
-        ZStack {
-            // ── Full-screen frosted glass background ──
-            LinearGradient(
-                colors: [
-                    Color(red: 0.05, green: 0.06, blue: 0.12),
-                    Color(red: 0.08, green: 0.09, blue: 0.18)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                // ── iOS 26 MeshGradient background ──
+                MeshGradient(
+                    width: 3, height: 3,
+                    points: [
+                        [0.0, 0.0], [0.5, 0.0], [1.0, 0.0],
+                        [0.0, 0.5], [0.5, 0.4], [1.0, 0.5],
+                        [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
+                    ],
+                    colors: [
+                        .black,         Color(hex: "0A0E1A"), .black,
+                        Color(hex: "070B18"), Color(hex: "0D1830"), Color(hex: "050912"),
+                        .black,         Color(hex: "08101F"), .black
+                    ]
+                )
+                .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // ── Top App Bar ──
-                topAppBar
-
-                // ── Search Bar ──
-                searchBar
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-
-                // ── Content ──
                 if viewModel.filteredGames.isEmpty {
                     emptyState
                 } else {
                     gameGrid
                 }
             }
+            .navigationTitle("YDrive")
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $viewModel.searchText, prompt: "Oyun ara...")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.isFilePickerPresented = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
+                    }
+                    // iOS 26: glass button style
+                    .buttonStyle(.glass)
+                }
+            }
         }
-        .navigationBarHidden(true)
         .fileImporter(
             isPresented: $viewModel.isFilePickerPresented,
             allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
             allowsMultipleSelection: true
         ) { result in
-            switch result {
-            case .success(let urls):
+            if case .success(let urls) = result {
                 urls.forEach { viewModel.addRom(url: $0) }
-            case .failure:
-                break
             }
         }
-        .alert("Oyunu Yeniden Adlandır", isPresented: $showingRenameAlert) {
+        .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
             TextField("Yeni ad", text: $renameText)
             Button("Kaydet") {
                 if let game = renameTarget, !renameText.isEmpty {
@@ -79,136 +84,57 @@ struct GameLibraryView: View {
         }
     }
 
-    // MARK: – Top App Bar
-    private var topAppBar: some View {
-        HStack(spacing: 12) {
-            // Logo
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        Circle()
-                            .stroke(.white.opacity(0.15), lineWidth: 1)
-                    )
-                    .frame(width: 44, height: 44)
-                Image(systemName: "gamecontroller.fill")
-                    .foregroundStyle(.blue.gradient)
-                    .font(.system(size: 20, weight: .semibold))
-            }
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("YDrive")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                Text("SEGA Consoles Emulator")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.blue.opacity(0.8))
-            }
-
-            Spacer()
-
-            // Settings
-            NavigationLink(destination: SettingsView()) {
-                ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            Circle()
-                                .stroke(.white.opacity(0.15), lineWidth: 1)
-                        )
-                        .frame(width: 44, height: 44)
-                    Image(systemName: "gearshape.fill")
-                        .foregroundStyle(.secondary)
-                        .font(.system(size: 18))
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(.white.opacity(0.08)),
-            alignment: .bottom
-        )
-    }
-
-    // MARK: – Search Bar
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-                .font(.system(size: 16, weight: .medium))
-            TextField("Oyun ara...", text: $viewModel.searchText)
-                .foregroundStyle(.white)
-                .tint(.blue)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(.white.opacity(0.12), lineWidth: 1)
-        )
-    }
-
     // MARK: – Empty State
     private var emptyState: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Spacer()
+
+            // iOS 26 glassEffect on the icon container
             ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .overlay(Circle().stroke(.white.opacity(0.12), lineWidth: 1))
-                    .frame(width: 96, height: 96)
-                Image(systemName: "gamecontroller")
-                    .font(.system(size: 40))
-                    .foregroundStyle(.blue.opacity(0.8))
+                Image(systemName: "gamecontroller.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(.blue.gradient)
             }
+            .padding(32)
+            .glassEffect(in: Circle())
+
             Text("Kütüphanede Oyun Yok")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-            Text("Oynamak için Genesis / Mega Drive ROM\ndosyası (.md, .bin, .gen, .zip) ekleyin.")
-                .font(.system(size: 14))
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+
+            Text("Genesis / Mega Drive ROM dosyası\n(.md .bin .gen .zip) ekleyin")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+
             Button {
                 viewModel.isFilePickerPresented = true
             } label: {
-                Label("ROM Ekle", systemImage: "plus")
+                Label("ROM Ekle", systemImage: "plus.circle.fill")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 28)
+                    .padding(.horizontal, 32)
                     .padding(.vertical, 14)
-                    .background(.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             }
+            // iOS 26 glass button
+            .buttonStyle(.glass)
+            .tint(.blue)
+
             Spacer()
         }
-        .padding()
+        .padding(32)
     }
 
     // MARK: – Game Grid
     private var gameGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                // "Add ROM" card
-                Button {
-                    viewModel.isFilePickerPresented = true
-                } label: {
-                    AddRomCardView()
-                }
-
-                // Game cards
+            LazyVGrid(columns: columns, spacing: 14) {
                 ForEach(viewModel.filteredGames) { game in
                     Button {
                         selectedGame = game
                     } label: {
                         GameCardView(game: game)
                     }
+                    .buttonStyle(.plain)
                     .contextMenu {
                         Button {
                             renameTarget = game
@@ -217,48 +143,35 @@ struct GameLibraryView: View {
                         } label: {
                             Label("Yeniden Adlandır", systemImage: "pencil")
                         }
+
                         Button(role: .destructive) {
                             viewModel.deleteGame(game)
                         } label: {
-                            Label("ROM'u Sil", systemImage: "trash")
+                            Label("Sil", systemImage: "trash")
                         }
                     }
                 }
             }
             .padding(16)
         }
+        .scrollIndicators(.hidden)
     }
 }
 
-// MARK: – Add ROM Card
-private struct AddRomCardView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.blue.opacity(0.15))
-                    .frame(height: 130)
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 44))
-                    .foregroundStyle(.blue.gradient)
-            }
-            Text("ROM Ekle")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.blue)
-        }
-        .padding(12)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(.blue.opacity(0.3), lineWidth: 1.5)
-        )
+// MARK: – Color hex helper
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let r = Double((int >> 16) & 0xFF) / 255
+        let g = Double((int >> 8)  & 0xFF) / 255
+        let b = Double(int         & 0xFF) / 255
+        self.init(red: r, green: g, blue: b)
     }
 }
 
 #Preview {
-    NavigationStack {
-        GameLibraryView()
-    }
-    .preferredColorScheme(.dark)
+    GameLibraryView()
+        .preferredColorScheme(.dark)
 }

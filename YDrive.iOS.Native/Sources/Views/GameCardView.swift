@@ -5,71 +5,59 @@ struct GameCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // ── Cover art area ──
+
+            // ── Cover art ──
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
-                        LinearGradient(
+                        MeshGradient(
+                            width: 2, height: 2,
+                            points: [[0,0],[1,0],[0,1],[1,1]],
                             colors: [
-                                Color(white: 0.12),
-                                Color(white: 0.08)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                                Color(hex: "0E1525"), Color(hex: "0A1020"),
+                                Color(hex: "080D1A"), Color(hex: "060A14")
+                            ]
                         )
                     )
-                    .frame(height: 140)
+                    .frame(height: 130)
 
                 if let coverPath = game.coverImagePath,
                    let uiImage = UIImage(contentsOfFile: coverPath) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 140)
+                        .frame(height: 130)
                         .clipped()
                 } else {
-                    // Placeholder
-                    VStack(spacing: 8) {
-                        Image(systemName: "gamecontroller")
-                            .font(.system(size: 36))
-                            .foregroundStyle(.white.opacity(0.25))
-                        Text("No Cover")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.white.opacity(0.2))
-                    }
+                    Image(systemName: "gamecontroller.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(.blue.opacity(0.35))
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .padding(.bottom, 10)
 
-            // ── Game Title ──
+            // ── Title ──
             Text(game.title)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .lineLimit(2)
-                .multilineTextAlignment(.leading)
-                .padding(.bottom, 4)
+                .padding(.bottom, 6)
 
-            // ── Console chip ──
+            // ── Console badge ──
             Text(game.consoleName)
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.blue)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(.blue.opacity(0.15))
-                .clipShape(Capsule())
+                .glassEffect(in: Capsule())  // iOS 26: glass capsule badge
 
             Spacer(minLength: 0)
         }
         .padding(12)
-        .frame(minHeight: 220)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(.white.opacity(0.13), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+        .frame(minHeight: 210)
+        // iOS 26: full-card liquid glass
+        .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
@@ -77,11 +65,10 @@ struct GameCardView: View {
     GameCardView(game: GameItem(
         title: "Sonic the Hedgehog 2",
         consoleName: "SEGA Genesis",
-        fileName: "sonic2.bin",
-        developer: "Sega"
+        fileName: "sonic2.bin"
     ))
-    .frame(width: 180)
+    .frame(width: 175)
     .padding()
-    .background(Color(white: 0.06))
+    .background(.black)
     .preferredColorScheme(.dark)
 }

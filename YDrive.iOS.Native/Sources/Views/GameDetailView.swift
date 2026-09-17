@@ -7,126 +7,124 @@ struct GameDetailView: View {
     @State private var showingGame = false
 
     var body: some View {
-        ZStack {
-            // Background
-            LinearGradient(
-                colors: [Color(white: 0.05), Color(white: 0.09)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                // MeshGradient background
+                MeshGradient(
+                    width: 2, height: 3,
+                    points: [[0,0],[1,0],[0,0.5],[1,0.5],[0,1],[1,1]],
+                    colors: [
+                        .black, Color(hex: "080E1C"),
+                        Color(hex: "060B16"), Color(hex: "0B1428"),
+                        .black, Color(hex: "06090F")
+                    ]
+                )
+                .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 20) {
+                ScrollView {
+                    VStack(spacing: 28) {
 
-                    // ── Cover Art ──
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(Color(white: 0.12))
-                            .frame(width: 200, height: 260)
+                        // ── Cover art ──
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(Color(hex: "0C1220"))
+                                .frame(width: 210, height: 270)
 
-                        if let path = game.coverImagePath,
-                           let img = UIImage(contentsOfFile: path) {
-                            Image(uiImage: img)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 200, height: 260)
-                                .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        } else {
-                            Image(systemName: "gamecontroller.fill")
-                                .font(.system(size: 60))
-                                .foregroundStyle(.white.opacity(0.2))
-                        }
-                    }
-                    .shadow(color: .black.opacity(0.5), radius: 20, y: 10)
-                    .padding(.top, 20)
-
-                    // ── Title & Console ──
-                    VStack(spacing: 8) {
-                        Text(game.title)
-                            .font(.system(size: 26, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.center)
-
-                        Text(game.consoleName)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.blue)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 5)
-                            .background(.blue.opacity(0.18))
-                            .clipShape(Capsule())
-                    }
-
-                    // ── Play Button ──
-                    Button {
-                        showingGame = true
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "play.fill")
-                            Text("Oyna")
-                                .fontWeight(.bold)
-                        }
-                        .font(.system(size: 18))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                colors: [.blue, Color(red: 0, green: 0.55, blue: 1)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .shadow(color: .blue.opacity(0.4), radius: 12, y: 6)
-                    }
-                    .padding(.horizontal, 16)
-
-                    // ── Info Card (Liquid Glass) ──
-                    VStack(alignment: .leading, spacing: 14) {
-                        infoRow(icon: "person.fill",
-                                label: "Yapımcı",
-                                value: game.developer ?? "Bilinmiyor")
-                        Divider().background(.white.opacity(0.1))
-                        infoRow(icon: "calendar",
-                                label: "Çıkış Yılı",
-                                value: game.releaseYear ?? "Bilinmiyor")
-                        Divider().background(.white.opacity(0.1))
-                        infoRow(icon: "doc.fill",
-                                label: "Dosya",
-                                value: game.fileName)
-                        if let summary = game.summary {
-                            Divider().background(.white.opacity(0.1))
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Özet")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                                Text(summary)
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.white.opacity(0.85))
+                            if let path = game.coverImagePath,
+                               let img = UIImage(contentsOfFile: path) {
+                                Image(uiImage: img)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 210, height: 270)
+                                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            } else {
+                                Image(systemName: "gamecontroller.fill")
+                                    .font(.system(size: 64))
+                                    .foregroundStyle(.blue.gradient.opacity(0.5))
                             }
                         }
+                        .shadow(color: .blue.opacity(0.25), radius: 30, y: 12)
+                        .padding(.top, 8)
+
+                        // ── Title ──
+                        VStack(spacing: 10) {
+                            Text(game.title)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.center)
+
+                            Text(game.consoleName)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.blue)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 5)
+                                .glassEffect(in: Capsule())
+                        }
+
+                        // ── Play button (iOS 26 prominent glass) ──
+                        Button {
+                            showingGame = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "play.fill")
+                                Text("Oyna")
+                                    .fontWeight(.bold)
+                            }
+                            .font(.system(size: 18))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 18)
+                        }
+                        .buttonStyle(.glass)
+                        .tint(.blue)
+                        .padding(.horizontal, 16)
+
+                        // ── Info panel ──
+                        VStack(alignment: .leading, spacing: 16) {
+                            infoRow(icon: "person.fill",
+                                    label: "Yapımcı",
+                                    value: game.developer ?? "Bilinmiyor")
+                            Divider().background(.white.opacity(0.08))
+
+                            infoRow(icon: "calendar",
+                                    label: "Çıkış Yılı",
+                                    value: game.releaseYear ?? "Bilinmiyor")
+                            Divider().background(.white.opacity(0.08))
+
+                            infoRow(icon: "doc.fill",
+                                    label: "Dosya",
+                                    value: game.fileName)
+
+                            if let summary = game.summary {
+                                Divider().background(.white.opacity(0.08))
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Özet")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Text(summary)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.primary)
+                                }
+                            }
+                        }
+                        .padding(18)
+                        // iOS 26: glass panel
+                        .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 32)
                     }
-                    .padding(16)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(.white.opacity(0.12), lineWidth: 1)
-                    )
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 32)
                 }
             }
-        }
-        .navigationBarHidden(true)
-        .overlay(alignment: .topLeading) {
-            Button { dismiss() } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.secondary)
-                    .padding(16)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .fontWeight(.semibold)
+                    }
+                    .buttonStyle(.glass)
+                }
             }
         }
         .fullScreenCover(isPresented: $showingGame) {
@@ -135,17 +133,17 @@ struct GameDetailView: View {
     }
 
     private func infoRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image(systemName: icon)
-                .frame(width: 20)
+                .frame(width: 22)
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(value)
-                    .font(.system(size: 14))
-                    .foregroundStyle(.white)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
             }
             Spacer()

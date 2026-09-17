@@ -1,9 +1,6 @@
 import SwiftUI
 import GameController
 
-/// Emulator canvas view.
-/// Actual libretro bridging / C interop goes here.
-/// This stub shows the on-screen controller overlay.
 struct EmulatorView: View {
     let game: GameItem
     @Environment(\.dismiss) private var dismiss
@@ -23,31 +20,39 @@ struct EmulatorView: View {
                         .font(.caption)
                 )
 
-            // ── On-screen controls (hidden when MFi/GCController connected) ──
+            // ── On-screen controls ──
             if !isControllerConnected {
                 VStack {
                     Spacer()
                     OnScreenControlsView(buttonStates: $buttonStates)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 32)
                 }
             }
 
-            // ── Dismiss button ──
+            // ── Dismiss & Title Bar ──
             VStack {
                 HStack {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.6))
+                        Image(systemName: "xmark")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(.white)
                             .padding(12)
                     }
+                    .glassEffect(in: Circle())
+                    .padding(16)
+                    
                     Spacer()
+                    
                     Text(game.title)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .padding(.trailing, 50)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .glassEffect(in: Capsule())
+                        .padding(.trailing, 60) // balance the layout
+                    Spacer()
                 }
                 Spacer()
             }
@@ -69,7 +74,8 @@ struct EmulatorView: View {
     }
 }
 
-// MARK: – On-Screen D-Pad + Buttons
+// MARK: – On-Screen Controls (Liquid Glass)
+
 struct ButtonState {
     var up = false, down = false, left = false, right = false
     var a = false, b = false, c = false, start = false
@@ -87,43 +93,44 @@ struct OnScreenControlsView: View {
                 onLeft: { buttonStates.left = $0 },
                 onRight: { buttonStates.right = $0 }
             )
-            .frame(width: 140, height: 140)
-            .padding(.leading, 24)
+            .padding(.leading, 32)
 
             Spacer()
 
             // Action buttons
-            VStack(spacing: 8) {
-                HStack(spacing: 8) {
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
                     actionButton("C", color: .yellow) { buttonStates.c = $0 }
                     actionButton("B", color: .blue)   { buttonStates.b = $0 }
                     actionButton("A", color: .red)    { buttonStates.a = $0 }
                 }
                 HStack {
                     Spacer()
-                    actionButton("START", color: .white.opacity(0.8), size: 56) { buttonStates.start = $0 }
+                    actionButton("START", color: .white, size: 60) { buttonStates.start = $0 }
                     Spacer()
                 }
             }
-            .padding(.trailing, 24)
+            .padding(.trailing, 32)
         }
     }
 
     private func actionButton(
         _ label: String,
         color: Color,
-        size: CGFloat = 52,
+        size: CGFloat = 56,
         onPress: @escaping (Bool) -> Void
     ) -> some View {
         ZStack {
             Circle()
-                .fill(.ultraThinMaterial)
-                .overlay(Circle().stroke(color.opacity(0.5), lineWidth: 2))
+                .fill(color.opacity(0.15))
                 .frame(width: size, height: size)
+            
             Text(label)
-                .font(.system(size: label.count > 1 ? 11 : 16, weight: .bold))
+                .font(.system(size: label.count > 1 ? 12 : 18, weight: .black, design: .rounded))
                 .foregroundStyle(color)
         }
+        // iOS 26 liquid glass button
+        .glassEffect(in: Circle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in onPress(true) }
@@ -132,7 +139,7 @@ struct OnScreenControlsView: View {
     }
 }
 
-// MARK: – D-Pad
+// MARK: – Liquid Glass D-Pad
 struct DPadView: View {
     var onUp: (Bool) -> Void
     var onDown: (Bool) -> Void
@@ -141,26 +148,29 @@ struct DPadView: View {
 
     var body: some View {
         ZStack {
-            // Horizontal bar
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .overlay(Capsule().stroke(.white.opacity(0.15), lineWidth: 1))
-                .frame(width: 140, height: 46)
-
-            // Vertical bar
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .overlay(Capsule().stroke(.white.opacity(0.15), lineWidth: 1))
-                .frame(width: 46, height: 140)
+            // Cross shape background
+            crossShape
+                .fill(Color.white.opacity(0.05))
+                .frame(width: 150, height: 150)
+                // We apply the glass effect to the whole cross
+                .glassEffect(in: crossShape)
 
             // Arrows
             Group {
-                dpadArrow("chevron.up",    offset: CGSize(width: 0, height: -44)) { onUp($0) }
-                dpadArrow("chevron.down",  offset: CGSize(width: 0, height: 44))  { onDown($0) }
-                dpadArrow("chevron.left",  offset: CGSize(width: -44, height: 0)) { onLeft($0) }
-                dpadArrow("chevron.right", offset: CGSize(width: 44, height: 0))  { onRight($0) }
+                dpadArrow("chevron.up", offset: CGSize(width: 0, height: -48)) { onUp($0) }
+                dpadArrow("chevron.down", offset: CGSize(width: 0, height: 48)) { onDown($0) }
+                dpadArrow("chevron.left", offset: CGSize(width: -48, height: 0)) { onLeft($0) }
+                dpadArrow("chevron.right", offset: CGSize(width: 48, height: 0)) { onRight($0) }
             }
         }
+        .frame(width: 150, height: 150)
+    }
+    
+    private var crossShape: some Shape {
+        // A simple composition of two capsules to form a cross.
+        // In real SwiftUI, you'd use a Path for a perfect outline, but for now we'll combine shapes visually.
+        // To make the glassEffect outline work properly, we use a single custom shape.
+        DPadCrossShape()
     }
 
     private func dpadArrow(
@@ -169,15 +179,55 @@ struct DPadView: View {
         onPress: @escaping (Bool) -> Void
     ) -> some View {
         Image(systemName: icon)
-            .font(.system(size: 18, weight: .bold))
-            .foregroundStyle(.white.opacity(0.8))
-            .frame(width: 36, height: 36)
+            .font(.system(size: 22, weight: .black))
+            .foregroundStyle(.white.opacity(0.7))
+            .frame(width: 48, height: 48)
             .offset(offset)
+            .contentShape(Rectangle()) // Make hit area larger
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in onPress(true) }
                     .onEnded   { _ in onPress(false) }
             )
+    }
+}
+
+/// Custom shape for the D-Pad to apply the glass stroke perfectly
+struct DPadCrossShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.width
+        let height = rect.height
+        let armWidth = width * 0.35
+        
+        let minX = (width - armWidth) / 2
+        let maxX = minX + armWidth
+        let minY = (height - armWidth) / 2
+        let maxY = minY + armWidth
+        let radius = armWidth / 2
+        
+        // Top arm
+        path.move(to: CGPoint(x: minX, y: minY))
+        path.addLine(to: CGPoint(x: minX, y: radius))
+        path.addArc(center: CGPoint(x: width/2, y: radius), radius: radius, startAngle: .degrees(180), endAngle: .degrees(0), clockwise: false)
+        path.addLine(to: CGPoint(x: maxX, y: minY))
+        
+        // Right arm
+        path.addLine(to: CGPoint(x: width - radius, y: minY))
+        path.addArc(center: CGPoint(x: width - radius, y: height/2), radius: radius, startAngle: .degrees(-90), endAngle: .degrees(90), clockwise: false)
+        path.addLine(to: CGPoint(x: maxX, y: maxY))
+        
+        // Bottom arm
+        path.addLine(to: CGPoint(x: maxX, y: height - radius))
+        path.addArc(center: CGPoint(x: width/2, y: height - radius), radius: radius, startAngle: .degrees(0), endAngle: .degrees(180), clockwise: false)
+        path.addLine(to: CGPoint(x: minX, y: maxY))
+        
+        // Left arm
+        path.addLine(to: CGPoint(x: radius, y: maxY))
+        path.addArc(center: CGPoint(x: radius, y: height/2), radius: radius, startAngle: .degrees(90), endAngle: .degrees(-90), clockwise: false)
+        path.closeSubpath()
+        
+        return path
     }
 }
 
