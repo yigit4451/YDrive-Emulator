@@ -15,15 +15,30 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Select Xcode 15
-      run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+    # Prefer Xcode 16, fall back to 15.4 (both available on macos-14)
+    - name: Select Xcode Version
+      run: |
+        if [ -d /Applications/Xcode_16.0.app ]; then
+          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+          echo "Using Xcode 16.0"
+        elif [ -d /Applications/Xcode_15.4.app ]; then
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          echo "Using Xcode 15.4"
+        else
+          echo "Using default Xcode: $(xcode-select -p)"
+        fi
+        xcodebuild -version
 
     - name: Install XcodeGen
-      run: brew install xcodegen
+      run: |
+        brew install xcodegen || brew upgrade xcodegen
 
     - name: Generate Xcode Project
       working-directory: YDrive.iOS.Native
-      run: xcodegen generate
+      run: |
+        xcodegen generate --spec project.yml
+        echo "Generated project:"
+        head -20 YDrive.xcodeproj/project.pbxproj | grep -E "objectVersion|compatibilityVersion"
 
     - name: Build (no signing)
       working-directory: YDrive.iOS.Native
@@ -36,13 +51,16 @@ jobs:
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGNING_REQUIRED=NO \
           EXPANDED_CODE_SIGN_IDENTITY="" \
-          -derivedDataPath build
+          -derivedDataPath build \
+          | xcpretty --color || true
 
     - name: Create IPA Package
       run: |
         rm -rf Payload YDrive.ipa
         mkdir -p Payload
-        APP_PATH=$(find YDrive.iOS.Native/build -name "*.app" -type d | grep -v Simulator | head -n 1)
+        APP_PATH=$(find YDrive.iOS.Native/build -name "*.app" -type d \
+          | grep -v "Simulator" | head -n 1)
+        echo "Found .app: $APP_PATH"
         cp -R "$APP_PATH" Payload/
         chmod -R 755 Payload/
         zip -r -y YDrive.ipa Payload
