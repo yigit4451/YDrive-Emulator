@@ -33,7 +33,7 @@ struct GameLibraryView: View {
             }
             .navigationTitle("YDrive")
             .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.isFilePickerPresented = true
                     } label: {
@@ -44,7 +44,9 @@ struct GameLibraryView: View {
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.circle)
                     .tint(Color.accentColor)
-                    
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingSettings = true
                     } label: {
