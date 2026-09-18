@@ -21,100 +21,59 @@ struct GameLibraryView: View {
     ]
 
     var body: some View {
-        ZStack(alignment: .top) {
-            // ── Background Content Area ──
-            Color(UIColor.systemGroupedBackground)
-                .ignoresSafeArea()
-
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Safe area padding for the floating header
-                    Color.clear.frame(height: 70)
-                    
-                    if viewModel.filteredGames.isEmpty {
-                        emptyState
-                    } else {
-                        gameGrid
+        NavigationStack {
+            Group {
+                if viewModel.games.isEmpty {
+                    mainContent
+                } else {
+                    mainContent
+                        .searchable(text: $viewModel.searchText, prompt: "Ara...")
+                }
+            }
+            .navigationTitle("YDrive")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        viewModel.isFilePickerPresented = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.body.weight(.semibold))
                     }
-                    
-                    // Safe area padding for the floating bottom dock
-                    Color.clear.frame(height: 100)
                 }
             }
-            .ignoresSafeArea(edges: .bottom)
-            
-            // ── Floating Glass Header ──
-            floatingHeader
-        }
-        .fileImporter(
-            isPresented: $viewModel.isFilePickerPresented,
-            allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
-            allowsMultipleSelection: true
-        ) { result in
-            if case .success(let urls) = result {
-                urls.forEach { viewModel.addRom(url: $0) }
-            }
-        }
-        .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
-            TextField("Yeni ad", text: $renameText)
-            Button("Kaydet") {
-                if let game = renameTarget, !renameText.isEmpty {
-                    viewModel.renameGame(game, to: renameText)
+            .fileImporter(
+                isPresented: $viewModel.isFilePickerPresented,
+                allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
+                allowsMultipleSelection: true
+            ) { result in
+                if case .success(let urls) = result {
+                    urls.forEach { viewModel.addRom(url: $0) }
                 }
             }
-            Button("İptal", role: .cancel) {}
-        }
-        .sheet(item: $selectedGame) { game in
-            GameDetailView(game: game, viewModel: viewModel)
+            .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
+                TextField("Yeni ad", text: $renameText)
+                Button("Kaydet") {
+                    if let game = renameTarget, !renameText.isEmpty {
+                        viewModel.renameGame(game, to: renameText)
+                    }
+                }
+                Button("İptal", role: .cancel) {}
+            }
+            .sheet(item: $selectedGame) { game in
+                GameDetailView(game: game, viewModel: viewModel)
+            }
         }
     }
     
-    // MARK: – Floating Header
-    private var floatingHeader: some View {
-        HStack(spacing: 12) {
-            Text("YDrive")
-                .font(.title2.weight(.bold))
-                .foregroundStyle(.primary)
-            
-            Spacer()
-            
-            // Search Bar Component
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                TextField("Ara...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-                    .autocorrectionDisabled()
-                if !viewModel.searchText.isEmpty {
-                    Button {
-                        viewModel.searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
-            .clipShape(Capsule())
-            
-            Button {
-                viewModel.isFilePickerPresented = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(10)
-                    .background(Color.accentColor)
-                    .clipShape(Circle())
+    private var mainContent: some View {
+        ScrollView {
+            if viewModel.games.isEmpty {
+                emptyState
+            } else {
+                gameGrid
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .applyLiquidGlassCapsule()
-        .padding(.horizontal, 16)
-        .padding(.top, 8) // Float slightly below the top safe area
+        .background(Color(UIColor.systemGroupedBackground))
     }
 
     // MARK: – Empty State
@@ -148,6 +107,7 @@ struct GameLibraryView: View {
             .padding(.top, 12)
         }
         .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: – Game Grid
