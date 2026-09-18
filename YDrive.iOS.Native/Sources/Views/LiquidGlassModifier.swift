@@ -4,7 +4,7 @@ extension View {
     /// Applies a true native iOS Material background with a subtle edge light stroke
     /// to mimic the depth of Liquid Glass, using safe and valid Xcode 16.2 APIs.
     @ViewBuilder
-    func applyLiquidGlass<S: Shape>(shape: S) -> some View {
+    func applyLiquidGlass<S: InsettableShape>(shape: S) -> some View {
         self
             .background(.ultraThinMaterial, in: shape)
             .overlay(

@@ -47,7 +47,7 @@ struct GameDetailView: View {
 
                         Text(game.consoleName)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
                             .background(Color.accentColor.opacity(0.15))
