@@ -21,31 +21,30 @@ struct GameLibraryView: View {
     ]
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(red: 0.04, green: 0.05, blue: 0.08)
-                    .ignoresSafeArea()
+        ZStack(alignment: .top) {
+            // ── Background Content Area ──
+            Color(UIColor.systemGroupedBackground)
+                .ignoresSafeArea()
 
-                if viewModel.filteredGames.isEmpty {
-                    emptyState
-                } else {
-                    gameGrid
-                }
-            }
-            .navigationTitle("YDrive")
-            .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $viewModel.searchText, prompt: "Oyun ara...")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        viewModel.isFilePickerPresented = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .fontWeight(.medium)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Safe area padding for the floating header
+                    Color.clear.frame(height: 70)
+                    
+                    if viewModel.filteredGames.isEmpty {
+                        emptyState
+                    } else {
+                        gameGrid
                     }
+                    
+                    // Safe area padding for the floating bottom dock
+                    Color.clear.frame(height: 100)
                 }
             }
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .ignoresSafeArea(edges: .bottom)
+            
+            // ── Floating Glass Header ──
+            floatingHeader
         }
         .fileImporter(
             isPresented: $viewModel.isFilePickerPresented,
@@ -69,16 +68,63 @@ struct GameLibraryView: View {
             GameDetailView(game: game, viewModel: viewModel)
         }
     }
+    
+    // MARK: – Floating Header
+    private var floatingHeader: some View {
+        HStack(spacing: 12) {
+            Text("YDrive")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            // Search Bar Component
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+                TextField("Ara...", text: $viewModel.searchText)
+                    .textFieldStyle(.plain)
+                    .autocorrectionDisabled()
+                if !viewModel.searchText.isEmpty {
+                    Button {
+                        viewModel.searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
+            .clipShape(Capsule())
+            
+            Button {
+                viewModel.isFilePickerPresented = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(10)
+                    .background(Color.accentColor)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .applyLiquidGlassCapsule()
+        .padding(.horizontal, 16)
+        .padding(.top, 8) // Float slightly below the top safe area
+    }
 
     // MARK: – Empty State
     private var emptyState: some View {
         VStack(spacing: 24) {
-            Spacer()
+            Spacer(minLength: 100)
 
             Image(systemName: "gamecontroller.fill")
                 .font(.system(size: 72))
-                .foregroundStyle(.ultraThinMaterial)
-                .shadow(color: .white.opacity(0.1), radius: 10, x: 0, y: 5)
+                .foregroundStyle(.tertiary)
                 .padding(.bottom, 8)
 
             Text("Kütüphanede Oyun Yok")
@@ -98,44 +144,40 @@ struct GameLibraryView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(Color.blue.opacity(0.8)) // Liquid glass prominent
+            .tint(Color.accentColor)
             .padding(.top, 12)
-
-            Spacer()
         }
         .padding(32)
     }
 
     // MARK: – Game Grid
     private var gameGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(viewModel.filteredGames) { game in
+        LazyVGrid(columns: columns, spacing: 16) {
+            ForEach(viewModel.filteredGames) { game in
+                Button {
+                    selectedGame = game
+                } label: {
+                    GameCardView(game: game)
+                }
+                .buttonStyle(.plain)
+                .contextMenu {
                     Button {
-                        selectedGame = game
+                        renameTarget = game
+                        renameText = game.title
+                        showingRenameAlert = true
                     } label: {
-                        GameCardView(game: game)
+                        Label("Yeniden Adlandır", systemImage: "pencil")
                     }
-                    .buttonStyle(.plain)
-                    .contextMenu {
-                        Button {
-                            renameTarget = game
-                            renameText = game.title
-                            showingRenameAlert = true
-                        } label: {
-                            Label("Yeniden Adlandır", systemImage: "pencil")
-                        }
 
-                        Button(role: .destructive) {
-                            viewModel.deleteGame(game)
-                        } label: {
-                            Label("Sil", systemImage: "trash")
-                        }
+                    Button(role: .destructive) {
+                        viewModel.deleteGame(game)
+                    } label: {
+                        Label("Sil", systemImage: "trash")
                     }
                 }
             }
-            .padding(16)
         }
+        .padding(16)
     }
 }
 
