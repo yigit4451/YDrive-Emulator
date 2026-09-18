@@ -23,98 +23,95 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.games.isEmpty {
-                    mainContent
-                } else {
-                    mainContent
-                        .searchable(text: $viewModel.searchText, prompt: "Ara...")
-                }
-            }
-            .navigationTitle("YDrive")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 12) {
-                        Button {
-                            viewModel.isFilePickerPresented = true
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.system(size: 18, weight: .bold))
-                                .frame(width: 24, height: 24)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .buttonBorderShape(.circle)
-                        .tint(Color.accentColor)
-                        
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .font(.system(size: 18, weight: .medium))
-                                .frame(width: 24, height: 24)
-                        }
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.circle)
-                        .tint(.secondary)
-                    }
-                }
-            }
-            .fileImporter(
-                isPresented: $viewModel.isFilePickerPresented,
-                allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
-                allowsMultipleSelection: true
-            ) { result in
-                if case .success(let urls) = result {
-                    urls.forEach { viewModel.addRom(url: $0) }
-                }
-            }
-            .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
-                TextField("Yeni ad", text: $renameText)
-                Button("Kaydet") {
-                    if let game = renameTarget, !renameText.isEmpty {
-                        viewModel.renameGame(game, to: renameText)
-                    }
-                }
-                Button("İptal", role: .cancel) {}
-            }
-            .sheet(item: $selectedGame) { game in
-                GameDetailView(game: game, viewModel: viewModel)
-            }
-            .sheet(isPresented: $showingSettings) {
-                NavigationStack {
-                    SettingsView()
-                        .navigationTitle("Ayarlar")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button {
-                                    showingSettings = false
-                                } label: {
-                                    Image(systemName: "xmark")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .frame(width: 24, height: 24)
-                                }
-                                .accessibilityLabel("Kapat")
-                                .buttonStyle(.bordered)
-                                .buttonBorderShape(.circle)
-                                .tint(.secondary)
+            mainContent
+                .navigationTitle("YDrive")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        HStack(spacing: 8) {
+                            Button {
+                                viewModel.isFilePickerPresented = true
+                            } label: {
+                                Image(systemName: "plus")
+                                    .fontWeight(.bold)
                             }
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.circle)
+                            .controlSize(.regular)
+                            .tint(Color.accentColor)
+                            
+                            Button {
+                                showingSettings = true
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .fontWeight(.medium)
+                            }
+                            .buttonStyle(.bordered)
+                            .buttonBorderShape(.circle)
+                            .controlSize(.regular)
+                            .tint(.secondary)
                         }
+                    }
                 }
-                .presentationDetents([.large])
-            }
+                .fileImporter(
+                    isPresented: $viewModel.isFilePickerPresented,
+                    allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
+                    allowsMultipleSelection: true
+                ) { result in
+                    if case .success(let urls) = result {
+                        urls.forEach { viewModel.addRom(url: $0) }
+                    }
+                }
+                .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
+                    TextField("Yeni ad", text: $renameText)
+                    Button("Kaydet") {
+                        if let game = renameTarget, !renameText.isEmpty {
+                            viewModel.renameGame(game, to: renameText)
+                        }
+                    }
+                    Button("İptal", role: .cancel) {}
+                }
+                .sheet(item: $selectedGame) { game in
+                    GameDetailView(game: game, viewModel: viewModel)
+                }
+                .sheet(isPresented: $showingSettings) {
+                    NavigationStack {
+                        SettingsView()
+                            .navigationTitle("Ayarlar")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .topBarTrailing) {
+                                    Button {
+                                        showingSettings = false
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .accessibilityLabel("Kapat")
+                                    .buttonStyle(.bordered)
+                                    .buttonBorderShape(.circle)
+                                    .controlSize(.regular)
+                                    .tint(.secondary)
+                                }
+                            }
+                    }
+                    .presentationDetents([.large])
+                }
         }
     }
     
+    @ViewBuilder
     private var mainContent: some View {
-        ScrollView {
+        Group {
             if viewModel.games.isEmpty {
                 emptyState
             } else {
-                gameGrid
+                ScrollView {
+                    gameGrid
+                }
+                .searchable(text: $viewModel.searchText, prompt: "Ara...")
             }
         }
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
     }
 
     // MARK: – Empty State
