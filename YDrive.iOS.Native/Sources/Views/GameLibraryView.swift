@@ -33,29 +33,32 @@ struct GameLibraryView: View {
             }
             .navigationTitle("YDrive")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    HStack(spacing: 8) {
-                        Button {
-                            viewModel.isFilePickerPresented = true
-                        } label: {
-                            Image(systemName: "plus")
-                                .imageScale(.large)
-                                .fontWeight(.bold)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .tint(Color.accentColor)
-                        
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .imageScale(.large)
-                                .fontWeight(.medium)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
-                        }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.isFilePickerPresented = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .imageScale(.large)
+                            .fontWeight(.bold)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.circle)
+                    .tint(Color.accentColor)
+                    
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .imageScale(.large)
+                            .fontWeight(.medium)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.circle)
+                    .tint(.secondary)
                 }
             }
             .fileImporter(
@@ -85,10 +88,20 @@ struct GameLibraryView: View {
                         .navigationTitle("Ayarlar")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Kapat") {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button {
                                     showingSettings = false
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .imageScale(.large)
+                                        .fontWeight(.semibold)
+                                        .frame(width: 44, height: 44)
+                                        .contentShape(Rectangle())
                                 }
+                                .accessibilityLabel("Kapat")
+                                .buttonStyle(.bordered)
+                                .buttonBorderShape(.circle)
+                                .tint(.secondary)
                             }
                         }
                 }
