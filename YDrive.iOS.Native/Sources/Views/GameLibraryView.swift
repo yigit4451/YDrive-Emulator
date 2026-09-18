@@ -15,6 +15,7 @@ struct GameLibraryView: View {
     @State private var renameTarget: GameItem?
     @State private var renameText = ""
     @State private var selectedGame: GameItem?
+    @State private var showingSettings = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
@@ -33,11 +34,20 @@ struct GameLibraryView: View {
             .navigationTitle("YDrive")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        viewModel.isFilePickerPresented = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.body.weight(.semibold))
+                    HStack(spacing: 16) {
+                        Button {
+                            viewModel.isFilePickerPresented = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.body.weight(.semibold))
+                        }
+                        
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                                .font(.body.weight(.semibold))
+                        }
                     }
                 }
             }
@@ -61,6 +71,21 @@ struct GameLibraryView: View {
             }
             .sheet(item: $selectedGame) { game in
                 GameDetailView(game: game, viewModel: viewModel)
+            }
+            .sheet(isPresented: $showingSettings) {
+                NavigationStack {
+                    SettingsView()
+                        .navigationTitle("Ayarlar")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Kapat") {
+                                    showingSettings = false
+                                }
+                            }
+                        }
+                }
+                .presentationDetents([.large])
             }
         }
     }
