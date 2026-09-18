@@ -28,31 +28,29 @@ struct GameLibraryView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 8) {
-                            ZStack {
-                                Button {
-                                    viewModel.isFilePickerPresented = true
-                                } label: {
-                                    Image(systemName: "plus")
-                                        .fontWeight(.bold)
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .buttonBorderShape(.circle)
-                                .controlSize(.regular)
-                                .tint(Color.accentColor)
+                            Button {
+                                viewModel.isFilePickerPresented = true
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.title3.weight(.bold))
+                                    .padding(4)
                             }
+                            .buttonStyle(.bordered)
+                            .buttonBorderShape(.circle)
+                            .tint(Color.accentColor)
                             
-                            ZStack {
-                                Button {
-                                    showingSettings = true
-                                } label: {
-                                    Image(systemName: "gearshape")
-                                        .fontWeight(.medium)
-                                }
-                                .buttonStyle(.bordered)
-                                .buttonBorderShape(.circle)
-                                .controlSize(.regular)
-                                .tint(.secondary)
+                            Color.clear.frame(width: 1) // Enforces strict separation against iOS auto-merge
+                            
+                            Button {
+                                showingSettings = true
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .font(.title3.weight(.medium))
+                                    .padding(4)
                             }
+                            .buttonStyle(.bordered)
+                            .buttonBorderShape(.circle)
+                            .tint(Color.accentColor)
                         }
                     }
                 }
