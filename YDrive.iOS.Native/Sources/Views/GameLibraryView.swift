@@ -38,10 +38,8 @@ struct GameLibraryView: View {
                         viewModel.isFilePickerPresented = true
                     } label: {
                         Image(systemName: "plus")
-                            .imageScale(.large)
-                            .fontWeight(.bold)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
+                            .font(.system(size: 18, weight: .bold))
+                            .frame(width: 24, height: 24)
                     }
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.circle)
@@ -51,10 +49,8 @@ struct GameLibraryView: View {
                         showingSettings = true
                     } label: {
                         Image(systemName: "gearshape")
-                            .imageScale(.large)
-                            .fontWeight(.medium)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
+                            .font(.system(size: 18, weight: .medium))
+                            .frame(width: 24, height: 24)
                     }
                     .buttonStyle(.bordered)
                     .buttonBorderShape(.circle)
@@ -93,10 +89,8 @@ struct GameLibraryView: View {
                                     showingSettings = false
                                 } label: {
                                     Image(systemName: "xmark")
-                                        .imageScale(.large)
-                                        .fontWeight(.semibold)
-                                        .frame(width: 44, height: 44)
-                                        .contentShape(Rectangle())
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .frame(width: 24, height: 24)
                                 }
                                 .accessibilityLabel("Kapat")
                                 .buttonStyle(.bordered)
