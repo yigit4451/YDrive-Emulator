@@ -28,27 +28,31 @@ struct GameLibraryView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 8) {
-                            Button {
-                                viewModel.isFilePickerPresented = true
-                            } label: {
-                                Image(systemName: "plus")
-                                    .fontWeight(.bold)
+                            ZStack {
+                                Button {
+                                    viewModel.isFilePickerPresented = true
+                                } label: {
+                                    Image(systemName: "plus")
+                                        .fontWeight(.bold)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .buttonBorderShape(.circle)
+                                .controlSize(.regular)
+                                .tint(Color.accentColor)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .buttonBorderShape(.circle)
-                            .controlSize(.regular)
-                            .tint(Color.accentColor)
                             
-                            Button {
-                                showingSettings = true
-                            } label: {
-                                Image(systemName: "gearshape")
-                                    .fontWeight(.medium)
+                            ZStack {
+                                Button {
+                                    showingSettings = true
+                                } label: {
+                                    Image(systemName: "gearshape")
+                                        .fontWeight(.medium)
+                                }
+                                .buttonStyle(.bordered)
+                                .buttonBorderShape(.circle)
+                                .controlSize(.regular)
+                                .tint(.secondary)
                             }
-                            .buttonStyle(.bordered)
-                            .buttonBorderShape(.circle)
-                            .controlSize(.regular)
-                            .tint(.secondary)
                         }
                     }
                 }
