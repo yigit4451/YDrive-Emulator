@@ -34,19 +34,26 @@ struct GameLibraryView: View {
             .navigationTitle("YDrive")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    HStack(spacing: 16) {
+                    HStack(spacing: 8) {
                         Button {
                             viewModel.isFilePickerPresented = true
                         } label: {
                             Image(systemName: "plus")
-                                .font(.body.weight(.semibold))
+                                .imageScale(.large)
+                                .fontWeight(.bold)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
+                        .tint(Color.accentColor)
                         
                         Button {
                             showingSettings = true
                         } label: {
                             Image(systemName: "gearshape")
-                                .font(.body.weight(.semibold))
+                                .imageScale(.large)
+                                .fontWeight(.medium)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
                     }
                 }
@@ -104,8 +111,6 @@ struct GameLibraryView: View {
     // MARK: – Empty State
     private var emptyState: some View {
         VStack(spacing: 24) {
-            Spacer(minLength: 100)
-
             Image(systemName: "gamecontroller.fill")
                 .font(.system(size: 72))
                 .foregroundStyle(.tertiary)
@@ -132,7 +137,7 @@ struct GameLibraryView: View {
             .padding(.top, 12)
         }
         .padding(32)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerRelativeFrame(.vertical, alignment: .center)
     }
 
     // MARK: – Game Grid
