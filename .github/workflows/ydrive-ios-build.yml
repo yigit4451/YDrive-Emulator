@@ -9,30 +9,30 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Prefer Xcode 16 (supports objectVersion 77), fall back to 15.4
+    # Prefer Xcode 27/18 for iOS 27 Liquid Glass support
     - name: Select Xcode Version
       run: |
-        if [ -d /Applications/Xcode_16.2.app ]; then
+        if [ -d /Applications/Xcode_27.app ]; then
+          sudo xcode-select -s /Applications/Xcode_27.app/Contents/Developer
+          echo "Using Xcode 27"
+        elif [ -d /Applications/Xcode_27.0.app ]; then
+          sudo xcode-select -s /Applications/Xcode_27.0.app/Contents/Developer
+          echo "Using Xcode 27.0"
+        elif [ -d /Applications/Xcode_18.2.app ]; then
+          sudo xcode-select -s /Applications/Xcode_18.2.app/Contents/Developer
+          echo "Using Xcode 18.2"
+        elif [ -d /Applications/Xcode_17.0.app ]; then
+          sudo xcode-select -s /Applications/Xcode_17.0.app/Contents/Developer
+          echo "Using Xcode 17.0"
+        elif [ -d /Applications/Xcode_16.2.app ]; then
           sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           echo "Using Xcode 16.2"
-        elif [ -d /Applications/Xcode_16.1.app ]; then
-          sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
-          echo "Using Xcode 16.1"
-        elif [ -d /Applications/Xcode_16.0.app ]; then
-          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
-          echo "Using Xcode 16.0"
-        elif [ -d /Applications/Xcode_16.app ]; then
-          sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
-          echo "Using Xcode 16"
-        elif [ -d /Applications/Xcode_15.4.app ]; then
-          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
-          echo "Using Xcode 15.4"
         else
           echo "Using default Xcode: $(xcode-select -p)"
         fi
