@@ -233,38 +233,42 @@ final class LibretroEmulatorEngine: ObservableObject {
         return attr?[.modificationDate] as? Date
     }
 
-    func saveState(for gameFileName: String, slot: Int, completion: @escaping (Bool) -> Void) {
+    func saveState(for gameFileName: String, slot: Int) async -> Bool {
         log.info("[ENGINE] Requesting save state for slot \(slot)")
         let url = saveStateURL(for: gameFileName, slot: slot)
         
         let bridgeRef = bridge
-        emulationQueue?.async {
-            guard let data = bridgeRef.saveState() else {
-                Task { @MainActor in completion(false) }
-                return
-            }
-            do {
-                try data.write(to: url, options: .atomic)
-                Task { @MainActor in completion(true) }
-            } catch {
-                log.error("[ENGINE] Failed to write save state: \(error.localizedDescription, privacy: .public)")
-                Task { @MainActor in completion(false) }
+        return await withCheckedContinuation { continuation in
+            emulationQueue?.async {
+                guard let data = bridgeRef.saveState() else {
+                    continuation.resume(returning: false)
+                    return
+                }
+                do {
+                    try data.write(to: url, options: .atomic)
+                    continuation.resume(returning: true)
+                } catch {
+                    log.error("[ENGINE] Failed to write save state: \(error.localizedDescription, privacy: .public)")
+                    continuation.resume(returning: false)
+                }
             }
         }
     }
     
-    func loadState(for gameFileName: String, slot: Int, completion: @escaping (Bool) -> Void) {
+    func loadState(for gameFileName: String, slot: Int) async -> Bool {
         log.info("[ENGINE] Requesting load state for slot \(slot)")
         let url = saveStateURL(for: gameFileName, slot: slot)
         
         let bridgeRef = bridge
-        emulationQueue?.async {
-            guard let data = try? Data(contentsOf: url) else {
-                Task { @MainActor in completion(false) }
-                return
+        return await withCheckedContinuation { continuation in
+            emulationQueue?.async {
+                guard let data = try? Data(contentsOf: url) else {
+                    continuation.resume(returning: false)
+                    return
+                }
+                let success = bridgeRef.loadState(data)
+                continuation.resume(returning: success)
             }
-            let success = bridgeRef.loadState(data)
-            Task { @MainActor in completion(success) }
         }
     }
 

@@ -82,7 +82,8 @@ struct SaveManagerView: View {
             HStack(spacing: 12) {
                 if slotDates[slot] != nil {
                     Button(action: {
-                        engine.loadState(for: gameFileName, slot: slot) { success in
+                        Task {
+                            let success = await engine.loadState(for: gameFileName, slot: slot)
                             if success {
                                 engine.setPaused(false)
                                 isPresented = false
@@ -100,7 +101,8 @@ struct SaveManagerView: View {
                 }
                 
                 Button(action: {
-                    engine.saveState(for: gameFileName, slot: slot) { success in
+                    Task {
+                        let success = await engine.saveState(for: gameFileName, slot: slot)
                         if success { refreshSlots() }
                     }
                 }) {
