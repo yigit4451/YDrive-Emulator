@@ -81,7 +81,7 @@ struct GameLibraryView: View {
                                             .fontWeight(.semibold)
                                     }
                                     .accessibilityLabel("Kapat")
-                                    .tint(.secondary)
+                                    .tint(.white)
                                 }
                             }
                     }
