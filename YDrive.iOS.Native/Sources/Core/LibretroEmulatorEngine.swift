@@ -116,7 +116,8 @@ final class LibretroEmulatorEngine: ObservableObject {
                 errorMessage = error.localizedDescription
             }
 
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self, errorMessage] in
+                guard let self else { return }
                 if ok {
                     self.videoWidth  = Int(bridge.videoWidth)
                     self.videoHeight = Int(bridge.videoHeight)
@@ -180,8 +181,4 @@ final class LibretroEmulatorEngine: ObservableObject {
         log.info("[ENGINE] Frame timer started at \(fps, format: .fixed(precision: 2)) fps")
     }
 
-    deinit {
-        frameTimer?.cancel()
-        bridge.unload()
-    }
 }
