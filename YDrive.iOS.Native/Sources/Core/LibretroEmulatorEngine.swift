@@ -112,22 +112,33 @@ final class LibretroEmulatorEngine: ObservableObject {
             } catch {
                 errorMessage = error.localizedDescription
             }
+            let finalError = errorMessage // Immutable snapshot
 
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                if ok {
-                    self.videoWidth  = Int(bridge.videoWidth)
-                    self.videoHeight = Int(bridge.videoHeight)
-                    self.aspectRatio = bridge.aspectRatio
-                    self.targetFPS   = bridge.targetFPS
+            if ok {
+                let w = Int(bridge.videoWidth)
+                let h = Int(bridge.videoHeight)
+                let ar = bridge.aspectRatio
+                let fps = bridge.targetFPS
+                
+                log.info("[ENGINE] Core loaded — \(w)x\(h) @ \(fps, format: .fixed(precision: 2)) fps")
+                
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.videoWidth  = w
+                    self.videoHeight = h
+                    self.aspectRatio = ar
+                    self.targetFPS   = fps
                     self.coreAvailable = true
                     self.isRunning   = true
-                    log.info("[ENGINE] Core loaded — \(self.videoWidth)x\(self.videoHeight) @ \(self.targetFPS, format: .fixed(precision: 2)) fps")
                     self.startFrameTimer(on: queue, bridge: bridge)
-                } else {
-                    self.errorMessage = errorMessage
+                }
+            } else {
+                log.error("[ENGINE] Failed to load game: \(finalError, privacy: .public)")
+                
+                Task { @MainActor [weak self, finalError] in
+                    guard let self else { return }
+                    self.errorMessage = finalError
                     self.coreAvailable = false
-                    log.error("[ENGINE] Failed to load game: \(errorMessage, privacy: .public)")
                 }
             }
         }
