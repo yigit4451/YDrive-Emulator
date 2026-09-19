@@ -34,6 +34,7 @@ typedef struct {
 
 // ── Callback block types ─────────────────────────────────────────────────────
 typedef void (^YDriveVideoFrameCallback)(YDriveVideoFrame frame);
+typedef void (^YDriveAudioPCMCallback)(const int16_t * _Nonnull data, size_t frames);
 
 // ─────────────────────────────────────────────────────────────────────────────
 /// Manages the full libretro core lifecycle on behalf of LibretroEmulatorEngine.
@@ -51,14 +52,21 @@ typedef void (^YDriveVideoFrameCallback)(YDriveVideoFrame frame);
 @property (nonatomic, readonly) unsigned int videoHeight;
 @property (nonatomic, readonly) float        aspectRatio;
 @property (nonatomic, readonly) double       targetFPS;
+@property (nonatomic, readonly) double       audioSampleRate;
 @property (nonatomic, readonly) YDrivePixelFormat currentPixelFormat;
 
 /// Called on the emulation thread each frame with the latest video data.
 @property (nonatomic, copy, nullable) YDriveVideoFrameCallback onVideoFrame;
 
+/// Called on the emulation thread when a batch of audio samples is ready.
+@property (nonatomic, copy, nullable) YDriveAudioPCMCallback onAudioPCM;
+
 /// Initialize the core. Returns YES on success.
 /// `romPath` must be the full filesystem path to the ROM file.
 - (BOOL)loadGameAtPath:(NSString *)romPath error:(NSError **)error;
+
+/// Set the state of a specific RetroPad button (e.g. RETRO_DEVICE_ID_JOYPAD_A).
+- (void)setButton:(unsigned)buttonID pressed:(BOOL)pressed;
 
 /// Run exactly one emulation frame. Call from a background thread at targetFPS cadence.
 - (void)runFrame;

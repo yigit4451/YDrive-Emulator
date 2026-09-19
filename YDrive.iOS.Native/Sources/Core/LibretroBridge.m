@@ -107,10 +107,34 @@ static void video_refresh_callback(const void *data, unsigned width, unsigned he
     bridge.onVideoFrame(frame);
 }
 
-static void audio_sample_callback(int16_t left, int16_t right) { /* audio stubbed */ }
-static size_t audio_batch_callback(const int16_t *data, size_t frames) { return frames; }
-static void input_poll_callback(void) { /* will be extended later */ }
-static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id) { return 0; }
+static void audio_sample_callback(int16_t left, int16_t right) {
+    if (!gBridgeInstance) return;
+    int16_t frame[2] = {left, right};
+    if (gBridgeInstance.onAudioPCM) {
+        gBridgeInstance.onAudioPCM(frame, 1);
+    }
+}
+static size_t audio_batch_callback(const int16_t *data, size_t frames) {
+    if (gBridgeInstance && gBridgeInstance.onAudioPCM) {
+        gBridgeInstance.onAudioPCM(data, frames);
+    }
+    return frames;
+}
+
+// ── Input State ───────────────────────────────────────────────────────────────
+static uint16_t gInputBitmask = 0;
+
+static void input_poll_callback(void) {
+    // Input is pushed directly via setButton:pressed:
+}
+
+static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id) {
+    if (port != 0) return 0; // Only player 1 for now
+    if (device == RETRO_DEVICE_JOYPAD || device == 1) { // 1 is RETRO_DEVICE_JOYPAD
+        return (gInputBitmask & (1 << id)) ? 1 : 0;
+    }
+    return 0;
+}
 
 #endif // YDRIVE_CORE_AVAILABLE
 
@@ -136,6 +160,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         _videoHeight         = 224;
         _aspectRatio         = 4.0f / 3.0f;
         _targetFPS           = 60.0;
+        _audioSampleRate     = 44100.0;
         _currentPixelFormat  = YDrivePixelFormatRGB565;
         _coreInitialized     = NO;
     }
@@ -212,9 +237,10 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
                     ? avInfo.geometry.aspect_ratio
                     : (float)_videoWidth / (float)_videoHeight;
     _targetFPS   = avInfo.timing.fps > 0 ? avInfo.timing.fps : 60.0;
+    _audioSampleRate = avInfo.timing.sample_rate > 0 ? avInfo.timing.sample_rate : 44100.0;
 
-    os_log(gLog, "[CORE] AV: %ux%u @ %.2f fps aspect=%.3f",
-           _videoWidth, _videoHeight, _targetFPS, _aspectRatio);
+    os_log(gLog, "[CORE] AV: %ux%u @ %.2f fps aspect=%.3f audio=%.0fHz",
+           _videoWidth, _videoHeight, _targetFPS, _aspectRatio, _audioSampleRate);
 
     retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
     retro_set_controller_port_device(1, RETRO_DEVICE_JOYPAD);
@@ -241,6 +267,16 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     if (!_isRunning) return;
     retro_run();
+#endif
+}
+
+- (void)setButton:(unsigned)buttonID pressed:(BOOL)pressed {
+#if YDRIVE_CORE_AVAILABLE
+    if (pressed) {
+        gInputBitmask |= (1 << buttonID);
+    } else {
+        gInputBitmask &= ~(1 << buttonID);
+    }
 #endif
 }
 

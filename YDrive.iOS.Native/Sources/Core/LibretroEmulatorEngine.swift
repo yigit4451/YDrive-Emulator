@@ -46,6 +46,7 @@ final class LibretroEmulatorEngine: ObservableObject {
 
     // ── Private ──────────────────────────────────────────────────────────────
     private let bridge     = YDriveLibretroBridge()
+    private let audioEngine = YDriveAudioEngine()
     private var emulationQueue: DispatchQueue?
     private var frameTimer: DispatchSourceTimer?
 
@@ -90,6 +91,10 @@ final class LibretroEmulatorEngine: ObservableObject {
                 self?.currentFrame = ef
             }
         }
+        
+        bridge.onAudioPCM = { [weak audioEngine] data, frames in
+            audioEngine?.pushAudio(data: data, frames: frames)
+        }
 
         // Load game on background queue to avoid blocking UI thread
         let queue = DispatchQueue(label: "com.yigit.ydrive.emulation",
@@ -130,6 +135,8 @@ final class LibretroEmulatorEngine: ObservableObject {
                     self.targetFPS   = fps
                     self.coreAvailable = true
                     self.isRunning   = true
+                    
+                    self.audioEngine.start(sampleRate: bridge.audioSampleRate)
                     self.startFrameTimer(on: queue, bridge: bridge)
                 }
             } else {
@@ -154,12 +161,24 @@ final class LibretroEmulatorEngine: ObservableObject {
         frameTimer = nil
         isRunning  = false
 
+        audioEngine.stop()
+
         // Unload on the emulation queue to avoid race with runFrame
         nonisolated(unsafe) let bridgeForUnload = bridge
         emulationQueue?.async { @Sendable in
             bridgeForUnload.unload()
         }
         emulationQueue = nil
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MARK: - Input State
+    // ─────────────────────────────────────────────────────────────────────────
+    
+    /// Called from SwiftUI to update input state
+    func setButton(_ buttonID: UInt32, pressed: Bool) {
+        // bridge.setButton modifies atomic bitmask, safe to call from main thread
+        bridge.setButton(buttonID, pressed: pressed)
     }
 
     // ─────────────────────────────────────────────────────────────────────────
