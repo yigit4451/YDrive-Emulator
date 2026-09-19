@@ -36,8 +36,9 @@ targets:
         SWIFT_OBJC_BRIDGING_HEADER: Sources/YDrive-Bridging-Header.h
         CLANG_ENABLE_OBJC_ARC: YES
         # When a libretro core .a is linked, set YDRIVE_CORE_AVAILABLE=1 here:
-        # OTHER_CFLAGS: "-DYDRIVE_CORE_AVAILABLE=1"
-        # OTHER_LDFLAGS: "-lpicodrive_ios"  (or your core name)
+        OTHER_CFLAGS: "-DYDRIVE_CORE_AVAILABLE=1"
+        OTHER_LDFLAGS: "-lpicodrive -lz"
+        LIBRARY_SEARCH_PATHS: "$(SRCROOT)/Sources/Core"
     dependencies:
       - sdk: Metal.framework
       - sdk: MetalKit.framework

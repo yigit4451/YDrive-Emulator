@@ -37,7 +37,15 @@ struct GameLibraryView: View {
                         .tint(Color.accentColor)
                     }
                     
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.refreshMetadata()
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.title3.weight(.medium))
+                        }
+                        .tint(Color.accentColor)
+
                         Button {
                             viewModel.isFilePickerPresented = true
                         } label: {

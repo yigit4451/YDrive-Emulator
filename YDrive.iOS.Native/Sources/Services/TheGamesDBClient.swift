@@ -53,12 +53,18 @@ final class TheGamesDBClient {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             
-            // TheGamesDB JSON Structure parsing
             let decoder = JSONDecoder()
             guard let response = try? decoder.decode(GamesDBResponse.self, from: data),
-                  let game = response.data.games.first else {
+                  !response.data.games.isEmpty else {
                 return nil
             }
+
+            // Find best match based on scoring
+            let bestGame = response.data.games.max { g1, g2 in
+                scoreMatch(title: g1.game_title, query: query) < scoreMatch(title: g2.game_title, query: query)
+            }
+            
+            guard let game = bestGame else { return nil }
 
             // Extract Release Year
             var releaseYear: String? = nil
@@ -95,6 +101,40 @@ final class TheGamesDBClient {
             print("[TheGamesDB] Fetch failed for \(query): \(error)")
             return nil
         }
+    }
+
+    private func scoreMatch(title: String, query: String) -> Int {
+        let normalizedTitle = normalizeName(title).lowercased()
+        let normalizedQuery = query.lowercased()
+        
+        if normalizedTitle == normalizedQuery {
+            return 100 // Exact match
+        }
+        
+        // Penalize if sequel numbers / key identifiers don't match
+        let digitsAndRoman = ["2", "3", "4", "5", "ii", "iii", "iv", "v", "& knuckles", "cd", "3d", "32x", "plus", "deluxe"]
+        for identifier in digitsAndRoman {
+            let titleHasIt = normalizedTitle.contains(identifier)
+            let queryHasIt = normalizedQuery.contains(identifier)
+            
+            // If one has a critical identifier and the other doesn't, huge penalty
+            if titleHasIt != queryHasIt {
+                // Ensure it's isolated as a word, e.g. "Sonic 2" vs "Sonic 2006"
+                let titleWords = normalizedTitle.components(separatedBy: .whitespaces)
+                let queryWords = normalizedQuery.components(separatedBy: .whitespaces)
+                
+                if titleWords.contains(identifier) || queryWords.contains(identifier) || identifier.contains(" ") {
+                    return -100 
+                }
+            }
+        }
+        
+        // Basic substring match fallback
+        if normalizedTitle.contains(normalizedQuery) || normalizedQuery.contains(normalizedTitle) {
+            return 50
+        }
+        
+        return 0
     }
 }
 

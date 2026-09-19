@@ -214,6 +214,7 @@ struct OnScreenControlsView: View {
                 .font(.system(size: label.count > 1 ? 14 : 22, weight: .bold, design: .rounded))
                 .foregroundStyle(color.opacity(0.9))
         }
+        .padding(16) // Increase invisible hit area
         .contentShape(Circle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
@@ -267,14 +268,6 @@ struct DPadView: View {
             Image(systemName: "chevron.down").offset(y: size/3).foregroundStyle(.white.opacity(0.6))
             Image(systemName: "chevron.left").offset(x: -size/3).foregroundStyle(.white.opacity(0.6))
             Image(systemName: "chevron.right").offset(x: size/3).foregroundStyle(.white.opacity(0.6))
-            
-            // Active thumb indicator (optional feedback)
-            if let loc = location {
-                Circle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(width: 44, height: 44)
-                    .position(loc)
-            }
         }
         .frame(width: size, height: size)
         .contentShape(Rectangle()) // Capture touches anywhere in the square
