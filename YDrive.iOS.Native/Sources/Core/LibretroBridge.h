@@ -18,9 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // ── Pixel format mirroring libretro RETRO_PIXEL_FORMAT_* constants ────────────
 typedef NS_ENUM(NSInteger, YDrivePixelFormat) {
-    YDrivePixelFormatTRGB1555 = 0,   // 15-bit, bit 15 always 0 (was 0RGB1555; renamed to avoid Swift leading-digit issue)
-    YDrivePixelFormatXRGB8888 = 1,   // 32-bit, X (alpha) ignored
-    YDrivePixelFormatRGB565   = 2,   // 16-bit packed
+    YDrivePixelFormatTRGB1555 NS_SWIFT_NAME(trgb1555) = 0,
+    YDrivePixelFormatXRGB8888 NS_SWIFT_NAME(xrgb8888) = 1,
+    YDrivePixelFormatRGB565   NS_SWIFT_NAME(rgb565)   = 2,
 };
 
 // ── Frame data delivered per retro_run() cycle ────────────────────────────────

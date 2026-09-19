@@ -110,7 +110,7 @@ final class LibretroEmulatorEngine: ObservableObject {
             var ok = false
             var errorMessage: String = "Emulator core not available"
             do {
-                try bridge.loadGameAtPath(romPath)
+                try bridge.loadGame(atPath: romPath)
                 ok = true
             } catch {
                 errorMessage = error.localizedDescription
@@ -166,7 +166,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         // Capture bridge as nonisolated(unsafe) — safe because runFrame is
         // always called on this same serial queue.
         nonisolated(unsafe) let capturedBridge = bridge
-        var running = true     // local copy avoids actor isolation crossing
+        let running = true     // local copy avoids actor isolation crossing
 
         let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
         timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
