@@ -81,9 +81,6 @@ struct GameLibraryView: View {
                                             .fontWeight(.semibold)
                                     }
                                     .accessibilityLabel("Kapat")
-                                    .buttonStyle(.bordered)
-                                    .buttonBorderShape(.circle)
-                                    .controlSize(.regular)
                                     .tint(.secondary)
                                 }
                             }
