@@ -48,7 +48,6 @@ final class LibretroEmulatorEngine: ObservableObject {
     private let bridge     = YDriveLibretroBridge()
     private var emulationQueue: DispatchQueue?
     private var frameTimer: DispatchSourceTimer?
-    private var _running   = false          // accessed only on emulationQueue
 
     // ─────────────────────────────────────────────────────────────────────────
     init() {
@@ -66,7 +65,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         log.info("[ENGINE] start() — ROM: \(romPath, privacy: .public)")
 
         // Wire up video callback before loadGame
-        bridge.onVideoFrame = { [weak self] frame in
+        bridge.onVideoFrame = { @Sendable frame in
             // This is called on the emulation queue — copy data immediately
             // so the raw pointer is safe to hand off across threads.
             let copied: Data?
@@ -87,7 +86,7 @@ final class LibretroEmulatorEngine: ObservableObject {
 
             log.debug("[VIDEO] frame \(frame.width)x\(frame.height) pitch=\(frame.pitch) fmt=\(frame.pixelFormat.rawValue)")
 
-            DispatchQueue.main.async { [weak self] in
+            Task { @MainActor [weak self] in
                 self?.currentFrame = ef
             }
         }
@@ -102,9 +101,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         // we enforce thread safety manually (bridge is only touched on `queue`).
         nonisolated(unsafe) let bridge = self.bridge
 
-        queue.async { [weak self] in
-            guard let self else { return }
-
+        queue.async { @Sendable in
             // Swift imports `- (BOOL)loadGameAtPath:error:` as `throws`.
             // The error: label is swallowed into Swift's throws mechanism.
             var ok = false
@@ -116,7 +113,7 @@ final class LibretroEmulatorEngine: ObservableObject {
                 errorMessage = error.localizedDescription
             }
 
-            DispatchQueue.main.async { [weak self, errorMessage] in
+            Task { @MainActor [weak self] in
                 guard let self else { return }
                 if ok {
                     self.videoWidth  = Int(bridge.videoWidth)
@@ -144,12 +141,11 @@ final class LibretroEmulatorEngine: ObservableObject {
 
         frameTimer?.cancel()
         frameTimer = nil
-        _running   = false
         isRunning  = false
 
         // Unload on the emulation queue to avoid race with runFrame
         nonisolated(unsafe) let bridgeForUnload = bridge
-        emulationQueue?.async {
+        emulationQueue?.async { @Sendable in
             bridgeForUnload.unload()
         }
         emulationQueue = nil
@@ -160,22 +156,18 @@ final class LibretroEmulatorEngine: ObservableObject {
     // ─────────────────────────────────────────────────────────────────────────
 
     private func startFrameTimer(on queue: DispatchQueue, bridge: YDriveLibretroBridge) {
-        _running = true
         let fps  = targetFPS > 0 ? targetFPS : 60.0
         let interval = DispatchTimeInterval.nanoseconds(Int(1_000_000_000.0 / fps))
 
         // Capture bridge as nonisolated(unsafe) — safe because runFrame is
         // always called on this same serial queue.
         nonisolated(unsafe) let capturedBridge = bridge
-        let running = true     // local copy avoids actor isolation crossing
 
         let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
         timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
-        timer.setEventHandler { [weak self] in
-            guard let self, self._running else { return }
+        timer.setEventHandler { @Sendable in
             capturedBridge.runFrame()
         }
-        _ = running  // suppress unused warning; the real flag is self._running
         timer.resume()
         self.frameTimer = timer
         log.info("[ENGINE] Frame timer started at \(fps, format: .fixed(precision: 2)) fps")
