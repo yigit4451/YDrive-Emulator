@@ -234,110 +234,137 @@ struct OnScreenControlsView: View {
             let safeBottom = geo.safeAreaInsets.bottom
             let safeLeft = geo.safeAreaInsets.leading
             let safeRight = geo.safeAreaInsets.trailing
-
-            // Scale down controls in portrait to fit narrow screens
-            let scale: CGFloat = isLandscape ? 1.0 : 0.8
             
-            let dpadSize: CGFloat = 200 * scale
-            let dpadR = dpadSize / 2
+            let minDim = min(w, h)
             
-            // Tightened ABC width for better ergonomic thumb cluster
-            let abcWidth: CGFloat = 210 * scale
-            let abcHeight: CGFloat = 110 * scale
-            let abcW = abcWidth / 2
-            let abcH = abcHeight / 2
+            // Dynamic proportional sizes based on screen size
+            let btnVisual = minDim * (isLandscape ? 0.17 : 0.15)
+            let btnHit = btnVisual + 24
             
-            let startSize: CGFloat = 80 * scale
-            let startR = startSize / 2
+            let dpadVisual = minDim * (isLandscape ? 0.40 : 0.35)
+            let dpadHit = dpadVisual + 40
+            
+            let startVisualW = minDim * 0.22
+            let startVisualH = minDim * 0.11
+            
+            let buttonSpacing = btnVisual * (isLandscape ? 1.3 : 1.15)
 
-            // Use smaller explicit padding; hit areas automatically add extra visual padding
-            let padX: CGFloat = isLandscape ? 8 : 16
-            let padY: CGFloat = isLandscape ? 16 : 16
-
-            // Compute Centers ensuring we stay within safe bounds
-            let centers: (dpad: CGPoint, abc: CGPoint, start: CGPoint) = {
+            // Compute exact Centers guaranteeing no overlaps and strict safe area adherence
+            let centers: (dpad: CGPoint, a: CGPoint, b: CGPoint, c: CGPoint, start: CGPoint) = {
                 if isLandscape {
+                    let padX: CGFloat = 24
+                    let padY: CGFloat = 24
+                    
+                    // DPad anchors to Bottom-Left
+                    let dpadX = safeLeft + padX + (dpadHit / 2)
+                    let dpadY = h - safeBottom - padY - (dpadHit / 2)
+                    
+                    // Action Buttons anchor to Bottom-Right
+                    // We anchor C (top-right most button) to the right edge
+                    let cX = w - safeRight - padX - (btnHit / 2)
+                    // We anchor A (bottom-left most button) to the bottom edge
+                    let aY = h - safeBottom - padY - (btnHit / 2)
+                    
+                    // B is exactly in between A and C diagonally
+                    let aX = cX - (2 * buttonSpacing)
+                    let cY = aY - buttonSpacing
+                    
+                    let bX = cX - buttonSpacing
+                    let bY = aY - (buttonSpacing * 0.5)
+                    
+                    let startX = w / 2
+                    let startY = h - safeBottom - 16 - (startVisualH / 2)
+                    
                     return (
-                        dpad: CGPoint(
-                            x: safeLeft + padX + dpadR,
-                            y: h - safeBottom - padY - dpadR
-                        ),
-                        abc: CGPoint(
-                            x: w - safeRight - padX - abcW,
-                            y: h - safeBottom - padY - abcH
-                        ),
-                        start: CGPoint(
-                            x: w / 2,
-                            y: h - safeBottom - padY - startR
-                        )
+                        dpad: CGPoint(x: dpadX, y: dpadY),
+                        a: CGPoint(x: aX, y: aY),
+                        b: CGPoint(x: bX, y: bY),
+                        c: CGPoint(x: cX, y: cY),
+                        start: CGPoint(x: startX, y: startY)
                     )
                 } else {
-                    // Portrait: DPad Left, ABC Right, Start Center-Bottom
-                    let availableBottomY = h - safeBottom - 16
-                    let startC = CGPoint(
-                        x: w / 2,
-                        y: availableBottomY - startR
-                    )
+                    // Portrait Mode
+                    let padBottom = max(safeBottom + 16, 24)
                     
-                    let controlsY = availableBottomY - startSize - 16 - dpadR
+                    let startX = w / 2
+                    let startY = h - padBottom - (startVisualH / 2)
+                    
+                    let controlsBaseY = startY - (startVisualH / 2) - 24
+                    
+                    // DPad anchors to left
+                    let dpadX = safeLeft + 16 + (dpadHit / 2)
+                    let dpadY = controlsBaseY - (dpadHit / 2)
+                    
+                    // Action buttons anchor to right
+                    let cX = w - safeRight - 16 - (btnHit / 2)
+                    let aY = controlsBaseY - (btnHit / 2)
+                    let cY = aY - buttonSpacing
+                    
+                    let aX = cX - (2 * buttonSpacing)
+                    let bX = cX - buttonSpacing
+                    let bY = aY - (buttonSpacing * 0.5)
+                    
                     return (
-                        dpad: CGPoint(
-                            x: safeLeft + 16 + dpadR,
-                            y: controlsY
-                        ),
-                        abc: CGPoint(
-                            x: w - safeRight - 16 - abcW,
-                            y: controlsY
-                        ),
-                        start: startC
+                        dpad: CGPoint(x: dpadX, y: dpadY),
+                        a: CGPoint(x: aX, y: aY),
+                        b: CGPoint(x: bX, y: bY),
+                        c: CGPoint(x: cX, y: cY),
+                        start: CGPoint(x: startX, y: startY)
                     )
                 }
             }()
 
             ZStack(alignment: .topLeading) {
                 // D-Pad
-                dpadArea(size: dpadSize, scale: scale)
+                dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
                     .position(centers.dpad)
                 
                 // A B C Buttons
-                actionArea(width: abcWidth, height: abcHeight, scale: scale)
-                    .position(centers.abc)
+                let bgColor = Color(red: 0, green: 71/255, blue: 171/255) // #0047AB
+                let borderColor = Color(red: 100/255, green: 181/255, blue: 246/255) // #64B5F6
+                
+                actionButton("A", color: bgColor, borderColor: borderColor, visualSize: btnVisual, hitSize: btnHit) { engine.setButton(ID_Y, pressed: $0) }
+                    .position(centers.a)
+                
+                actionButton("B", color: bgColor, borderColor: borderColor, visualSize: btnVisual, hitSize: btnHit) { engine.setButton(ID_B, pressed: $0) }
+                    .position(centers.b)
+                
+                actionButton("C", color: bgColor, borderColor: borderColor, visualSize: btnVisual, hitSize: btnHit) { engine.setButton(ID_A, pressed: $0) }
+                    .position(centers.c)
                 
                 // START Button
-                startButton(scale: scale)
+                startButton(visualWidth: startVisualW, visualHeight: startVisualH, hitWidth: startVisualW + 40, hitHeight: startVisualH + 40)
                     .position(centers.start)
             }
         }
     }
     
-    private func dpadArea(size: CGFloat, scale: CGFloat) -> some View {
+    private func dpadArea(visualSize: CGFloat, hitSize: CGFloat) -> some View {
         MultiTouchDPad { up, down, left, right in
             engine.setButton(ID_UP, pressed: up)
             engine.setButton(ID_DOWN, pressed: down)
             engine.setButton(ID_LEFT, pressed: left)
             engine.setButton(ID_RIGHT, pressed: right)
         }
-        .frame(width: size, height: size)
+        .frame(width: hitSize, height: hitSize)
         .background(
             ZStack {
-                let visualSize: CGFloat = 160 * scale
-                
                 // Base Circle (Frosted Glass D-Pad Base)
                 Circle()
-                    .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44)) // #7012131A
+                    .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44))
                     .frame(width: visualSize, height: visualSize)
                     .overlay(
-                        Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2 * scale) // #50A8C7FA
+                        Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2)
                     )
                 
                 // Center Thumb Hub
                 Circle()
-                    .fill(Color.white.opacity(0.19)) // #30FFFFFF
-                    .frame(width: 50 * scale, height: 50 * scale)
+                    .fill(Color.white.opacity(0.19))
+                    .frame(width: visualSize * 0.31, height: visualSize * 0.31)
                 
                 // Directional Arrows
                 let offset = visualSize * 0.32
-                let iconSize = 22 * scale
+                let iconSize = visualSize * 0.14
                 let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
                 
                 Image(systemName: "arrowtriangle.up.fill")
@@ -362,28 +389,6 @@ struct OnScreenControlsView: View {
             }
         )
     }
-    
-    private func actionArea(width: CGFloat, height: CGFloat, scale: CGFloat) -> some View {
-        ZStack {
-            let btnSize: CGFloat = 68 * scale
-            let hitSize: CGFloat = 88 * scale
-            let bgColor = Color(red: 0, green: 71/255, blue: 171/255) // #0047AB
-            let borderColor = Color(red: 100/255, green: 181/255, blue: 246/255) // #64B5F6
-            
-            // SEGA A maps to Retro Y (1)
-            actionButton("A", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_Y, pressed: $0) }
-                .position(x: hitSize/2, y: height - hitSize/2)
-            
-            // SEGA B maps to Retro B (0)
-            actionButton("B", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_B, pressed: $0) }
-                .position(x: width/2, y: height/2 + (5 * scale)) // slight tweak for natural arc
-            
-            // SEGA C maps to Retro A (8)
-            actionButton("C", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_A, pressed: $0) }
-                .position(x: width - hitSize/2, y: hitSize/2)
-        }
-        .frame(width: width, height: height)
-    }
 
     private func actionButton(
         _ label: String,
@@ -403,37 +408,33 @@ struct OnScreenControlsView: View {
                     .fill(color.opacity(0.4))
                     .frame(width: visualSize, height: visualSize)
                     .overlay(
-                        Circle().stroke(borderColor.opacity(0.8), lineWidth: 2 * (visualSize/68))
+                        Circle().stroke(borderColor.opacity(0.8), lineWidth: 2)
                     )
                 
                 Text(label)
-                    .font(.system(size: 20 * (visualSize/68), weight: .bold, design: .rounded))
+                    .font(.system(size: visualSize * 0.35, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             }
         )
     }
     
-    private func startButton(scale: CGFloat) -> some View {
-        let width = 80 * scale
-        let height = 40 * scale
-        let hitSize = 80 * scale
-        
-        return MultiTouchButton { isPressed in
+    private func startButton(visualWidth: CGFloat, visualHeight: CGFloat, hitWidth: CGFloat, hitHeight: CGFloat) -> some View {
+        MultiTouchButton { isPressed in
             engine.setButton(ID_START, pressed: isPressed)
         }
-        .frame(width: width + 40, height: height + 40)
+        .frame(width: hitWidth, height: hitHeight)
         .background(
             ZStack {
                 Capsule()
-                    .fill(Color(white: 0.13).opacity(0.4)) // #66212121
-                    .frame(width: width, height: height)
+                    .fill(Color(white: 0.13).opacity(0.4))
+                    .frame(width: visualWidth, height: visualHeight)
                     .overlay(
-                        Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5 * scale) // #99E0E0E0
+                        Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5)
                     )
                 
                 Text("START")
-                    .font(.system(size: 12 * scale, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(white: 0.93)) // #EEEEEE
+                    .font(.system(size: visualHeight * 0.35, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(white: 0.93))
             }
         )
     }
