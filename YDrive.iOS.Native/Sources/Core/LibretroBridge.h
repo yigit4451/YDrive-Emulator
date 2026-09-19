@@ -74,6 +74,15 @@ typedef void (^YDriveAudioPCMCallback)(const int16_t * _Nonnull data, size_t fra
 /// Stop emulation, unload game, and release core resources.
 - (void)unload;
 
+/// Reset the emulation core
+- (void)reset;
+
+/// Save the current emulation state
+- (NSData * _Nullable)saveState;
+
+/// Load a previously saved emulation state
+- (BOOL)loadState:(NSData *)data;
+
 @end
 
 NS_ASSUME_NONNULL_END

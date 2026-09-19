@@ -63,6 +63,10 @@ extern void retro_get_system_av_info(retro_system_av_info *info);
 extern bool retro_load_game(const retro_game_info *game);
 extern void retro_unload_game(void);
 extern void retro_run(void);
+extern void retro_reset(void);
+extern size_t retro_serialize_size(void);
+extern bool retro_serialize(void *data, size_t size);
+extern bool retro_unserialize(const void *data, size_t size);
 extern void retro_set_environment(retro_environment_t);
 extern void retro_set_video_refresh(retro_video_refresh_t);
 extern void retro_set_audio_sample(retro_audio_sample_t);
@@ -277,6 +281,60 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     } else {
         gInputBitmask &= ~(1 << buttonID);
     }
+#endif
+}
+
+- (void)reset {
+    os_log(gLog, "[CORE] reset called");
+#if YDRIVE_CORE_AVAILABLE
+    if (_isRunning) {
+        retro_reset();
+    }
+#endif
+}
+
+- (NSData * _Nullable)saveState {
+    os_log(gLog, "[CORE] saveState called");
+#if YDRIVE_CORE_AVAILABLE
+    if (!_isRunning) return nil;
+    
+    size_t size = retro_serialize_size();
+    if (size == 0) {
+        os_log_error(gLog, "[CORE] Core does not support save states (size=0)");
+        return nil;
+    }
+    
+    NSMutableData *data = [NSMutableData dataWithLength:size];
+    if (retro_serialize(data.mutableBytes, size)) {
+        return data;
+    } else {
+        os_log_error(gLog, "[CORE] retro_serialize failed");
+        return nil;
+    }
+#else
+    return nil;
+#endif
+}
+
+- (BOOL)loadState:(NSData *)data {
+    os_log(gLog, "[CORE] loadState called");
+#if YDRIVE_CORE_AVAILABLE
+    if (!_isRunning || !data || data.length == 0) return NO;
+    
+    size_t expectedSize = retro_serialize_size();
+    if (expectedSize == 0 || data.length != expectedSize) {
+        os_log_error(gLog, "[CORE] State size mismatch: got %zu, expected %zu", data.length, expectedSize);
+        return NO;
+    }
+    
+    if (retro_unserialize(data.bytes, data.length)) {
+        return YES;
+    } else {
+        os_log_error(gLog, "[CORE] retro_unserialize failed");
+        return NO;
+    }
+#else
+    return NO;
 #endif
 }
 

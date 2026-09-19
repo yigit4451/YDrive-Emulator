@@ -32,6 +32,7 @@ final class LibretroEmulatorEngine: ObservableObject {
 
     // ── Public state ─────────────────────────────────────────────────────────
     @Published private(set) var isRunning   = false
+    @Published private(set) var isPaused    = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var coreAvailable = false
 
@@ -49,6 +50,7 @@ final class LibretroEmulatorEngine: ObservableObject {
     private let audioEngine = YDriveAudioEngine()
     private var emulationQueue: DispatchQueue?
     private var frameTimer: DispatchSourceTimer?
+    private var isEmulationPaused = false
 
     // ─────────────────────────────────────────────────────────────────────────
     init() {
@@ -160,6 +162,8 @@ final class LibretroEmulatorEngine: ObservableObject {
         frameTimer?.cancel()
         frameTimer = nil
         isRunning  = false
+        isPaused   = false
+        isEmulationPaused = false
 
         audioEngine.stop()
 
@@ -182,6 +186,92 @@ final class LibretroEmulatorEngine: ObservableObject {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // MARK: - Game Lifecycle Actions
+    // ─────────────────────────────────────────────────────────────────────────
+    
+    func setPaused(_ paused: Bool) {
+        self.isPaused = paused
+        emulationQueue?.async { [weak self] in
+            self?.isEmulationPaused = paused
+        }
+        if paused {
+            audioEngine.stop()
+        } else {
+            audioEngine.start(sampleRate: bridge.audioSampleRate)
+        }
+    }
+    
+    func reset() {
+        nonisolated(unsafe) let bridgeRef = bridge
+        emulationQueue?.async {
+            bridgeRef.reset()
+        }
+    }
+    
+    // ─────────────────────────────────────────────────────────────────────────
+    // MARK: - Save / Load States
+    // ─────────────────────────────────────────────────────────────────────────
+    
+    private func getSavesDirectory() -> URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+        if !FileManager.default.fileExists(atPath: savesDir.path) {
+            try? FileManager.default.createDirectory(at: savesDir, withIntermediateDirectories: true)
+        }
+        return savesDir
+    }
+    
+    private func saveStateURL(for gameFileName: String, slot: Int) -> URL {
+        let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
+        return getSavesDirectory().appendingPathComponent("\(safeName)_slot\(slot).state")
+    }
+    
+    func hasSaveState(for gameFileName: String, slot: Int) -> Bool {
+        return FileManager.default.fileExists(atPath: saveStateURL(for: gameFileName, slot: slot).path)
+    }
+    
+    func getSaveStateDate(for gameFileName: String, slot: Int) -> Date? {
+        let url = saveStateURL(for: gameFileName, slot: slot)
+        let attr = try? FileManager.default.attributesOfItem(atPath: url.path)
+        return attr?[.modificationDate] as? Date
+    }
+
+    func saveState(for gameFileName: String, slot: Int, completion: @escaping (Bool) -> Void) {
+        log.info("[ENGINE] Requesting save state for slot \(slot)")
+        let url = saveStateURL(for: gameFileName, slot: slot)
+        
+        nonisolated(unsafe) let bridgeRef = bridge
+        emulationQueue?.async {
+            guard let data = bridgeRef.saveState() else {
+                Task { @MainActor in completion(false) }
+                return
+            }
+            do {
+                try data.write(to: url, options: .atomic)
+                Task { @MainActor in completion(true) }
+            } catch {
+                log.error("[ENGINE] Failed to write save state: \(error.localizedDescription, privacy: .public)")
+                Task { @MainActor in completion(false) }
+            }
+        }
+    }
+    
+    func loadState(for gameFileName: String, slot: Int, completion: @escaping (Bool) -> Void) {
+        log.info("[ENGINE] Requesting load state for slot \(slot)")
+        let url = saveStateURL(for: gameFileName, slot: slot)
+        
+        nonisolated(unsafe) let bridgeRef = bridge
+        emulationQueue?.async {
+            guard let data = try? Data(contentsOf: url) else {
+                Task { @MainActor in completion(false) }
+                return
+            }
+            let success = bridgeRef.loadState(data)
+            Task { @MainActor in completion(success) }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // MARK: - Private — frame timing loop
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -195,7 +285,8 @@ final class LibretroEmulatorEngine: ObservableObject {
 
         let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
         timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
-        timer.setEventHandler { @Sendable in
+        timer.setEventHandler { [weak self] @Sendable in
+            guard let self = self, !self.isEmulationPaused else { return }
             capturedBridge.runFrame()
         }
         timer.resume()

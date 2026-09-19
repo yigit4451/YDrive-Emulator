@@ -10,7 +10,7 @@ struct EmulatorView: View {
     @State private var isControllerConnected = false
     @StateObject private var engine = LibretroEmulatorEngine()
     @State private var isTopBarVisible = false
-    @State private var isPaused = false
+    @State private var isSaveManagerPresented = false
 
     var body: some View {
         ZStack {
@@ -81,6 +81,13 @@ struct EmulatorView: View {
                 }
                 .zIndex(10)
             }
+            
+            // ── Save Manager Overlay ─────────────────────────────────────────
+            if isSaveManagerPresented {
+                SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+                    .zIndex(20)
+                    .transition(.opacity)
+            }
         }
         .statusBarHidden(true)
         .onAppear {
@@ -114,19 +121,31 @@ struct EmulatorView: View {
 
             // Pause
             Button {
-                // Toggle pause logic (to be implemented in bridge later, or stop timer)
-                // For now, it's just a visual toggle
-                isPaused.toggle()
+                engine.setPaused(!engine.isPaused)
             } label: {
-                Image(systemName: isPaused ? "play.fill" : "pause.fill")
+                Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
+                    .font(.title2)
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, 8)
+            
+            // Saves
+            Button {
+                withAnimation {
+                    engine.setPaused(true)
+                    isSaveManagerPresented = true
+                    isTopBarVisible = false
+                }
+            } label: {
+                Image(systemName: "tray.and.arrow.down.fill")
                     .font(.title2)
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, 8)
 
-            // Reset (stub)
+            // Reset
             Button {
-                // Stub reset
+                engine.reset()
             } label: {
                 Image(systemName: "arrow.counterclockwise")
                     .font(.title2)
@@ -159,15 +178,11 @@ struct EmulatorView: View {
                     .clipShape(Circle())
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 24)
         .padding(.vertical, 12)
-        .background(Color.black.opacity(0.85))
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(Color.white.opacity(0.1)),
-            alignment: .bottom
-        )
+        .applyLiquidGlassCapsule()
+        .padding(.top, 8)
+        .padding(.horizontal)
     }
 
     // ── ROM path resolution ───────────────────────────────────────────────────
