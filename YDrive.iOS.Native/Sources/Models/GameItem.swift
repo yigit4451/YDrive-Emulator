@@ -1,7 +1,7 @@
 import Foundation
 
 // Represents a ROM / game entry in the library
-struct GameItem: Identifiable, Hashable {
+struct GameItem: Identifiable, Hashable, Codable {
     let id: UUID
     var title: String
     var consoleName: String

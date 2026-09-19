@@ -67,11 +67,7 @@ struct SaveManagerView: View {
                     .foregroundStyle(.white)
                 
                 if let date = slotDates[slot] {
-                    Text(date, style: .date)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
-                    + Text(" ") +
-                    Text(date, style: .time)
+                    (Text(date, style: .date) + Text(" ") + Text(date, style: .time))
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.7))
                 } else {

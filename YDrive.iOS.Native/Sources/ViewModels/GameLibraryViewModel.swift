@@ -7,6 +7,25 @@ final class GameLibraryViewModel: ObservableObject {
     @Published var games: [GameItem] = []
     @Published var searchText: String = ""
     @Published var isFilePickerPresented: Bool = false
+    
+    private let saveKey = "YDrive_SavedGames"
+    
+    init() {
+        loadLibrary()
+    }
+    
+    private func saveLibrary() {
+        if let encoded = try? JSONEncoder().encode(games) {
+            UserDefaults.standard.set(encoded, forKey: saveKey)
+        }
+    }
+    
+    private func loadLibrary() {
+        if let data = UserDefaults.standard.data(forKey: saveKey),
+           let decoded = try? JSONDecoder().decode([GameItem].self, from: data) {
+            self.games = decoded
+        }
+    }
 
     var filteredGames: [GameItem] {
         if searchText.isEmpty { return games }
@@ -40,6 +59,7 @@ final class GameLibraryViewModel: ObservableObject {
         )
         let id = item.id
         games.append(item)
+        saveLibrary()
 
         Task {
             if let result = await TheGamesDBClient.shared.fetchMetadata(for: name) {
@@ -47,6 +67,7 @@ final class GameLibraryViewModel: ObservableObject {
                     if let dev = result.developer { self.games[index].developer = dev }
                     if let year = result.releaseYear { self.games[index].releaseYear = year }
                     if let sum = result.summary { self.games[index].summary = sum }
+                    self.saveLibrary()
                 }
                 
                 if let imgUrlString = result.coverImageUrl, let imgUrl = URL(string: imgUrlString) {
@@ -56,6 +77,7 @@ final class GameLibraryViewModel: ObservableObject {
                         try? data.write(to: imgDest)
                         if let index = self.games.firstIndex(where: { $0.id == id }) {
                             self.games[index].coverImagePath = imgDest.path
+                            self.saveLibrary()
                         }
                     }
                 }
@@ -65,11 +87,13 @@ final class GameLibraryViewModel: ObservableObject {
 
     func deleteGame(_ game: GameItem) {
         games.removeAll { $0.id == game.id }
+        saveLibrary()
     }
 
     func renameGame(_ game: GameItem, to newName: String) {
         if let index = games.firstIndex(of: game) {
             games[index].title = newName
+            saveLibrary()
         }
     }
 
@@ -84,6 +108,7 @@ final class GameLibraryViewModel: ObservableObject {
                         if let dev = result.developer { self.games[index].developer = dev }
                         if let year = result.releaseYear { self.games[index].releaseYear = year }
                         if let sum = result.summary { self.games[index].summary = sum }
+                        self.saveLibrary()
                     }
                     
                     if let imgUrlString = result.coverImageUrl, let imgUrl = URL(string: imgUrlString) {
@@ -94,6 +119,7 @@ final class GameLibraryViewModel: ObservableObject {
                             try? data.write(to: imgDest)
                             if let index = self.games.firstIndex(where: { $0.id == id }) {
                                 self.games[index].coverImagePath = imgDest.path
+                                self.saveLibrary()
                             }
                         }
                     }
