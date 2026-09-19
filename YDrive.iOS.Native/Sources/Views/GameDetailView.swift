@@ -57,19 +57,23 @@ struct GameDetailView: View {
 
                     // ── Info panel ──
                     VStack(alignment: .leading, spacing: 16) {
-                        infoRow(icon: "person.fill",
-                                label: "Yapımcı",
-                                value: game.developer ?? "Bilinmiyor")
-                        Divider()
+                        if let developer = game.developer {
+                            infoRow(icon: "person.fill",
+                                    label: "Yapımcı",
+                                    value: developer)
+                            Divider()
+                        }
 
-                        infoRow(icon: "calendar",
-                                label: "Çıkış Yılı",
-                                value: game.releaseYear ?? "Bilinmiyor")
-                        Divider()
+                        if let releaseYear = game.releaseYear {
+                            infoRow(icon: "calendar",
+                                    label: "Çıkış Yılı",
+                                    value: releaseYear)
+                            Divider()
+                        }
 
                         infoRow(icon: "doc.fill",
                                 label: "Dosya",
-                                value: game.fileName)
+                                value: URL(fileURLWithPath: game.fileName).lastPathComponent)
 
                         if let summary = game.summary {
                             Divider()
@@ -110,27 +114,6 @@ struct GameDetailView: View {
             .padding(.horizontal, 16)
             .padding(.top, 16)
 
-            // ── Floating Play Button ──
-            VStack {
-                Spacer()
-                Button {
-                    showingGame = true
-                } label: {
-                    Label("Oyna", systemImage: "play.fill")
-                        .font(.title3.weight(.bold))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(Color.accentColor)
-                .padding(.horizontal, 32)
-                .padding(.bottom, 32)
-                .shadow(color: Color.accentColor.opacity(0.4), radius: 10, y: 5)
-            }
-            .ignoresSafeArea(.keyboard)
-        }
-        .fullScreenCover(isPresented: $showingGame) {
-            EmulatorView(game: game)
         }
     }
 

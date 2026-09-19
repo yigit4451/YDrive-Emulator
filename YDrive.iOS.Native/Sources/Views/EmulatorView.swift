@@ -135,53 +135,86 @@ struct OnScreenControlsView: View {
     @Binding var buttonStates: ButtonState
 
     var body: some View {
-        HStack(alignment: .bottom) {
-            // D-Pad
-            DPadView(
-                onUp: { buttonStates.up = $0 },
-                onDown: { buttonStates.down = $0 },
-                onLeft: { buttonStates.left = $0 },
-                onRight: { buttonStates.right = $0 }
-            )
-            .padding(.leading, 32)
+        GeometryReader { geo in
+            let isLandscape = geo.size.width > geo.size.height
 
-            Spacer()
-
-            // Action buttons
-            VStack(spacing: 16) {
-                HStack(spacing: 16) {
-                    actionButton("C", color: .yellow) { buttonStates.c = $0 }
-                    actionButton("B", color: .blue)   { buttonStates.b = $0 }
-                    actionButton("A", color: .red)    { buttonStates.a = $0 }
+            if isLandscape {
+                // LANDSCAPE: Controls pushed to far corners
+                HStack(alignment: .bottom) {
+                    dpadArea
+                        .padding(.leading, safePadding(geo))
+                    Spacer()
+                    actionArea
+                        .padding(.trailing, safePadding(geo))
                 }
-                HStack {
+                .padding(.bottom, safePadding(geo))
+                .frame(maxHeight: .infinity, alignment: .bottom)
+            } else {
+                // PORTRAIT: D-pad left-mid, Actions right-mid, Start center
+                VStack {
                     Spacer()
-                    actionButton("START", color: .white, size: 64) { buttonStates.start = $0 }
-                    Spacer()
+                    HStack(alignment: .bottom) {
+                        dpadArea
+                            .padding(.leading, 24)
+                        
+                        Spacer()
+                        
+                        VStack(spacing: 24) {
+                            actionButton("START", color: .white, size: 50) { buttonStates.start = $0 }
+                                .padding(.bottom, 20)
+                            
+                            actionArea
+                        }
+                        .padding(.trailing, 24)
+                    }
+                    .padding(.bottom, 48)
                 }
             }
-            .padding(.trailing, 32)
+        }
+    }
+    
+    private func safePadding(_ geo: GeometryProxy) -> CGFloat {
+        return geo.safeAreaInsets.bottom > 0 ? 32 : 16
+    }
+    
+    private var dpadArea: some View {
+        DPadView(
+            onUp: { buttonStates.up = $0 },
+            onDown: { buttonStates.down = $0 },
+            onLeft: { buttonStates.left = $0 },
+            onRight: { buttonStates.right = $0 }
+        )
+    }
+    
+    private var actionArea: some View {
+        HStack(spacing: 12) {
+            actionButton("A", color: .red)    { buttonStates.a = $0 }
+                .offset(y: 24)
+            actionButton("B", color: .blue)   { buttonStates.b = $0 }
+            actionButton("C", color: .yellow) { buttonStates.c = $0 }
+                .offset(y: -24)
         }
     }
 
     private func actionButton(
         _ label: String,
         color: Color,
-        size: CGFloat = 56,
+        size: CGFloat = 64,
         onPress: @escaping (Bool) -> Void
     ) -> some View {
         ZStack {
             Circle()
-                .applyLiquidGlassCircle()
+                .fill(Color(white: 0.1).opacity(0.8))
                 .frame(width: size, height: size)
                 .overlay(
-                    Circle().stroke(color.opacity(0.3), lineWidth: 1)
+                    Circle().stroke(color.opacity(0.6), lineWidth: 2)
                 )
             
             Text(label)
-                .font(.system(size: label.count > 1 ? 14 : 20, weight: .bold, design: .rounded))
-                .foregroundStyle(color.opacity(0.8))
+                .font(.system(size: label.count > 1 ? 14 : 22, weight: .bold, design: .rounded))
+                .foregroundStyle(color.opacity(0.9))
         }
+        .contentShape(Circle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in onPress(true) }
@@ -196,46 +229,75 @@ struct DPadView: View {
     var onDown: (Bool) -> Void
     var onLeft: (Bool) -> Void
     var onRight: (Bool) -> Void
+    
+    @State private var location: CGPoint? = nil
 
     var body: some View {
-        ZStack {
-            // Vertical bar
-            Capsule()
-                .applyLiquidGlassCapsule()
-                .frame(width: 52, height: 160)
-            
-            // Horizontal bar
-            Capsule()
-                .applyLiquidGlassCapsule()
-                .frame(width: 160, height: 52)
+        let size: CGFloat = 160
+        let center = size / 2
+        let threshold: CGFloat = 20
 
+        ZStack {
+            // Background cross
+            Path { path in
+                let w: CGFloat = 52
+                let h = size
+                // vertical
+                path.addRoundedRect(in: CGRect(x: (size - w)/2, y: 0, width: w, height: h), cornerSize: CGSize(width: 8, height: 8))
+                // horizontal
+                path.addRoundedRect(in: CGRect(x: 0, y: (size - w)/2, width: h, height: w), cornerSize: CGSize(width: 8, height: 8))
+            }
+            .fill(Color(white: 0.1).opacity(0.8))
+            .overlay(
+                Path { path in
+                    let w: CGFloat = 52
+                    let h = size
+                    path.addRoundedRect(in: CGRect(x: (size - w)/2, y: 0, width: w, height: h), cornerSize: CGSize(width: 8, height: 8))
+                    path.addRoundedRect(in: CGRect(x: 0, y: (size - w)/2, width: h, height: w), cornerSize: CGSize(width: 8, height: 8))
+                }.stroke(Color.white.opacity(0.2), lineWidth: 1)
+            )
+
+            // Inner pivot
+            Circle()
+                .fill(Color.black.opacity(0.5))
+                .frame(width: 32, height: 32)
+                
             // Arrows
-            Group {
-                dpadArrow("chevron.up", offset: CGSize(width: 0, height: -52)) { onUp($0) }
-                dpadArrow("chevron.down", offset: CGSize(width: 0, height: 52)) { onDown($0) }
-                dpadArrow("chevron.left", offset: CGSize(width: -52, height: 0)) { onLeft($0) }
-                dpadArrow("chevron.right", offset: CGSize(width: 52, height: 0)) { onRight($0) }
+            Image(systemName: "chevron.up").offset(y: -size/3).foregroundStyle(.white.opacity(0.6))
+            Image(systemName: "chevron.down").offset(y: size/3).foregroundStyle(.white.opacity(0.6))
+            Image(systemName: "chevron.left").offset(x: -size/3).foregroundStyle(.white.opacity(0.6))
+            Image(systemName: "chevron.right").offset(x: size/3).foregroundStyle(.white.opacity(0.6))
+            
+            // Active thumb indicator (optional feedback)
+            if let loc = location {
+                Circle()
+                    .fill(Color.white.opacity(0.3))
+                    .frame(width: 44, height: 44)
+                    .position(loc)
             }
         }
-        .frame(width: 160, height: 160)
-    }
-
-    private func dpadArrow(
-        _ icon: String,
-        offset: CGSize,
-        onPress: @escaping (Bool) -> Void
-    ) -> some View {
-        Image(systemName: icon)
-            .font(.title2.weight(.bold))
-            .foregroundStyle(.white.opacity(0.6))
-            .frame(width: 52, height: 52)
-            .offset(offset)
-            .contentShape(Rectangle())
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in onPress(true) }
-                    .onEnded   { _ in onPress(false) }
-            )
+        .frame(width: size, height: size)
+        .contentShape(Rectangle()) // Capture touches anywhere in the square
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    location = value.location
+                    let dx = value.location.x - center
+                    let dy = value.location.y - center
+                    
+                    onLeft(dx < -threshold)
+                    onRight(dx > threshold)
+                    onUp(dy < -threshold)
+                    onDown(dy > threshold)
+                }
+                .onEnded { _ in
+                    location = nil
+                    onLeft(false)
+                    onRight(false)
+                    onUp(false)
+                    onDown(false)
+                }
+        )
     }
 }
 

@@ -14,7 +14,8 @@ struct GameLibraryView: View {
     @State private var showingRenameAlert = false
     @State private var renameTarget: GameItem?
     @State private var renameText = ""
-    @State private var selectedGame: GameItem?
+    @State private var playingGame: GameItem?
+    @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
 
     private let columns = [
@@ -64,7 +65,10 @@ struct GameLibraryView: View {
                     }
                     Button("İptal", role: .cancel) {}
                 }
-                .sheet(item: $selectedGame) { game in
+                .fullScreenCover(item: $playingGame) { game in
+                    EmulatorView(game: game)
+                }
+                .sheet(item: $showingDetailsForGame) { game in
                     GameDetailView(game: game, viewModel: viewModel)
                 }
                 .sheet(isPresented: $showingSettings) {
@@ -142,12 +146,18 @@ struct GameLibraryView: View {
         LazyVGrid(columns: columns, spacing: 16) {
             ForEach(viewModel.filteredGames) { game in
                 Button {
-                    selectedGame = game
+                    playingGame = game
                 } label: {
                     GameCardView(game: game)
                 }
                 .buttonStyle(.plain)
                 .contextMenu {
+                    Button {
+                        showingDetailsForGame = game
+                    } label: {
+                        Label("Oyun Bilgileri", systemImage: "info.circle")
+                    }
+                    
                     Button {
                         renameTarget = game
                         renameText = game.title
