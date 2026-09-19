@@ -47,7 +47,19 @@ jobs:
         git clone --depth 1 https://github.com/libretro/picodrive.git
         cd picodrive
         git submodule update --init --recursive
-        make -f Makefile.libretro platform=ios-arm64 -j$(sysctl -n hw.ncpu)
+        
+        echo "Building PicoDrive for iOS arm64 as a static archive..."
+        make -f Makefile.libretro platform=ios-arm64 STATIC_LINKING=1 TARGET=picodrive_libretro_ios.a MINVERSION="-miphoneos-version-min=26.0" -j$(sysctl -n hw.ncpu)
+        
+        echo "=== Verifying the static archive ==="
+        file picodrive_libretro_ios.a
+        
+        echo "=== Verifying Libretro symbols ==="
+        nm -g picodrive_libretro_ios.a > symbols.txt
+        if ! grep -q "retro_init" symbols.txt; then echo "Missing retro_init"; exit 1; fi
+        if ! grep -q "retro_load_game" symbols.txt; then echo "Missing retro_load_game"; exit 1; fi
+        if ! grep -q "retro_run" symbols.txt; then echo "Missing retro_run"; exit 1; fi
+        echo "Libretro symbols verified."
         
         # Copy the built static library to the Xcode project Sources
         mkdir -p ../YDrive.iOS.Native/Sources/Core
