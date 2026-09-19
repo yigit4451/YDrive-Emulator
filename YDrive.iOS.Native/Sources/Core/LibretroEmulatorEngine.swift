@@ -50,7 +50,6 @@ final class LibretroEmulatorEngine: ObservableObject {
     private let audioEngine = YDriveAudioEngine()
     private var emulationQueue: DispatchQueue?
     private var frameTimer: DispatchSourceTimer?
-    private var isEmulationPaused = false
 
     // ─────────────────────────────────────────────────────────────────────────
     init() {
@@ -103,10 +102,9 @@ final class LibretroEmulatorEngine: ObservableObject {
                                   qos: .userInteractive)
         self.emulationQueue = queue
 
-        // Capture bridge as nonisolated(unsafe) to satisfy Swift 6 Sendable
-        // requirements. YDriveLibretroBridge is ObjC and not Sendable-annotated;
-        // we enforce thread safety manually (bridge is only touched on `queue`).
-        nonisolated(unsafe) let bridge = self.bridge
+        // YDriveLibretroBridge is now marked as @Sendable in Objective-C.
+        // It uses thread-safe mechanisms internally (atomic properties, locks).
+        let bridgeRef = self.bridge
 
         queue.async { @Sendable in
             // Swift imports `- (BOOL)loadGameAtPath:error:` as `throws`.
@@ -114,7 +112,7 @@ final class LibretroEmulatorEngine: ObservableObject {
             var ok = false
             var errorMessage: String = "Emulator core not available"
             do {
-                try bridge.loadGame(atPath: romPath)
+                try bridgeRef.loadGame(atPath: romPath)
                 ok = true
             } catch {
                 errorMessage = error.localizedDescription
@@ -122,10 +120,10 @@ final class LibretroEmulatorEngine: ObservableObject {
             let finalError = errorMessage // Immutable snapshot
 
             if ok {
-                let w = Int(bridge.videoWidth)
-                let h = Int(bridge.videoHeight)
-                let ar = bridge.aspectRatio
-                let fps = bridge.targetFPS
+                let w = Int(bridgeRef.videoWidth)
+                let h = Int(bridgeRef.videoHeight)
+                let ar = bridgeRef.aspectRatio
+                let fps = bridgeRef.targetFPS
                 
                 log.info("[ENGINE] Core loaded — \(w)x\(h) @ \(fps, format: .fixed(precision: 2)) fps")
                 
@@ -138,8 +136,8 @@ final class LibretroEmulatorEngine: ObservableObject {
                     self.coreAvailable = true
                     self.isRunning   = true
                     
-                    self.audioEngine.start(sampleRate: bridge.audioSampleRate)
-                    self.startFrameTimer(on: queue, bridge: bridge)
+                    self.audioEngine.start(sampleRate: bridgeRef.audioSampleRate)
+                    self.startFrameTimer(on: queue, bridge: bridgeRef)
                 }
             } else {
                 log.error("[ENGINE] Failed to load game: \(finalError, privacy: .public)")
@@ -163,14 +161,13 @@ final class LibretroEmulatorEngine: ObservableObject {
         frameTimer = nil
         isRunning  = false
         isPaused   = false
-        isEmulationPaused = false
 
         audioEngine.stop()
 
         // Unload on the emulation queue to avoid race with runFrame
-        nonisolated(unsafe) let bridgeForUnload = bridge
+        let bridgeRef = bridge
         emulationQueue?.async { @Sendable in
-            bridgeForUnload.unload()
+            bridgeRef.unload()
         }
         emulationQueue = nil
     }
@@ -191,9 +188,9 @@ final class LibretroEmulatorEngine: ObservableObject {
     
     func setPaused(_ paused: Bool) {
         self.isPaused = paused
-        emulationQueue?.async { [weak self] in
-            self?.isEmulationPaused = paused
-        }
+        // bridge.isPaused is an atomic property, safe to write from MainActor
+        bridge.isPaused = paused
+        
         if paused {
             audioEngine.stop()
         } else {
@@ -202,7 +199,7 @@ final class LibretroEmulatorEngine: ObservableObject {
     }
     
     func reset() {
-        nonisolated(unsafe) let bridgeRef = bridge
+        let bridgeRef = bridge
         emulationQueue?.async {
             bridgeRef.reset()
         }
@@ -240,7 +237,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         log.info("[ENGINE] Requesting save state for slot \(slot)")
         let url = saveStateURL(for: gameFileName, slot: slot)
         
-        nonisolated(unsafe) let bridgeRef = bridge
+        let bridgeRef = bridge
         emulationQueue?.async {
             guard let data = bridgeRef.saveState() else {
                 Task { @MainActor in completion(false) }
@@ -260,7 +257,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         log.info("[ENGINE] Requesting load state for slot \(slot)")
         let url = saveStateURL(for: gameFileName, slot: slot)
         
-        nonisolated(unsafe) let bridgeRef = bridge
+        let bridgeRef = bridge
         emulationQueue?.async {
             guard let data = try? Data(contentsOf: url) else {
                 Task { @MainActor in completion(false) }
@@ -279,15 +276,13 @@ final class LibretroEmulatorEngine: ObservableObject {
         let fps  = targetFPS > 0 ? targetFPS : 60.0
         let interval = DispatchTimeInterval.nanoseconds(Int(1_000_000_000.0 / fps))
 
-        // Capture bridge as nonisolated(unsafe) — safe because runFrame is
-        // always called on this same serial queue.
-        nonisolated(unsafe) let capturedBridge = bridge
+        let bridgeRef = bridge
 
         let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
         timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
-        timer.setEventHandler { @Sendable [weak self] in
-            guard let self = self, !self.isEmulationPaused else { return }
-            capturedBridge.runFrame()
+        timer.setEventHandler { @Sendable in
+            guard !bridgeRef.isPaused else { return }
+            bridgeRef.runFrame()
         }
         timer.resume()
         self.frameTimer = timer

@@ -42,7 +42,11 @@ typedef void (^YDriveAudioPCMCallback)(const int16_t * _Nonnull data, size_t fra
 /// Thread safety: `loadGame:` and `unload` must be called from any single thread;
 /// `runFrame` is called from the emulation background thread.
 // ─────────────────────────────────────────────────────────────────────────────
+__attribute__((swift_attr("@Sendable")))
 @interface YDriveLibretroBridge : NSObject
+
+/// YES when the core should skip frame execution. Thread-safe atomic property.
+@property (atomic, assign) BOOL isPaused;
 
 /// YES when a core is loaded and a game has been successfully started.
 @property (nonatomic, readonly) BOOL isRunning;
