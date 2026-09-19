@@ -226,138 +226,181 @@ struct OnScreenControlsView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let isLandscape = geo.size.width > geo.size.height
+            let w = geo.size.width
+            let h = geo.size.height
+            let isLandscape = w > h
+            
+            let safeTop = geo.safeAreaInsets.top
+            let safeBottom = geo.safeAreaInsets.bottom
+            let safeLeft = geo.safeAreaInsets.leading
+            let safeRight = geo.safeAreaInsets.trailing
 
+            // Scale down controls in portrait to fit narrow screens
+            let scale: CGFloat = isLandscape ? 1.0 : 0.8
+            
+            let dpadSize: CGFloat = 200 * scale
+            let dpadR = dpadSize / 2
+            
+            let abcWidth: CGFloat = 220 * scale
+            let abcHeight: CGFloat = 120 * scale
+            let abcW = abcWidth / 2
+            let abcH = abcHeight / 2
+            
+            let startSize: CGFloat = 80 * scale
+            let startR = startSize / 2
+
+            let padX: CGFloat = isLandscape ? max(16, safeLeft) : 16
+            let padY: CGFloat = isLandscape ? max(16, safeBottom) : 16
+
+            // Compute Centers ensuring we stay within safe bounds
+            let dpadCenter: CGPoint
+            let abcCenter: CGPoint
+            let startCenter: CGPoint
+            
             if isLandscape {
-                // LANDSCAPE: Controls pushed to far corners
-                HStack(alignment: .bottom) {
-                    dpadArea
-                        .padding(.leading, safePadding(geo))
-                    Spacer()
-                    actionArea
-                        .padding(.trailing, safePadding(geo))
-                }
-                .padding(.bottom, safePadding(geo))
-                .frame(maxHeight: .infinity, alignment: .bottom)
+                dpadCenter = CGPoint(
+                    x: padX + dpadR,
+                    y: h - padY - dpadR
+                )
+                
+                abcCenter = CGPoint(
+                    x: w - safeRight - (isLandscape ? 16 : 0) - abcW,
+                    y: h - padY - abcH
+                )
+                
+                startCenter = CGPoint(
+                    x: w / 2,
+                    y: h - padY - startR
+                )
             } else {
-                // PORTRAIT: D-pad left-mid, Actions right-mid, Start center
-                VStack {
-                    Spacer()
-                    HStack(alignment: .bottom) {
-                        dpadArea
-                            .padding(.leading, 16)
-                        
-                        Spacer()
-                        
-                        VStack(spacing: 24) {
-                            actionButton("START", color: .white, size: 45) { engine.setButton(ID_START, pressed: $0) }
-                                .padding(.bottom, 20)
-                            
-                            actionArea
-                        }
-                        .padding(.trailing, 16)
-                    }
-                    .padding(.bottom, 48)
-                }
+                // Portrait: DPad Left, ABC Right, Start Center-Bottom
+                let availableBottomY = h - safeBottom - 16
+                
+                startCenter = CGPoint(
+                    x: w / 2,
+                    y: availableBottomY - startR
+                )
+                
+                let controlsY = availableBottomY - startSize - 16 - dpadR
+                
+                dpadCenter = CGPoint(
+                    x: safeLeft + 16 + dpadR,
+                    y: controlsY
+                )
+                
+                abcCenter = CGPoint(
+                    x: w - safeRight - 16 - abcW,
+                    y: controlsY
+                )
+            }
+
+            ZStack(alignment: .topLeading) {
+                // D-Pad
+                dpadArea(size: dpadSize, scale: scale)
+                    .position(dpadCenter)
+                
+                // A B C Buttons
+                actionArea(width: abcWidth, height: abcHeight, scale: scale)
+                    .position(abcCenter)
+                
+                // START Button
+                actionButton("START", color: .white, visualSize: 45 * scale, hitSize: startSize) { engine.setButton(ID_START, pressed: $0) }
+                    .position(startCenter)
             }
         }
     }
     
-    private func safePadding(_ geo: GeometryProxy) -> CGFloat {
-        return geo.safeAreaInsets.bottom > 0 ? 32 : 16
-    }
-    
-    private var dpadArea: some View {
-        // MultiTouchDPad gives us zero-latency up/down/left/right
+    private func dpadArea(size: CGFloat, scale: CGFloat) -> some View {
         MultiTouchDPad { up, down, left, right in
             engine.setButton(ID_UP, pressed: up)
             engine.setButton(ID_DOWN, pressed: down)
             engine.setButton(ID_LEFT, pressed: left)
             engine.setButton(ID_RIGHT, pressed: right)
         }
-        .frame(width: 240, height: 240) // Expanded touch area for ergonomics
+        .frame(width: size, height: size)
         .background(
             ZStack {
                 Path { path in
-                    let size: CGFloat = 160
-                    let w: CGFloat = 56
-                    let h = size
-                    let xOffset = (240 - size) / 2
-                    let yOffset = (240 - size) / 2
+                    let visualSize: CGFloat = 160 * scale
+                    let w: CGFloat = 56 * scale
+                    let h = visualSize
+                    let xOffset = (size - visualSize) / 2
+                    let yOffset = (size - visualSize) / 2
                     
-                    // Vertical arm
                     path.addRoundedRect(
-                        in: CGRect(x: xOffset + (size - w)/2, y: yOffset, width: w, height: h),
-                        cornerSize: CGSize(width: 8, height: 8)
+                        in: CGRect(x: xOffset + (visualSize - w)/2, y: yOffset, width: w, height: h),
+                        cornerSize: CGSize(width: 8*scale, height: 8*scale)
                     )
-                    // Horizontal arm
                     path.addRoundedRect(
-                        in: CGRect(x: xOffset, y: yOffset + (size - w)/2, width: h, height: w),
-                        cornerSize: CGSize(width: 8, height: 8)
+                        in: CGRect(x: xOffset, y: yOffset + (visualSize - w)/2, width: h, height: w),
+                        cornerSize: CGSize(width: 8*scale, height: 8*scale)
                     )
                 }
                 .fill(Color(white: 0.1).opacity(0.7))
                 .overlay(
                     Path { path in
-                        let size: CGFloat = 160
-                        let w: CGFloat = 56
-                        let h = size
-                        let xOffset = (240 - size) / 2
-                        let yOffset = (240 - size) / 2
+                        let visualSize: CGFloat = 160 * scale
+                        let w: CGFloat = 56 * scale
+                        let h = visualSize
+                        let xOffset = (size - visualSize) / 2
+                        let yOffset = (size - visualSize) / 2
                         
-                        // Vertical arm
                         path.addRoundedRect(
-                            in: CGRect(x: xOffset + (size - w)/2, y: yOffset, width: w, height: h),
-                            cornerSize: CGSize(width: 8, height: 8)
+                            in: CGRect(x: xOffset + (visualSize - w)/2, y: yOffset, width: w, height: h),
+                            cornerSize: CGSize(width: 8*scale, height: 8*scale)
                         )
-                        // Horizontal arm
                         path.addRoundedRect(
-                            in: CGRect(x: xOffset, y: yOffset + (size - w)/2, width: h, height: w),
-                            cornerSize: CGSize(width: 8, height: 8)
+                            in: CGRect(x: xOffset, y: yOffset + (visualSize - w)/2, width: h, height: w),
+                            cornerSize: CGSize(width: 8*scale, height: 8*scale)
                         )
                     }.stroke(Color.white.opacity(0.15), lineWidth: 1)
                 )
-                
-                // Purely digital - removed the analog-like pivot circle
             }
         )
     }
     
-    private var actionArea: some View {
-        HStack(spacing: 8) {
+    private func actionArea(width: CGFloat, height: CGFloat, scale: CGFloat) -> some View {
+        ZStack {
+            let btnSize: CGFloat = 64 * scale
+            let hitSize: CGFloat = 84 * scale
+            
             // SEGA A maps to Retro Y (1)
-            actionButton("A", color: .red) { engine.setButton(ID_Y, pressed: $0) }
-                .offset(y: 24)
+            actionButton("A", color: .red, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_Y, pressed: $0) }
+                .position(x: hitSize/2, y: height - hitSize/2)
+            
             // SEGA B maps to Retro B (0)
-            actionButton("B", color: .blue) { engine.setButton(ID_B, pressed: $0) }
+            actionButton("B", color: .blue, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_B, pressed: $0) }
+                .position(x: width/2, y: height/2)
+            
             // SEGA C maps to Retro A (8)
-            actionButton("C", color: .yellow) { engine.setButton(ID_A, pressed: $0) }
-                .offset(y: -24)
+            actionButton("C", color: .yellow, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_A, pressed: $0) }
+                .position(x: width - hitSize/2, y: hitSize/2)
         }
+        .frame(width: width, height: height)
     }
 
     private func actionButton(
         _ label: String,
         color: Color,
-        size: CGFloat = 64,
+        visualSize: CGFloat,
+        hitSize: CGFloat,
         onPress: @escaping (Bool) -> Void
     ) -> some View {
-        // Wrap in a larger frame for increased touch area
         MultiTouchButton { isPressed in
             onPress(isPressed)
         }
-        .frame(width: size + 40, height: size + 40)
+        .frame(width: hitSize, height: hitSize)
         .background(
             ZStack {
                 Circle()
                     .fill(Color(white: 0.1).opacity(0.7))
-                    .frame(width: size, height: size)
+                    .frame(width: visualSize, height: visualSize)
                     .overlay(
                         Circle().stroke(color.opacity(0.6), lineWidth: 2)
                     )
                 
                 Text(label)
-                    .font(.system(size: label.count > 1 ? 14 : 24, weight: .bold, design: .rounded))
+                    .font(.system(size: label.count > 1 ? 14*visualSize/64 : 24*visualSize/64, weight: .bold, design: .rounded))
                     .foregroundStyle(color.opacity(0.95))
             }
         )
