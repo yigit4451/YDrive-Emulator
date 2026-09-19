@@ -275,30 +275,50 @@ struct OnScreenControlsView: View {
             engine.setButton(ID_LEFT, pressed: left)
             engine.setButton(ID_RIGHT, pressed: right)
         }
-        .frame(width: 160, height: 160)
+        .frame(width: 240, height: 240) // Expanded touch area for ergonomics
         .background(
             ZStack {
                 Path { path in
                     let size: CGFloat = 160
-                    let w: CGFloat = 52
+                    let w: CGFloat = 56
                     let h = size
-                    path.addRoundedRect(in: CGRect(x: (size - w)/2, y: 0, width: w, height: h), cornerSize: CGSize(width: 8, height: 8))
-                    path.addRoundedRect(in: CGRect(x: 0, y: (size - w)/2, width: h, height: w), cornerSize: CGSize(width: 8, height: 8))
+                    let xOffset = (240 - size) / 2
+                    let yOffset = (240 - size) / 2
+                    
+                    // Vertical arm
+                    path.addRoundedRect(
+                        in: CGRect(x: xOffset + (size - w)/2, y: yOffset, width: w, height: h),
+                        cornerSize: CGSize(width: 8, height: 8)
+                    )
+                    // Horizontal arm
+                    path.addRoundedRect(
+                        in: CGRect(x: xOffset, y: yOffset + (size - w)/2, width: h, height: w),
+                        cornerSize: CGSize(width: 8, height: 8)
+                    )
                 }
-                .fill(Color(white: 0.1).opacity(0.6))
+                .fill(Color(white: 0.1).opacity(0.7))
                 .overlay(
                     Path { path in
                         let size: CGFloat = 160
-                        let w: CGFloat = 52
+                        let w: CGFloat = 56
                         let h = size
-                        path.addRoundedRect(in: CGRect(x: (size - w)/2, y: 0, width: w, height: h), cornerSize: CGSize(width: 8, height: 8))
-                        path.addRoundedRect(in: CGRect(x: 0, y: (size - w)/2, width: h, height: w), cornerSize: CGSize(width: 8, height: 8))
-                    }.stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        let xOffset = (240 - size) / 2
+                        let yOffset = (240 - size) / 2
+                        
+                        // Vertical arm
+                        path.addRoundedRect(
+                            in: CGRect(x: xOffset + (size - w)/2, y: yOffset, width: w, height: h),
+                            cornerSize: CGSize(width: 8, height: 8)
+                        )
+                        // Horizontal arm
+                        path.addRoundedRect(
+                            in: CGRect(x: xOffset, y: yOffset + (size - w)/2, width: h, height: w),
+                            cornerSize: CGSize(width: 8, height: 8)
+                        )
+                    }.stroke(Color.white.opacity(0.15), lineWidth: 1)
                 )
                 
-                Circle()
-                    .fill(Color.black.opacity(0.5))
-                    .frame(width: 32, height: 32)
+                // Purely digital - removed the analog-like pivot circle
             }
         )
     }
@@ -322,22 +342,23 @@ struct OnScreenControlsView: View {
         size: CGFloat = 64,
         onPress: @escaping (Bool) -> Void
     ) -> some View {
+        // Wrap in a larger frame for increased touch area
         MultiTouchButton { isPressed in
             onPress(isPressed)
         }
-        .frame(width: size + 20, height: size + 20) // Give the touch target extra padding
+        .frame(width: size + 40, height: size + 40)
         .background(
             ZStack {
                 Circle()
-                    .fill(Color(white: 0.1).opacity(0.6))
+                    .fill(Color(white: 0.1).opacity(0.7))
                     .frame(width: size, height: size)
                     .overlay(
-                        Circle().stroke(color.opacity(0.5), lineWidth: 2)
+                        Circle().stroke(color.opacity(0.6), lineWidth: 2)
                     )
                 
                 Text(label)
-                    .font(.system(size: label.count > 1 ? 14 : 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(color.opacity(0.9))
+                    .font(.system(size: label.count > 1 ? 14 : 24, weight: .bold, design: .rounded))
+                    .foregroundStyle(color.opacity(0.95))
             }
         )
     }
