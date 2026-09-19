@@ -5,123 +5,113 @@ struct SaveManagerView: View {
     let gameFileName: String
     @Binding var isPresented: Bool
     
-    @State private var slotDates: [Int: Date] = [:]
+    @State private var existingSaves: [Int: Date] = [:]
     
     var body: some View {
-        ZStack {
-            // Darkened background for modal feel
-            Color.black.opacity(0.5).ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text("Save States")
-                        .font(.title2.bold())
-                        .foregroundStyle(.white)
-                    
-                    Spacer()
-                    
-                    Button(action: { isPresented = false }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.white.opacity(0.8))
-                    }
-                }
-                .padding()
-                .background(Color.black.opacity(0.2))
-                
-                // Slots
-                ScrollView {
-                    VStack(spacing: 12) {
-                        ForEach(0..<10) { slot in
-                            slotRow(for: slot)
+        NavigationStack {
+            List {
+                if existingSaves.isEmpty {
+                    Text("Henüz save alınmadı")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                } else {
+                    // Sort descending by date so newest is at the top
+                    ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
+                        Button(action: {
+                            Task {
+                                let success = await engine.loadState(for: gameFileName, slot: slot)
+                                if success {
+                                    engine.setPaused(false)
+                                    isPresented = false
+                                }
+                            }
+                        }) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Kayıt \(slot + 1)")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                
+                                (Text(date, style: .date) + Text(" ") + Text(date, style: .time))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 4)
                         }
                     }
-                    .padding()
+                    .onDelete(perform: deleteSaves)
                 }
             }
-            .frame(maxWidth: 500, maxHeight: 600)
-            .applyLiquidGlass(cornerRadius: 24)
-            .padding()
+            .navigationTitle("Saves")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Kapat") {
+                        isPresented = false
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: addNewSave) {
+                        Image(systemName: "plus")
+                            .font(.headline)
+                    }
+                }
+            }
         }
         .onAppear {
-            refreshSlots()
+            fetchAllSaves()
         }
     }
     
-    private func refreshSlots() {
-        var dates = [Int: Date]()
-        for i in 0..<10 {
-            if let d = engine.getSaveStateDate(for: gameFileName, slot: i) {
-                dates[i] = d
-            }
-        }
-        slotDates = dates
-    }
-    
-    private func slotRow(for slot: Int) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Slot \(slot)")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                
-                if let date = slotDates[slot] {
-                    (Text(date, style: .date) + Text(" ") + Text(date, style: .time))
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
-                } else {
-                    Text("Empty")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.5))
-                }
-            }
-            
-            Spacer()
-            
-            HStack(spacing: 12) {
-                if slotDates[slot] != nil {
-                    Button(action: {
-                        Task {
-                            let success = await engine.loadState(for: gameFileName, slot: slot)
-                            if success {
-                                engine.setPaused(false)
-                                isPresented = false
-                            }
+    private func fetchAllSaves() {
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+        let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
+        
+        var saves = [Int: Date]()
+        
+        if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+            for file in files {
+                if file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") {
+                    let numberString = file
+                        .replacingOccurrences(of: "\(safeName)_slot", with: "")
+                        .replacingOccurrences(of: ".state", with: "")
+                    
+                    if let slot = Int(numberString) {
+                        if let attr = try? FileManager.default.attributesOfItem(atPath: savesDir.appendingPathComponent(file).path),
+                           let date = attr[.modificationDate] as? Date {
+                            saves[slot] = date
                         }
-                    }) {
-                        Text("Load")
-                            .font(.subheadline.bold())
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.blue.opacity(0.8))
-                            .clipShape(Capsule())
-                            .foregroundStyle(.white)
                     }
-                }
-                
-                Button(action: {
-                    Task {
-                        let success = await engine.saveState(for: gameFileName, slot: slot)
-                        if success { refreshSlots() }
-                    }
-                }) {
-                    Text("Save")
-                        .font(.subheadline.bold())
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.green.opacity(0.8))
-                        .clipShape(Capsule())
-                        .foregroundStyle(.white)
                 }
             }
         }
-        .padding()
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-        )
+        
+        existingSaves = saves
+    }
+    
+    private func addNewSave() {
+        let nextSlot = (existingSaves.keys.max() ?? -1) + 1
+        Task {
+            let success = await engine.saveState(for: gameFileName, slot: nextSlot)
+            if success {
+                fetchAllSaves()
+            }
+        }
+    }
+    
+    private func deleteSaves(at offsets: IndexSet) {
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+        let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
+        
+        let sorted = existingSaves.sorted(by: { $0.value > $1.value })
+        for index in offsets {
+            let slot = sorted[index].key
+            let fileURL = savesDir.appendingPathComponent("\(safeName)_slot\(slot).state")
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        fetchAllSaves()
     }
 }

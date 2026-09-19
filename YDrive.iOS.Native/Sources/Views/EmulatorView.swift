@@ -81,15 +81,11 @@ struct EmulatorView: View {
                 }
                 .zIndex(10)
             }
-            
-            // ── Save Manager Overlay ─────────────────────────────────────────
-            if isSaveManagerPresented {
-                SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
-                    .zIndex(20)
-                    .transition(.opacity)
-            }
         }
         .statusBarHidden(true)
+        .sheet(isPresented: $isSaveManagerPresented) {
+            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+        }
         .onAppear {
             observeControllers()
             startEmulator()
