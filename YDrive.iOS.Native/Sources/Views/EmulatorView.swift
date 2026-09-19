@@ -241,16 +241,16 @@ struct OnScreenControlsView: View {
             let dpadSize: CGFloat = 200 * scale
             let dpadR = dpadSize / 2
             
-            let abcWidth: CGFloat = 220 * scale
-            let abcHeight: CGFloat = 120 * scale
+            let abcWidth: CGFloat = 260 * scale
+            let abcHeight: CGFloat = 130 * scale
             let abcW = abcWidth / 2
             let abcH = abcHeight / 2
             
             let startSize: CGFloat = 80 * scale
             let startR = startSize / 2
 
-            let padX: CGFloat = isLandscape ? max(16, safeLeft) : 16
-            let padY: CGFloat = isLandscape ? max(16, safeBottom) : 16
+            let padX: CGFloat = isLandscape ? (safeLeft > 0 ? safeLeft + 4 : 24) : 16
+            let padY: CGFloat = isLandscape ? (safeBottom > 0 ? safeBottom + 4 : 24) : 16
 
             // Compute Centers ensuring we stay within safe bounds
             let centers: (dpad: CGPoint, abc: CGPoint, start: CGPoint) = {
@@ -302,7 +302,7 @@ struct OnScreenControlsView: View {
                     .position(centers.abc)
                 
                 // START Button
-                actionButton("START", color: .white, visualSize: 45 * scale, hitSize: startSize) { engine.setButton(ID_START, pressed: $0) }
+                startButton(scale: scale)
                     .position(centers.start)
             }
         }
@@ -318,60 +318,66 @@ struct OnScreenControlsView: View {
         .frame(width: size, height: size)
         .background(
             ZStack {
-                Path { path in
-                    let visualSize: CGFloat = 160 * scale
-                    let w: CGFloat = 56 * scale
-                    let h = visualSize
-                    let xOffset = (size - visualSize) / 2
-                    let yOffset = (size - visualSize) / 2
-                    
-                    path.addRoundedRect(
-                        in: CGRect(x: xOffset + (visualSize - w)/2, y: yOffset, width: w, height: h),
-                        cornerSize: CGSize(width: 8*scale, height: 8*scale)
+                let visualSize: CGFloat = 160 * scale
+                
+                // Base Circle (Frosted Glass D-Pad Base)
+                Circle()
+                    .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44)) // #7012131A
+                    .frame(width: visualSize, height: visualSize)
+                    .overlay(
+                        Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2 * scale) // #50A8C7FA
                     )
-                    path.addRoundedRect(
-                        in: CGRect(x: xOffset, y: yOffset + (visualSize - w)/2, width: h, height: w),
-                        cornerSize: CGSize(width: 8*scale, height: 8*scale)
-                    )
-                }
-                .fill(Color(white: 0.1).opacity(0.7))
-                .overlay(
-                    Path { path in
-                        let visualSize: CGFloat = 160 * scale
-                        let w: CGFloat = 56 * scale
-                        let h = visualSize
-                        let xOffset = (size - visualSize) / 2
-                        let yOffset = (size - visualSize) / 2
-                        
-                        path.addRoundedRect(
-                            in: CGRect(x: xOffset + (visualSize - w)/2, y: yOffset, width: w, height: h),
-                            cornerSize: CGSize(width: 8*scale, height: 8*scale)
-                        )
-                        path.addRoundedRect(
-                            in: CGRect(x: xOffset, y: yOffset + (visualSize - w)/2, width: h, height: w),
-                            cornerSize: CGSize(width: 8*scale, height: 8*scale)
-                        )
-                    }.stroke(Color.white.opacity(0.15), lineWidth: 1)
-                )
+                
+                // Center Thumb Hub
+                Circle()
+                    .fill(Color.white.opacity(0.19)) // #30FFFFFF
+                    .frame(width: 50 * scale, height: 50 * scale)
+                
+                // Directional Arrows
+                let offset = visualSize * 0.32
+                let iconSize = 22 * scale
+                let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
+                
+                Image(systemName: "arrowtriangle.up.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(iconColor)
+                    .offset(y: -offset)
+                
+                Image(systemName: "arrowtriangle.down.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(iconColor)
+                    .offset(y: offset)
+                
+                Image(systemName: "arrowtriangle.left.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(iconColor)
+                    .offset(x: -offset)
+                
+                Image(systemName: "arrowtriangle.right.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(iconColor)
+                    .offset(x: offset)
             }
         )
     }
     
     private func actionArea(width: CGFloat, height: CGFloat, scale: CGFloat) -> some View {
         ZStack {
-            let btnSize: CGFloat = 64 * scale
-            let hitSize: CGFloat = 84 * scale
+            let btnSize: CGFloat = 68 * scale
+            let hitSize: CGFloat = 88 * scale
+            let bgColor = Color(red: 0, green: 71/255, blue: 171/255) // #0047AB
+            let borderColor = Color(red: 100/255, green: 181/255, blue: 246/255) // #64B5F6
             
             // SEGA A maps to Retro Y (1)
-            actionButton("A", color: .red, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_Y, pressed: $0) }
+            actionButton("A", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_Y, pressed: $0) }
                 .position(x: hitSize/2, y: height - hitSize/2)
             
             // SEGA B maps to Retro B (0)
-            actionButton("B", color: .blue, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_B, pressed: $0) }
+            actionButton("B", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_B, pressed: $0) }
                 .position(x: width/2, y: height/2)
             
             // SEGA C maps to Retro A (8)
-            actionButton("C", color: .yellow, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_A, pressed: $0) }
+            actionButton("C", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_A, pressed: $0) }
                 .position(x: width - hitSize/2, y: hitSize/2)
         }
         .frame(width: width, height: height)
@@ -380,6 +386,7 @@ struct OnScreenControlsView: View {
     private func actionButton(
         _ label: String,
         color: Color,
+        borderColor: Color,
         visualSize: CGFloat,
         hitSize: CGFloat,
         onPress: @escaping (Bool) -> Void
@@ -391,15 +398,40 @@ struct OnScreenControlsView: View {
         .background(
             ZStack {
                 Circle()
-                    .fill(Color(white: 0.1).opacity(0.7))
+                    .fill(color.opacity(0.4))
                     .frame(width: visualSize, height: visualSize)
                     .overlay(
-                        Circle().stroke(color.opacity(0.6), lineWidth: 2)
+                        Circle().stroke(borderColor.opacity(0.8), lineWidth: 2 * (visualSize/68))
                     )
                 
                 Text(label)
-                    .font(.system(size: label.count > 1 ? 14*visualSize/64 : 24*visualSize/64, weight: .bold, design: .rounded))
-                    .foregroundStyle(color.opacity(0.95))
+                    .font(.system(size: 20 * (visualSize/68), weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+        )
+    }
+    
+    private func startButton(scale: CGFloat) -> some View {
+        let width = 80 * scale
+        let height = 40 * scale
+        let hitSize = 80 * scale
+        
+        return MultiTouchButton { isPressed in
+            engine.setButton(ID_START, pressed: isPressed)
+        }
+        .frame(width: width + 40, height: height + 40)
+        .background(
+            ZStack {
+                Capsule()
+                    .fill(Color(white: 0.13).opacity(0.4)) // #66212121
+                    .frame(width: width, height: height)
+                    .overlay(
+                        Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5 * scale) // #99E0E0E0
+                    )
+                
+                Text("START")
+                    .font(.system(size: 12 * scale, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(white: 0.93)) // #EEEEEE
             }
         )
     }
