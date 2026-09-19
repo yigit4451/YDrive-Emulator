@@ -49,21 +49,23 @@ jobs:
         git submodule update --init --recursive
         
         echo "Building PicoDrive for iOS arm64 as a static archive..."
-        make -f Makefile.libretro platform=ios-arm64 STATIC_LINKING=1 TARGET=picodrive_libretro_ios.a MINVERSION="-miphoneos-version-min=26.0" -j$(sysctl -n hw.ncpu)
+        make -f Makefile.libretro platform=ios-arm64 STATIC_LINKING_LINK=1 TARGET=libpicodrive_libretro_ios.a MINVERSION="-miphoneos-version-min=26.0" -j$(sysctl -n hw.ncpu)
         
         echo "=== Verifying the static archive ==="
-        file picodrive_libretro_ios.a
+        file libpicodrive_libretro_ios.a
         
         echo "=== Verifying Libretro symbols ==="
-        nm -g picodrive_libretro_ios.a > symbols.txt
+        nm -g libpicodrive_libretro_ios.a > symbols.txt
         if ! grep -q "retro_init" symbols.txt; then echo "Missing retro_init"; exit 1; fi
         if ! grep -q "retro_load_game" symbols.txt; then echo "Missing retro_load_game"; exit 1; fi
         if ! grep -q "retro_run" symbols.txt; then echo "Missing retro_run"; exit 1; fi
-        echo "Libretro symbols verified."
+        if ! grep -q "filestream_vfs_init" symbols.txt; then echo "Missing filestream_vfs_init (libretro-common failed)"; exit 1; fi
+        if ! grep -q "rpng_alloc" symbols.txt; then echo "Missing rpng_alloc (libretro-common failed)"; exit 1; fi
+        echo "Libretro and libretro-common symbols verified."
         
         # Copy the built static library to the Xcode project Sources
         mkdir -p ../YDrive.iOS.Native/Sources/Core
-        cp picodrive_libretro_ios.a ../YDrive.iOS.Native/Sources/Core/libpicodrive.a
+        cp libpicodrive_libretro_ios.a ../YDrive.iOS.Native/Sources/Core/libpicodrive.a
         cd ..
 
     - name: Generate Xcode Project
