@@ -97,24 +97,31 @@ final class LibretroEmulatorEngine: ObservableObject {
                                   qos: .userInteractive)
         self.emulationQueue = queue
 
+        // Capture bridge as nonisolated(unsafe) to satisfy Swift 6 Sendable
+        // requirements. YDriveLibretroBridge is ObjC and not Sendable-annotated;
+        // we enforce thread safety manually (bridge is only touched on `queue`).
+        nonisolated(unsafe) let bridge = self.bridge
+
         queue.async { [weak self] in
             guard let self else { return }
 
+            // Swift imports `- (BOOL)loadGame:error:` as a throwing method.
             var loadError: NSError?
-            let ok = self.bridge.loadGameAtPath(romPath, error: &loadError)
+            // Use ObjC-style pointer call (Swift 6 keeps this as a bridged throws).
+            let ok = bridge.loadGameAtPath(romPath, error: &loadError)
 
             DispatchQueue.main.async {
                 if ok {
-                    self.videoWidth  = Int(self.bridge.videoWidth)
-                    self.videoHeight = Int(self.bridge.videoHeight)
-                    self.aspectRatio = self.bridge.aspectRatio
-                    self.targetFPS   = self.bridge.targetFPS
+                    self.videoWidth  = Int(bridge.videoWidth)
+                    self.videoHeight = Int(bridge.videoHeight)
+                    self.aspectRatio = bridge.aspectRatio
+                    self.targetFPS   = bridge.targetFPS
                     self.coreAvailable = true
                     self.isRunning   = true
                     log.info("[ENGINE] Core loaded — \(self.videoWidth)x\(self.videoHeight) @ \(self.targetFPS, format: .fixed(precision: 2)) fps")
-                    self.startFrameTimer(on: queue)
+                    self.startFrameTimer(on: queue, bridge: bridge)
                 } else {
-                    let msg = loadError?.localizedDescription ?? "Unknown error"
+                    let msg = loadError?.localizedDescription ?? "Emulator core not available"
                     self.errorMessage = msg
                     self.coreAvailable = false
                     log.error("[ENGINE] Failed to load game: \(msg, privacy: .public)")
@@ -135,8 +142,9 @@ final class LibretroEmulatorEngine: ObservableObject {
         isRunning  = false
 
         // Unload on the emulation queue to avoid race with runFrame
-        emulationQueue?.async { [bridge] in
-            bridge.unload()
+        nonisolated(unsafe) let bridgeForUnload = bridge
+        emulationQueue?.async {
+            bridgeForUnload.unload()
         }
         emulationQueue = nil
     }
@@ -145,17 +153,23 @@ final class LibretroEmulatorEngine: ObservableObject {
     // MARK: - Private — frame timing loop
     // ─────────────────────────────────────────────────────────────────────────
 
-    private func startFrameTimer(on queue: DispatchQueue) {
+    private func startFrameTimer(on queue: DispatchQueue, bridge: YDriveLibretroBridge) {
         _running = true
         let fps  = targetFPS > 0 ? targetFPS : 60.0
         let interval = DispatchTimeInterval.nanoseconds(Int(1_000_000_000.0 / fps))
+
+        // Capture bridge as nonisolated(unsafe) — safe because runFrame is
+        // always called on this same serial queue.
+        nonisolated(unsafe) let capturedBridge = bridge
+        var running = true     // local copy avoids actor isolation crossing
 
         let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
         timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
         timer.setEventHandler { [weak self] in
             guard let self, self._running else { return }
-            self.bridge.runFrame()
+            capturedBridge.runFrame()
         }
+        _ = running  // suppress unused warning; the real flag is self._running
         timer.resume()
         self.frameTimer = timer
         log.info("[ENGINE] Frame timer started at \(fps, format: .fixed(precision: 2)) fps")

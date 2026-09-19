@@ -81,7 +81,7 @@ static bool env_callback(unsigned cmd, void *data) {
     if (cmd == RETRO_ENVIRONMENT_SET_PIXEL_FORMAT) {
         enum retro_pixel_format fmt = *(enum retro_pixel_format *)data;
         switch (fmt) {
-            case RETRO_PIXEL_FORMAT_0RGB1555: gCurrentPixelFormat = YDrivePixelFormat0RGB1555; break;
+            case RETRO_PIXEL_FORMAT_0RGB1555: gCurrentPixelFormat = YDrivePixelFormatTRGB1555; break;
             case RETRO_PIXEL_FORMAT_XRGB8888: gCurrentPixelFormat = YDrivePixelFormatXRGB8888; break;
             case RETRO_PIXEL_FORMAT_RGB565:   gCurrentPixelFormat = YDrivePixelFormatRGB565;   break;
         }
