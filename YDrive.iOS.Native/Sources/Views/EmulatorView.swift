@@ -44,11 +44,8 @@ struct EmulatorView: View {
 
             // ── On-screen controls ───────────────────────────────────────────
             if !isControllerConnected {
-                VStack {
-                    Spacer()
-                    OnScreenControlsView(engine: engine)
-                        .padding(.bottom, 32)
-                }
+                OnScreenControlsView(engine: engine)
+                    .ignoresSafeArea()
             }
 
             // ── Floating Menu Button ─────────────────────────────────────────
@@ -252,8 +249,8 @@ struct OnScreenControlsView: View {
             // Compute exact Centers guaranteeing no overlaps and strict safe area adherence
             let centers: (dpad: CGPoint, a: CGPoint, b: CGPoint, c: CGPoint, start: CGPoint) = {
                 if isLandscape {
-                    let padX: CGFloat = 24
-                    let padY: CGFloat = 24
+                    let padX: CGFloat = 16
+                    let padY: CGFloat = 16
                     
                     // DPad anchors to Bottom-Left
                     let dpadX = safeLeft + padX + (dpadHit / 2)
