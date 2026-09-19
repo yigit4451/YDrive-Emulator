@@ -172,17 +172,6 @@ struct EmulatorView: View {
             alignment: .bottom
         )
     }
-        }
-        .statusBarHidden(true)
-        .onAppear {
-            observeControllers()
-            startEmulator()
-        }
-        .onDisappear {
-            NotificationCenter.default.removeObserver(self)
-            engine.stop()
-        }
-    }
 
     // ── ROM path resolution ───────────────────────────────────────────────────
     private func startEmulator() {
