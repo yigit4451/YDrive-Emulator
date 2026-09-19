@@ -241,32 +241,34 @@ struct OnScreenControlsView: View {
             let dpadSize: CGFloat = 200 * scale
             let dpadR = dpadSize / 2
             
-            let abcWidth: CGFloat = 260 * scale
-            let abcHeight: CGFloat = 130 * scale
+            // Tightened ABC width for better ergonomic thumb cluster
+            let abcWidth: CGFloat = 210 * scale
+            let abcHeight: CGFloat = 110 * scale
             let abcW = abcWidth / 2
             let abcH = abcHeight / 2
             
             let startSize: CGFloat = 80 * scale
             let startR = startSize / 2
 
-            let padX: CGFloat = isLandscape ? (safeLeft > 0 ? safeLeft + 4 : 24) : 16
-            let padY: CGFloat = isLandscape ? (safeBottom > 0 ? safeBottom + 4 : 24) : 16
+            // Use smaller explicit padding; hit areas automatically add extra visual padding
+            let padX: CGFloat = isLandscape ? 8 : 16
+            let padY: CGFloat = isLandscape ? 16 : 16
 
             // Compute Centers ensuring we stay within safe bounds
             let centers: (dpad: CGPoint, abc: CGPoint, start: CGPoint) = {
                 if isLandscape {
                     return (
                         dpad: CGPoint(
-                            x: padX + dpadR,
-                            y: h - padY - dpadR
+                            x: safeLeft + padX + dpadR,
+                            y: h - safeBottom - padY - dpadR
                         ),
                         abc: CGPoint(
-                            x: w - safeRight - (isLandscape ? 16 : 0) - abcW,
-                            y: h - padY - abcH
+                            x: w - safeRight - padX - abcW,
+                            y: h - safeBottom - padY - abcH
                         ),
                         start: CGPoint(
                             x: w / 2,
-                            y: h - padY - startR
+                            y: h - safeBottom - padY - startR
                         )
                     )
                 } else {
@@ -374,7 +376,7 @@ struct OnScreenControlsView: View {
             
             // SEGA B maps to Retro B (0)
             actionButton("B", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_B, pressed: $0) }
-                .position(x: width/2, y: height/2)
+                .position(x: width/2, y: height/2 + (5 * scale)) // slight tweak for natural arc
             
             // SEGA C maps to Retro A (8)
             actionButton("C", color: bgColor, borderColor: borderColor, visualSize: btnSize, hitSize: hitSize) { engine.setButton(ID_A, pressed: $0) }
