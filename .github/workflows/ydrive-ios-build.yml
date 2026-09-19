@@ -98,10 +98,20 @@ jobs:
         # İzinleri düzenle
         chmod -R 755 Payload/
 
-        # AltStore/SideStore için ad-hoc imza (ldid) uygula
-        brew install ldid || true
+        # Build sonrası mevcut binary'nin imza durumunu raporla (Diagnostic)
         APP_DIR_NAME=$(basename "$APP_PATH")
-        ldid -S Payload/"$APP_DIR_NAME"/YDrive || true
+        echo "--- PRE-SIGN DIAGNOSTICS ---"
+        codesign -dvvv Payload/"$APP_DIR_NAME" || true
+        codesign -d --entitlements :- Payload/"$APP_DIR_NAME" || true
+
+        # AltStore için tüm application bundle'ı ad-hoc imzala (_CodeSignature oluşturulması için)
+        # ldid yerine doğrudan macOS native codesign aracı kullanılıyor
+        echo "--- APPLYING AD-HOC SIGNATURE ---"
+        codesign --force --deep --sign - Payload/"$APP_DIR_NAME"
+
+        # Final uygulamanın imzasını doğrula (Diagnostic)
+        echo "--- POST-SIGN VERIFICATION ---"
+        codesign --verify --deep --strict --verbose=4 Payload/"$APP_DIR_NAME"
 
         # Symlinkleri koruyarak zip'le
         zip -r -y YDrive.ipa Payload
