@@ -253,59 +253,57 @@ struct OnScreenControlsView: View {
             let padY: CGFloat = isLandscape ? max(16, safeBottom) : 16
 
             // Compute Centers ensuring we stay within safe bounds
-            let dpadCenter: CGPoint
-            let abcCenter: CGPoint
-            let startCenter: CGPoint
-            
-            if isLandscape {
-                dpadCenter = CGPoint(
-                    x: padX + dpadR,
-                    y: h - padY - dpadR
-                )
-                
-                abcCenter = CGPoint(
-                    x: w - safeRight - (isLandscape ? 16 : 0) - abcW,
-                    y: h - padY - abcH
-                )
-                
-                startCenter = CGPoint(
-                    x: w / 2,
-                    y: h - padY - startR
-                )
-            } else {
-                // Portrait: DPad Left, ABC Right, Start Center-Bottom
-                let availableBottomY = h - safeBottom - 16
-                
-                startCenter = CGPoint(
-                    x: w / 2,
-                    y: availableBottomY - startR
-                )
-                
-                let controlsY = availableBottomY - startSize - 16 - dpadR
-                
-                dpadCenter = CGPoint(
-                    x: safeLeft + 16 + dpadR,
-                    y: controlsY
-                )
-                
-                abcCenter = CGPoint(
-                    x: w - safeRight - 16 - abcW,
-                    y: controlsY
-                )
-            }
+            let centers: (dpad: CGPoint, abc: CGPoint, start: CGPoint) = {
+                if isLandscape {
+                    return (
+                        dpad: CGPoint(
+                            x: padX + dpadR,
+                            y: h - padY - dpadR
+                        ),
+                        abc: CGPoint(
+                            x: w - safeRight - (isLandscape ? 16 : 0) - abcW,
+                            y: h - padY - abcH
+                        ),
+                        start: CGPoint(
+                            x: w / 2,
+                            y: h - padY - startR
+                        )
+                    )
+                } else {
+                    // Portrait: DPad Left, ABC Right, Start Center-Bottom
+                    let availableBottomY = h - safeBottom - 16
+                    let startC = CGPoint(
+                        x: w / 2,
+                        y: availableBottomY - startR
+                    )
+                    
+                    let controlsY = availableBottomY - startSize - 16 - dpadR
+                    return (
+                        dpad: CGPoint(
+                            x: safeLeft + 16 + dpadR,
+                            y: controlsY
+                        ),
+                        abc: CGPoint(
+                            x: w - safeRight - 16 - abcW,
+                            y: controlsY
+                        ),
+                        start: startC
+                    )
+                }
+            }()
 
             ZStack(alignment: .topLeading) {
                 // D-Pad
                 dpadArea(size: dpadSize, scale: scale)
-                    .position(dpadCenter)
+                    .position(centers.dpad)
                 
                 // A B C Buttons
                 actionArea(width: abcWidth, height: abcHeight, scale: scale)
-                    .position(abcCenter)
+                    .position(centers.abc)
                 
                 // START Button
                 actionButton("START", color: .white, visualSize: 45 * scale, hitSize: startSize) { engine.setButton(ID_START, pressed: $0) }
-                    .position(startCenter)
+                    .position(centers.start)
             }
         }
     }
