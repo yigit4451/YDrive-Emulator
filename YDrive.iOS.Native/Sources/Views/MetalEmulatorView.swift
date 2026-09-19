@@ -76,7 +76,7 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
     // Current texture dimensions
     private var texWidth:  Int = 0
     private var texHeight: Int = 0
-    private var texFormat: YDrivePixelFormat = .rgb565
+    private var texFormat: YDrivePixelFormat = .rGB565
 
     // Fullscreen quad vertices: position (x,y) + uv (u,v)
     private let quadVertices: [Float] = [
@@ -180,9 +180,9 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
 
         let metalFormat: MTLPixelFormat
         switch format {
-        case .xrgb8888: metalFormat = .bgra8Unorm
-        case .rgb565:   metalFormat = .b5g6r5Unorm
-        case .trgb1555: metalFormat = .bgr5A1Unorm
+        case .xRGB8888: metalFormat = .bgra8Unorm
+        case .rGB565:   metalFormat = .b5g6r5Unorm
+        case .tRGB1555: metalFormat = .bgr5A1Unorm
         @unknown default: metalFormat = .bgra8Unorm
         }
 
@@ -212,7 +212,7 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
         // For BGRA8 / XRGB8888 we can blit directly; for 16-bit we convert to 32-bit.
         switch frame.pixelFormat {
 
-        case .xrgb8888:
+        case .xRGB8888:
             // libretro XRGB8888 is actually stored as BGRA on little-endian — blit directly.
             data.withUnsafeBytes { ptr in
                 texture.replace(region: MTLRegionMake2D(0, 0, w, h),
@@ -221,7 +221,7 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
                                 bytesPerRow: pitch)
             }
 
-        case .rgb565:
+        case .rGB565:
             // Convert RGB565 → BGRA8 row by row
             let dest = UnsafeMutablePointer<UInt32>.allocate(capacity: w * h)
             defer { dest.deallocate() }
@@ -249,7 +249,7 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
                             withBytes: dest,
                             bytesPerRow: w * 4)
 
-        case .trgb1555:
+        case .tRGB1555:
             // Convert 0RGB1555 → BGRA8
             let dest = UnsafeMutablePointer<UInt32>.allocate(capacity: w * h)
             defer { dest.deallocate() }

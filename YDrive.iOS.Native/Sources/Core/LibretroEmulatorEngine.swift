@@ -105,10 +105,16 @@ final class LibretroEmulatorEngine: ObservableObject {
         queue.async { [weak self] in
             guard let self else { return }
 
-            // Swift imports `- (BOOL)loadGame:error:` as a throwing method.
-            var loadError: NSError?
-            // Use ObjC-style pointer call (Swift 6 keeps this as a bridged throws).
-            let ok = bridge.loadGameAtPath(romPath, error: &loadError)
+            // Swift imports `- (BOOL)loadGameAtPath:error:` as `throws`.
+            // The error: label is swallowed into Swift's throws mechanism.
+            var ok = false
+            var errorMessage: String = "Emulator core not available"
+            do {
+                try bridge.loadGameAtPath(romPath)
+                ok = true
+            } catch {
+                errorMessage = error.localizedDescription
+            }
 
             DispatchQueue.main.async {
                 if ok {
@@ -121,10 +127,9 @@ final class LibretroEmulatorEngine: ObservableObject {
                     log.info("[ENGINE] Core loaded — \(self.videoWidth)x\(self.videoHeight) @ \(self.targetFPS, format: .fixed(precision: 2)) fps")
                     self.startFrameTimer(on: queue, bridge: bridge)
                 } else {
-                    let msg = loadError?.localizedDescription ?? "Emulator core not available"
-                    self.errorMessage = msg
+                    self.errorMessage = errorMessage
                     self.coreAvailable = false
-                    log.error("[ENGINE] Failed to load game: \(msg, privacy: .public)")
+                    log.error("[ENGINE] Failed to load game: \(errorMessage, privacy: .public)")
                 }
             }
         }
