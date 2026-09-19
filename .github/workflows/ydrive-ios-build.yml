@@ -15,7 +15,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Prefer Xcode 27/18 for iOS 27 Liquid Glass support
+    # Prefer Xcode 27/26/18 for iOS 26+ Liquid Glass support
     - name: Select Xcode Version
       run: |
         if [ -d /Applications/Xcode_27.app ]; then
@@ -57,7 +57,6 @@ jobs:
         echo "Current objectVersion: $OBJ_VER"
         XCODE_MAJOR=$(xcodebuild -version | head -1 | grep -o '[0-9]*' | head -1)
         echo "Active Xcode major: $XCODE_MAJOR"
-        # If project format is newer than what Xcode can handle, downgrade to 56
         if [ "$OBJ_VER" -gt 60 ] && [ "$XCODE_MAJOR" -lt 16 ]; then
           echo "Downgrading objectVersion $OBJ_VER -> 56 for Xcode $XCODE_MAJOR compatibility"
           sed -i '' 's/objectVersion = [0-9]*;/objectVersion = 56;/g' "$PBXPROJ"
@@ -81,44 +80,181 @@ jobs:
           CODE_SIGNING_REQUIRED=NO \
           clean build
 
-    - name: Create AltStore-Ready IPA Package
+    - name: Locate Built App
+      id: locate_app
       run: |
-        rm -rf Payload YDrive.ipa
-        mkdir -p Payload
         APP_PATH=$(find "$GITHUB_WORKSPACE/build" -name "*.app" -type d | head -n 1)
-        echo "Bulunan App Yolu: $APP_PATH"
         if [ -z "$APP_PATH" ]; then
-          echo "HATA: .app paketi build klasöründe bulunamadı!"
+          echo "ERROR: .app bundle not found in build directory!"
+          find "$GITHUB_WORKSPACE/build" -type f | head -30
           exit 1
         fi
+        echo "Found: $APP_PATH"
+        APP_NAME=$(basename "$APP_PATH")
+        echo "app_path=$APP_PATH" >> $GITHUB_OUTPUT
+        echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
-        # Dosyayı Payload içine kopyala
-        cp -R "$APP_PATH" Payload/
+    # ─── Diagnostics: inspect the raw Xcode-built .app ───────────────────────
+    - name: Inspect Xcode-built .app bundle
+      run: |
+        APP_PATH="${{ steps.locate_app.outputs.app_path }}"
+        APP_NAME="${{ steps.locate_app.outputs.app_name }}"
+        echo "=== Contents of $APP_NAME ==="
+        ls -la "$APP_PATH/"
 
-        # İzinleri düzenle
-        chmod -R 755 Payload/
+        echo ""
+        echo "=== file (executable arch) ==="
+        file "$APP_PATH/YDrive" || true
 
-        # Build sonrası mevcut binary'nin imza durumunu raporla (Diagnostic)
-        APP_DIR_NAME=$(basename "$APP_PATH")
-        echo "--- PRE-SIGN DIAGNOSTICS ---"
-        codesign -dvvv Payload/"$APP_DIR_NAME" || true
-        codesign -d --entitlements :- Payload/"$APP_DIR_NAME" || true
+        echo ""
+        echo "=== plutil Info.plist ==="
+        plutil -p "$APP_PATH/Info.plist" || true
 
-        # AltStore için tüm application bundle'ı ad-hoc imzala (_CodeSignature oluşturulması için)
-        # ldid yerine doğrudan macOS native codesign aracı kullanılıyor
-        echo "--- APPLYING AD-HOC SIGNATURE ---"
-        codesign --force --deep --sign - Payload/"$APP_DIR_NAME"
+        echo ""
+        echo "=== codesign state (raw from Xcode) ==="
+        codesign -dvvv "$APP_PATH" || true
 
-        # Final uygulamanın imzasını doğrula (Diagnostic)
-        echo "--- POST-SIGN VERIFICATION ---"
-        codesign --verify --deep --strict --verbose=4 Payload/"$APP_DIR_NAME"
+        echo ""
+        echo "=== entitlements (raw from Xcode) ==="
+        codesign -d --entitlements :- "$APP_PATH" || true
 
-        # Symlinkleri koruyarak zip'le
-        zip -r -y YDrive.ipa Payload
+    # ─── A: YDrive-unsigned.ipa ───────────────────────────────────────────────
+    # Xcode'un tam .app paketini kullan, _CodeSignature varsa kaldır.
+    # Executable, Assets.car, Info.plist veya diğer dosyalara dokunma.
+    - name: Package A — YDrive-unsigned.ipa
+      run: |
+        APP_PATH="${{ steps.locate_app.outputs.app_path }}"
+        APP_NAME="${{ steps.locate_app.outputs.app_name }}"
 
-    - name: Upload IPA Artifact
+        rm -rf Payload_unsigned
+        mkdir -p Payload_unsigned
+
+        # Tam Xcode .app'i kopyala (symlinks korunur)
+        cp -R "$APP_PATH" Payload_unsigned/
+
+        # Yalnızca imza metadata'sını kaldır; diğer dosyalara dokunma
+        echo "Removing _CodeSignature from unsigned copy..."
+        rm -rf "Payload_unsigned/$APP_NAME/_CodeSignature"
+        # Embedded provisioning profile yoksa bu zaten boş olacak
+        rm -f "Payload_unsigned/$APP_NAME/embedded.mobileprovision"
+
+        # İzinleri ayarla
+        chmod -R 755 Payload_unsigned/
+
+        echo "=== Unsigned .app contents ==="
+        ls -la "Payload_unsigned/$APP_NAME/"
+
+        # IPA oluştur (symlinks korunur)
+        zip -r -y YDrive-unsigned.ipa Payload_unsigned --exclude "*.DS_Store"
+        # IPA yapısını Payload/ olarak düzelt
+        mv YDrive-unsigned.ipa YDrive-unsigned-raw.ipa
+        rm -rf Payload_unsigned_final
+        mkdir -p Payload_unsigned_final/Payload
+        cp -R "Payload_unsigned/$APP_NAME" Payload_unsigned_final/Payload/
+        cd Payload_unsigned_final && zip -r -y ../YDrive-unsigned.ipa Payload --exclude "*.DS_Store"
+        cd ..
+        rm -rf Payload_unsigned Payload_unsigned_final YDrive-unsigned-raw.ipa
+
+        echo "=== YDrive-unsigned.ipa size ==="
+        ls -lh YDrive-unsigned.ipa
+
+    # ─── B: YDrive-adhoc.ipa ─────────────────────────────────────────────────
+    # Aynı .app bundle'ı macOS codesign ile ad-hoc imzala.
+    # Önce nested binary/framework tespiti, sonra inside-out signing sırası.
+    - name: Package B — YDrive-adhoc.ipa
+      run: |
+        APP_PATH="${{ steps.locate_app.outputs.app_path }}"
+        APP_NAME="${{ steps.locate_app.outputs.app_name }}"
+
+        rm -rf Payload_adhoc
+        mkdir -p Payload_adhoc
+
+        # Tam Xcode .app'i kopyala
+        cp -R "$APP_PATH" Payload_adhoc/
+
+        STAGED_APP="Payload_adhoc/$APP_NAME"
+
+        # Eski signature kalıntılarını temizle (çakışmayı önlemek için)
+        echo "Cleaning old signature metadata before re-signing..."
+        rm -rf "$STAGED_APP/_CodeSignature"
+        rm -f "$STAGED_APP/embedded.mobileprovision"
+
+        # İzinleri ayarla
+        chmod -R 755 Payload_adhoc/
+
+        # Nested binary/framework tespiti ve inside-out signing
+        echo "=== Detecting nested binaries/frameworks ==="
+        find "$STAGED_APP" -type d \( -name "*.framework" -o -name "*.appex" -o -name "*.dylib" \) | sort
+        find "$STAGED_APP" -type f -name "*.dylib" | sort
+
+        echo ""
+        echo "=== Signing nested components first (inside-out) ==="
+        # Frameworks
+        find "$STAGED_APP/Frameworks" -maxdepth 1 -type d -name "*.framework" 2>/dev/null | while read fw; do
+          echo "Signing framework: $fw"
+          codesign --force --sign - "$fw"
+        done || true
+
+        # Dylibs
+        find "$STAGED_APP" -name "*.dylib" 2>/dev/null | while read dylib; do
+          echo "Signing dylib: $dylib"
+          codesign --force --sign - "$dylib"
+        done || true
+
+        # App extensions
+        find "$STAGED_APP/PlugIns" -maxdepth 1 -type d -name "*.appex" 2>/dev/null | while read ext; do
+          echo "Signing extension: $ext"
+          codesign --force --sign - "$ext"
+        done || true
+
+        # Ana .app bundle'ı imzala (en son)
+        echo ""
+        echo "=== Signing main app bundle ==="
+        codesign --force --sign - "$STAGED_APP"
+
+        # Doğrulama ve tanısal çıktılar
+        echo ""
+        echo "=== POST-SIGN: codesign -dvvv ==="
+        codesign -dvvv "$STAGED_APP"
+
+        echo ""
+        echo "=== POST-SIGN: entitlements ==="
+        codesign -d --entitlements :- "$STAGED_APP"
+
+        echo ""
+        echo "=== POST-SIGN: codesign --verify --deep --strict --verbose=4 ==="
+        codesign --verify --deep --strict --verbose=4 "$STAGED_APP"
+
+        echo ""
+        echo "=== file (executable arch) ==="
+        file "$STAGED_APP/YDrive"
+
+        echo ""
+        echo "=== plutil Info.plist ==="
+        plutil -p "$STAGED_APP/Info.plist"
+
+        # IPA oluştur (Payload/YDrive.app/... yapısı)
+        rm -rf Payload_adhoc_final
+        mkdir -p Payload_adhoc_final/Payload
+        cp -R "$STAGED_APP" Payload_adhoc_final/Payload/
+        cd Payload_adhoc_final && zip -r -y ../YDrive-adhoc.ipa Payload --exclude "*.DS_Store"
+        cd ..
+        rm -rf Payload_adhoc Payload_adhoc_final
+
+        echo "=== YDrive-adhoc.ipa size ==="
+        ls -lh YDrive-adhoc.ipa
+
+    # ─── Artifacts ───────────────────────────────────────────────────────────
+    - name: Upload YDrive-unsigned.ipa
       uses: actions/upload-artifact@v4
       with:
-        name: YDrive-iOS-IPA
-        path: YDrive.ipa
+        name: YDrive-unsigned
+        path: YDrive-unsigned.ipa
+        retention-days: 14
+
+    - name: Upload YDrive-adhoc.ipa
+      uses: actions/upload-artifact@v4
+      with:
+        name: YDrive-adhoc
+        path: YDrive-adhoc.ipa
         retention-days: 14
