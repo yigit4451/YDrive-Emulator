@@ -285,7 +285,7 @@ final class LibretroEmulatorEngine: ObservableObject {
 
         let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
         timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
-        timer.setEventHandler { [weak self] @Sendable in
+        timer.setEventHandler { @Sendable [weak self] in
             guard let self = self, !self.isEmulationPaused else { return }
             capturedBridge.runFrame()
         }
