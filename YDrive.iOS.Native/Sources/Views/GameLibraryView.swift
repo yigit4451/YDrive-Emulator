@@ -32,10 +32,7 @@ struct GameLibraryView: View {
                         } label: {
                             Image(systemName: "gearshape")
                                 .font(.title3.weight(.medium))
-                                .padding(4)
                         }
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.circle)
                         .tint(.secondary)
                     }
                     
@@ -45,10 +42,7 @@ struct GameLibraryView: View {
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title3.weight(.bold))
-                                .padding(4)
                         }
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.circle)
                         .tint(Color.accentColor)
                     }
                 }
