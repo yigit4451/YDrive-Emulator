@@ -32,3 +32,14 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_VERSION: "6.0"
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        # ObjC bridging header — exposes LibretroBridge to Swift
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/YDrive-Bridging-Header.h
+        CLANG_ENABLE_OBJC_ARC: YES
+        # When a libretro core .a is linked, set YDRIVE_CORE_AVAILABLE=1 here:
+        # OTHER_CFLAGS: "-DYDRIVE_CORE_AVAILABLE=1"
+        # OTHER_LDFLAGS: "-lpicodrive_ios"  (or your core name)
+    dependencies:
+      - sdk: Metal.framework
+      - sdk: MetalKit.framework
+      - sdk: GameController.framework
+

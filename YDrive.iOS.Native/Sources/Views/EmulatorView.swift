@@ -1,26 +1,47 @@
 import SwiftUI
 import GameController
+import os
+
+private let emulatorLog = Logger(subsystem: "com.yigit.ydrive", category: "EmulatorView")
 
 struct EmulatorView: View {
     let game: GameItem
     @Environment(\.dismiss) private var dismiss
     @State private var isControllerConnected = false
     @State private var buttonStates = ButtonState()
+    @StateObject private var engine = LibretroEmulatorEngine()
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            // ── Game render surface placeholder ──
-            Rectangle()
-                .fill(Color.black)
-                .overlay(
-                    Text("Emulator Core Output")
+            // ── Game render surface ───────────────────────────────────────────
+            if engine.coreAvailable {
+                // Real libretro core is running — show Metal output
+                MetalEmulatorView(engine: engine)
+                    .ignoresSafeArea()
+            } else if let errorMsg = engine.errorMessage {
+                // Core not available or load failed — show diagnostic info
+                VStack(spacing: 12) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.yellow)
+                    Text("Emulator Core Unavailable")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text(errorMsg)
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.1))
-                )
+                        .foregroundStyle(.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+            } else {
+                // Loading state
+                ProgressView()
+                    .tint(.white)
+            }
 
-            // ── On-screen controls ──
+            // ── On-screen controls ───────────────────────────────────────────
             if !isControllerConnected {
                 VStack {
                     Spacer()
@@ -29,10 +50,11 @@ struct EmulatorView: View {
                 }
             }
 
-            // ── Top Bar ──
+            // ── Top Bar ──────────────────────────────────────────────────────
             VStack {
                 HStack {
                     Button {
+                        engine.stop()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -40,27 +62,54 @@ struct EmulatorView: View {
                             .foregroundStyle(.white.opacity(0.7), .black.opacity(0.4))
                     }
                     .padding(16)
-                    
+
                     Spacer()
-                    
+
                     Text(game.title)
                         .font(.headline)
                         .foregroundStyle(.white.opacity(0.8))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .applyLiquidGlassCapsule()
-                        .padding(.trailing, 64) // balance the layout
-                    
+                        .padding(.trailing, 64)
+
                     Spacer()
                 }
                 Spacer()
             }
         }
         .statusBarHidden(true)
-        .onAppear { observeControllers() }
-        .onDisappear { NotificationCenter.default.removeObserver(self) }
+        .onAppear {
+            observeControllers()
+            startEmulator()
+        }
+        .onDisappear {
+            NotificationCenter.default.removeObserver(self)
+            engine.stop()
+        }
     }
 
+    // ── ROM path resolution ───────────────────────────────────────────────────
+    private func startEmulator() {
+        // Resolve ROM to a full filesystem path.
+        // GameLibraryViewModel.addRom stores only the fileName; the actual
+        // copied file lives in the app's Documents directory.
+        let romPath = resolveRomPath(for: game.fileName)
+        emulatorLog.info("[VIEW] Starting emulator for: \(game.title, privacy: .public)")
+        emulatorLog.info("[VIEW] ROM path: \(romPath, privacy: .public)")
+        engine.start(romPath: romPath)
+    }
+
+    private func resolveRomPath(for fileName: String) -> String {
+        // If fileName is already an absolute path, use it directly.
+        if fileName.hasPrefix("/") { return fileName }
+
+        // Otherwise look in Documents (where the file importer copies ROMs).
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        return docs?.appendingPathComponent(fileName).path ?? fileName
+    }
+
+    // ── Controller observation ────────────────────────────────────────────────
     private func observeControllers() {
         let check: @Sendable () -> Void = {
             Task { @MainActor in

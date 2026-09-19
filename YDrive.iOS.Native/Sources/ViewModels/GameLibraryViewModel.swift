@@ -14,11 +14,29 @@ final class GameLibraryViewModel: ObservableObject {
     }
 
     func addRom(url: URL) {
+        // Security-scoped resource access is required for file-picker URLs.
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
+        // Copy the ROM into the app's Documents directory so the path remains
+        // valid after the security scope ends and across app relaunches.
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let dest = docs.appendingPathComponent(url.lastPathComponent)
+
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: url, to: dest)
+        } catch {
+            print("[ViewModel] ROM copy failed: \(error)")
+        }
+
         let name = url.deletingPathExtension().lastPathComponent
         let item = GameItem(
             title: name,
             consoleName: "SEGA Genesis",
-            fileName: url.lastPathComponent
+            fileName: dest.path   // store the full absolute path
         )
         games.append(item)
     }
