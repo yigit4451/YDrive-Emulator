@@ -33,7 +33,7 @@ struct GameLibraryView: View {
                             Image(systemName: "gearshape")
                                 .font(.title3.weight(.medium))
                         }
-                        .tint(.secondary)
+                        .tint(Color.accentColor)
                     }
                     
                     ToolbarItem(placement: .topBarTrailing) {
