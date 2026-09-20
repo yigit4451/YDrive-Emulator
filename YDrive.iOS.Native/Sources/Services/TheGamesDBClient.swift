@@ -4,7 +4,8 @@ import Foundation
 final class TheGamesDBClient {
     static let shared = TheGamesDBClient()
     private let apiKey = "163b4c08edcb64c0b9e5792d9667ff117159372039296b3d0d74b1234757f818"
-    private let platformGenesis = 18 // Sega Genesis platform ID in TheGamesDB
+    // Sega Genesis = 18, Sega CD = 20
+    private let platforms = "18,20"
 
     private init() {}
 
@@ -46,7 +47,7 @@ final class TheGamesDBClient {
         guard !query.isEmpty else { return nil }
 
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "https://api.thegamesdb.net/v1/Games/ByGameName?apikey=\(apiKey)&name=\(encodedQuery)&filter%5Bplatform%5D=\(platformGenesis)&fields=overview,developers,publishers&lang=en") else {
+              let url = URL(string: "https://api.thegamesdb.net/v1/Games/ByGameName?apikey=\(apiKey)&name=\(encodedQuery)&filter%5Bplatform%5D=\(platforms)&fields=overview,developers,publishers&lang=en") else {
             return nil
         }
 
