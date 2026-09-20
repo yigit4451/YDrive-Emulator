@@ -110,7 +110,7 @@ struct EmulatorView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .applyLiquidGlassCapsule()
+            .background(Color.secondary.opacity(0.15), in: Capsule())
 
             Spacer()
 
@@ -120,11 +120,10 @@ struct EmulatorView: View {
             } label: {
                 Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
                     .font(.title2)
-                    .foregroundStyle(.primary)
                     .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .applyLiquidGlassCircle()
             }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
             
             // Saves
             Button {
@@ -136,11 +135,10 @@ struct EmulatorView: View {
             } label: {
                 Image(systemName: "tray.and.arrow.down")
                     .font(.title2)
-                    .foregroundStyle(.primary)
                     .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .applyLiquidGlassCircle()
             }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
 
             // Reset
             Button {
@@ -148,24 +146,22 @@ struct EmulatorView: View {
             } label: {
                 Image(systemName: "arrow.counterclockwise")
                     .font(.title2)
-                    .foregroundStyle(.primary)
                     .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .applyLiquidGlassCircle()
             }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
 
             // Exit
-            Button {
+            Button(role: .destructive) {
                 engine.stop()
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
                     .font(.title2.bold())
-                    .foregroundStyle(.red)
                     .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .applyLiquidGlassCircle()
             }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
 
             // Close Bar
             Button {
@@ -175,11 +171,10 @@ struct EmulatorView: View {
             } label: {
                 Image(systemName: "chevron.up")
                     .font(.title3.bold())
-                    .foregroundStyle(.primary)
                     .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .applyLiquidGlassCircle()
             }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
