@@ -3,6 +3,8 @@ import SwiftUI
 struct BiosManagerView: View {
     @StateObject private var manager = BiosManager.shared
     @State private var isImporterPresented = false
+    @State private var regionToDelete: String?
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         Form {
@@ -39,6 +41,14 @@ struct BiosManagerView: View {
                 print("Import failed: \(error.localizedDescription)")
             }
         }
+        .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
+            Button("İptal", role: .cancel) { }
+            Button("Sil", role: .destructive) {
+                if let region = regionToDelete {
+                    manager.deleteBios(region: region)
+                }
+            }
+        }
     }
     
     @ViewBuilder
@@ -51,7 +61,8 @@ struct BiosManagerView: View {
                     .foregroundStyle(.green)
                 
                 Button {
-                    manager.deleteBios(region: region)
+                    regionToDelete = region
+                    showingDeleteAlert = true
                 } label: {
                     Image(systemName: "trash")
                         .foregroundStyle(.red)

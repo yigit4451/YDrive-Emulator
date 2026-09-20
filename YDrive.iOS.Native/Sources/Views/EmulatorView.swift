@@ -130,6 +130,9 @@ struct EmulatorView: View {
                     
                     Button {
                         engine.reset()
+                        if engine.isPaused {
+                            engine.setPaused(false)
+                        }
                     } label: {
                         Label("Reset", systemImage: "arrow.counterclockwise")
                     }

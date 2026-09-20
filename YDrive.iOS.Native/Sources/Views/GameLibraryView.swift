@@ -15,6 +15,8 @@ struct GameLibraryView: View {
     @State private var showingRenameAlert = false
     @State private var renameTarget: GameItem?
     @State private var renameText = ""
+    @State private var showingDeleteAlert = false
+    @State private var gameToDelete: GameItem?
     @State private var playingGame: GameItem?
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
@@ -73,6 +75,14 @@ struct GameLibraryView: View {
                         }
                     }
                     Button("İptal", role: .cancel) {}
+                }
+                .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
+                    Button("İptal", role: .cancel) { }
+                    Button("Sil", role: .destructive) {
+                        if let game = gameToDelete {
+                            viewModel.deleteGame(game)
+                        }
+                    }
                 }
                 .fullScreenCover(item: $playingGame) { game in
                     EmulatorView(game: game)
@@ -176,7 +186,8 @@ struct GameLibraryView: View {
                     }
 
                     Button(role: .destructive) {
-                        viewModel.deleteGame(game)
+                        gameToDelete = game
+                        showingDeleteAlert = true
                     } label: {
                         Label("Sil", systemImage: "trash")
                     }

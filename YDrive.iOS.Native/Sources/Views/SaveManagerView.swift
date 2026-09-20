@@ -6,40 +6,65 @@ struct SaveManagerView: View {
     @Binding var isPresented: Bool
     
     @State private var existingSaves: [Int: Date] = [:]
+    @State private var slotToDelete: Int?
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         NavigationStack {
             List {
                 if existingSaves.isEmpty {
-                    Text("Henüz save alınmadı")
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding()
+                    VStack(spacing: 12) {
+                        Image(systemName: "floppy.disk")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text("Henüz save kaydedilmedi")
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
                 } else {
                     // Sort descending by date so newest is at the top
                     ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
-                        Button(action: {
-                            Task {
-                                let success = await engine.loadState(for: gameFileName, slot: slot)
-                                if success {
-                                    engine.setPaused(false)
-                                    isPresented = false
+                        HStack {
+                            Button(action: {
+                                Task {
+                                    let success = await engine.loadState(for: gameFileName, slot: slot)
+                                    if success {
+                                        engine.setPaused(false)
+                                        isPresented = false
+                                    }
+                                }
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "floppy.disk")
+                                        .foregroundColor(.blue)
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Kayıt \(slot + 1)")
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                        
+                                        (Text(date, style: .date) + Text(" ") + Text(date, style: .time))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                             }
-                        }) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Kayıt \(slot + 1)")
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                
-                                (Text(date, style: .date) + Text(" ") + Text(date, style: .time))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                            .buttonStyle(.plain)
+                            
+                            Spacer()
+                            
+                            Button {
+                                slotToDelete = slot
+                                showingDeleteAlert = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
                             }
-                            .padding(.vertical, 4)
+                            .buttonStyle(.borderless)
                         }
+                        .padding(.vertical, 4)
                     }
-                    .onDelete(perform: deleteSaves)
                 }
             }
             .navigationTitle("Saves")
@@ -59,8 +84,18 @@ struct SaveManagerView: View {
                 }
             }
         }
+            }
+        }
         .onAppear {
             fetchAllSaves()
+        }
+        .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
+            Button("İptal", role: .cancel) { }
+            Button("Sil", role: .destructive) {
+                if let slot = slotToDelete {
+                    deleteSave(slot: slot)
+                }
+            }
         }
     }
     
@@ -101,17 +136,13 @@ struct SaveManagerView: View {
         }
     }
     
-    private func deleteSaves(at offsets: IndexSet) {
+    private func deleteSave(slot: Int) {
         guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
         let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
         let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
         
-        let sorted = existingSaves.sorted(by: { $0.value > $1.value })
-        for index in offsets {
-            let slot = sorted[index].key
-            let fileURL = savesDir.appendingPathComponent("\(safeName)_slot\(slot).state")
-            try? FileManager.default.removeItem(at: fileURL)
-        }
+        let fileURL = savesDir.appendingPathComponent("\(safeName)_slot\(slot).state")
+        try? FileManager.default.removeItem(at: fileURL)
         fetchAllSaves()
     }
 }
