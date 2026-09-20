@@ -27,6 +27,7 @@ private let log = Logger(subsystem: "com.yigit.ydrive", category: "MetalRenderer
 struct MetalEmulatorView: UIViewRepresentable {
 
     @ObservedObject var engine: LibretroEmulatorEngine
+    var videoFilter: String
 
     func makeCoordinator() -> MetalCoordinator {
         MetalCoordinator()
@@ -50,6 +51,11 @@ struct MetalEmulatorView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MTKView, context: Context) {
+        var mode: Int32 = 0
+        if videoFilter == "CRT" { mode = 1 }
+        else if videoFilter == "Simple CRT" { mode = 2 }
+        context.coordinator.filterMode = mode
+        
         if let frame = engine.currentFrame {
             context.coordinator.enqueueFrame(frame)
         }
@@ -72,6 +78,8 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
     // Pending frame from emulation queue (lock-free single-slot mailbox)
     private var pendingFrame:    EmulatorFrame?
     private let frameLock        = NSLock()
+    
+    var filterMode: Int32 = 0
 
     // Current texture dimensions
     private var texWidth:  Int = 0
@@ -137,10 +145,43 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
             return out;
         }
 
+        struct Uniforms {
+            int filterMode;
+        };
+
         fragment float4 frag(VertexOut in [[stage_in]],
                              texture2d<float> tex [[texture(0)]],
-                             sampler smp          [[sampler(0)]]) {
-            return tex.sample(smp, in.uv);
+                             sampler smp          [[sampler(0)]],
+                             constant Uniforms &u [[buffer(1)]]) {
+            float4 color = tex.sample(smp, in.uv);
+            
+            if (u.filterMode == 1) {
+                // CRT: screen curve + scanlines + vignette
+                float2 uv = in.uv;
+                uv = uv * 2.0 - 1.0;
+                uv *= 1.0 + pow(abs(uv.yx), float2(2.0)) / 10.0;
+                uv = uv * 0.5 + 0.5;
+                
+                if(uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+                    return float4(0,0,0,1);
+                }
+                
+                float4 texColor = tex.sample(smp, uv);
+                float tex_y = uv.y * float(tex.get_height());
+                float scanline = sin(tex_y * 3.14159) * 0.2 + 0.8;
+                
+                float vig = length(uv - 0.5);
+                vig = smoothstep(0.7, 0.4, vig);
+                
+                return float4(texColor.rgb * scanline * vig, texColor.a);
+            } else if (u.filterMode == 2) {
+                // Simple CRT: just scanlines
+                float tex_y = in.uv.y * float(tex.get_height());
+                float scanline = sin(tex_y * 3.14159) * 0.15 + 0.85;
+                return float4(color.rgb * scanline, color.a);
+            }
+            
+            return color;
         }
         """
 
@@ -342,6 +383,10 @@ final class MetalCoordinator: NSObject, MTKViewDelegate {
         encoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
         encoder.setFragmentTexture(texture, index: 0)
         encoder.setFragmentSamplerState(samplerState, index: 0)
+        
+        var mode = filterMode
+        encoder.setFragmentBytes(&mode, length: MemoryLayout<Int32>.size, index: 1)
+        
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
         encoder.endEncoding()
 

@@ -15,6 +15,7 @@ struct EmulatorView: View {
     
     @AppStorage("showFPS") private var showFPS = false
     @AppStorage("audioEnabled") private var audioEnabled = true
+    @AppStorage("videoFilter") private var videoFilter = "Off"
 
     var body: some View {
         NavigationStack {
@@ -24,7 +25,7 @@ struct EmulatorView: View {
                 // ── Game render surface ───────────────────────────────────────────
                 if engine.coreAvailable {
                     // Real libretro core is running — show Metal output
-                    MetalEmulatorView(engine: engine)
+                    MetalEmulatorView(engine: engine, videoFilter: videoFilter)
                         .ignoresSafeArea()
                         .overlay(
                             Group {
