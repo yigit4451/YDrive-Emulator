@@ -87,6 +87,11 @@ struct SaveManagerView: View {
         .onAppear {
             fetchAllSaves()
         }
+        .onDisappear {
+            if engine.isPaused {
+                engine.setPaused(false)
+            }
+        }
         .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
             Button("İptal", role: .cancel) { }
             Button("Sil", role: .destructive) {
