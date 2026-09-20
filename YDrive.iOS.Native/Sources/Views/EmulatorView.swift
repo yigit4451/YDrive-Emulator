@@ -87,7 +87,7 @@ struct EmulatorView: View {
                         .foregroundColor(.primary))
                         .font(.subheadline.bold())
                         .lineLimit(1)
-                        .truncationMode(.tail)
+                        .fixedSize(horizontal: true, vertical: false)
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
