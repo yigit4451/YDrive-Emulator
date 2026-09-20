@@ -193,18 +193,18 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     // ── Register C callbacks ──────────────────────────────────────────────────
     gBridgeInstance = self;
     gInputBitmask = 0; // Clear stuck inputs from previous runs
-    
-    retro_set_environment(env_callback);
-    retro_set_video_refresh(video_refresh_callback);
-    retro_set_audio_sample(audio_sample_callback);
-    retro_set_audio_sample_batch(audio_batch_callback);
-    retro_set_input_poll(input_poll_callback);
-    retro_set_input_state(input_state_callback);
-
-    os_log(gLog, "[CORE] Callbacks registered");
 
     // ── Init ─────────────────────────────────────────────────────────────────
     if (!gCoreGlobalInitialized) {
+        retro_set_environment(env_callback);
+        retro_set_video_refresh(video_refresh_callback);
+        retro_set_audio_sample(audio_sample_callback);
+        retro_set_audio_sample_batch(audio_batch_callback);
+        retro_set_input_poll(input_poll_callback);
+        retro_set_input_state(input_state_callback);
+        
+        os_log(gLog, "[CORE] Callbacks registered");
+        
         retro_init();
         gCoreGlobalInitialized = YES;
         os_log(gLog, "[CORE] retro_init() completed globally");
