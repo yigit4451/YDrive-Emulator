@@ -80,16 +80,14 @@ struct EmulatorView: View {
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "gamecontroller.fill")
-                            .foregroundStyle(.blue)
-                        Text(game.title)
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.primary)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                    }
-                    .layoutPriority(1)
+                    (Text(Image(systemName: "gamecontroller.fill"))
+                        .foregroundColor(.blue)
+                     + Text("  ")
+                     + Text(game.title)
+                        .foregroundColor(.primary))
+                        .font(.subheadline.bold())
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
