@@ -11,11 +11,13 @@ struct BiosManagerView: View {
                 biosRow(region: "Europe", isInstalled: manager.isEuropeBiosInstalled)
                 biosRow(region: "Japan", isInstalled: manager.isJapanBiosInstalled)
                 
-                Button {
-                    isImporterPresented = true
-                } label: {
-                    Text("Import BIOS...")
-                        .foregroundStyle(.blue)
+                if !manager.isUSABiosInstalled || !manager.isEuropeBiosInstalled || !manager.isJapanBiosInstalled {
+                    Button {
+                        isImporterPresented = true
+                    } label: {
+                        Text("Import BIOS...")
+                            .foregroundStyle(.blue)
+                    }
                 }
             }
             .listRowBackground(Color.clear.background(.ultraThinMaterial))
@@ -45,20 +47,20 @@ struct BiosManagerView: View {
             Text(region)
             Spacer()
             if isInstalled {
-                Text("Installed")
+                Image(systemName: "checkmark")
                     .foregroundStyle(.green)
-            } else {
-                Text("Missing")
-                    .foregroundStyle(.red)
-            }
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            if isInstalled {
-                Button(role: .destructive) {
+                
+                Button {
                     manager.deleteBios(region: region)
                 } label: {
-                    Label("Delete", systemImage: "trash")
+                    Image(systemName: "trash")
+                        .foregroundStyle(.red)
                 }
+                .buttonStyle(.borderless)
+                .padding(.leading, 8)
+            } else {
+                Image(systemName: "xmark")
+                    .foregroundStyle(.red)
             }
         }
     }
