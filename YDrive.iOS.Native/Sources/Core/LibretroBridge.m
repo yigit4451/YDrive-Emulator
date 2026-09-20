@@ -79,6 +79,7 @@ extern void retro_set_controller_port_device(unsigned port, unsigned device);
 // ── Global bridge instance for C callbacks ───────────────────────────────────
 static __weak YDriveLibretroBridge *gBridgeInstance = nil;
 static YDrivePixelFormat gCurrentPixelFormat = YDrivePixelFormatRGB565;
+static BOOL gCoreGlobalInitialized = NO;
 
 // ── C-level callbacks ─────────────────────────────────────────────────────────
 
@@ -191,6 +192,8 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     // ── Register C callbacks ──────────────────────────────────────────────────
     gBridgeInstance = self;
+    gInputBitmask = 0; // Clear stuck inputs from previous runs
+    
     retro_set_environment(env_callback);
     retro_set_video_refresh(video_refresh_callback);
     retro_set_audio_sample(audio_sample_callback);
@@ -201,9 +204,12 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     os_log(gLog, "[CORE] Callbacks registered");
 
     // ── Init ─────────────────────────────────────────────────────────────────
-    retro_init();
+    if (!gCoreGlobalInitialized) {
+        retro_init();
+        gCoreGlobalInitialized = YES;
+        os_log(gLog, "[CORE] retro_init() completed globally");
+    }
     _coreInitialized = YES;
-    os_log(gLog, "[CORE] retro_init() completed");
 
     // ── System info ──────────────────────────────────────────────────────────
     retro_system_info sysInfo = {0};
@@ -359,8 +365,10 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         retro_unload_game();
         _isRunning = NO;
     }
+    // We intentionally DO NOT call retro_deinit() because PicoDrive is statically linked
+    // and its global variables do not get zeroed out. Calling retro_deinit and retro_init
+    // again in the same process leads to input pointer corruption.
     if (_coreInitialized) {
-        retro_deinit();
         _coreInitialized = NO;
     }
     gBridgeInstance = nil;
