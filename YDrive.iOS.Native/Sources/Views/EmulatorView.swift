@@ -13,76 +13,124 @@ struct EmulatorView: View {
     @State private var isSaveManagerPresented = false
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
 
-            // ── Game render surface ───────────────────────────────────────────
-            if engine.coreAvailable {
-                // Real libretro core is running — show Metal output
-                MetalEmulatorView(engine: engine)
-                    .ignoresSafeArea()
-            } else if let errorMsg = engine.errorMessage {
-                // Core not available or load failed — show diagnostic info
-                VStack(spacing: 12) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.yellow)
-                    Text("Emulator Core Unavailable")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                    Text(errorMsg)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.5))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                // ── Game render surface ───────────────────────────────────────────
+                if engine.coreAvailable {
+                    // Real libretro core is running — show Metal output
+                    MetalEmulatorView(engine: engine)
+                        .ignoresSafeArea()
+                } else if let errorMsg = engine.errorMessage {
+                    // Core not available or load failed — show diagnostic info
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.yellow)
+                        Text("Emulator Core Unavailable")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                        Text(errorMsg)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 32)
+                    }
+                } else {
+                    // Loading state
+                    ProgressView()
+                        .tint(.white)
                 }
-            } else {
-                // Loading state
-                ProgressView()
-                    .tint(.white)
-            }
 
-            // ── On-screen controls ───────────────────────────────────────────
-            if !isControllerConnected {
-                OnScreenControlsView(engine: engine)
-                    .ignoresSafeArea()
-            }
+                // ── On-screen controls ───────────────────────────────────────────
+                if !isControllerConnected {
+                    OnScreenControlsView(engine: engine)
+                        .ignoresSafeArea()
+                }
 
-            // ── Floating Menu Button ─────────────────────────────────────────
-            if !isTopBarVisible {
-                VStack {
-                    HStack {
-                        Button {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                isTopBarVisible = true
+                // ── Floating Menu Button (Collapsed State) ───────────────────────
+                if !isTopBarVisible {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button {
+                                withAnimation {
+                                    isTopBarVisible = true
+                                }
+                            } label: {
+                                Image(systemName: "chevron.down")
+                                    .font(.title3.bold())
+                                    .foregroundStyle(.white)
+                                    .padding(12)
+                                    .background(Color.black.opacity(0.6))
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                             }
-                        } label: {
-                            Image(systemName: "chevron.down")
-                                .font(.title3.bold())
-                                .foregroundStyle(.white)
-                                .padding(12)
-                                .background(Color.black.opacity(0.6))
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                            .padding(16)
+                            .padding(.top, 24)
                         }
-                        .padding(16)
                         Spacer()
                     }
-                    Spacer()
                 }
             }
-
-            // ── Top Bar Overlay ──────────────────────────────────────────────
-            if isTopBarVisible {
-                VStack {
-                    topBar
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    Spacer()
+            .statusBarHidden(true)
+            .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "gamecontroller.fill")
+                            .foregroundStyle(.blue)
+                        Text(game.title)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
                 }
-                .zIndex(10)
+
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        engine.setPaused(!engine.isPaused)
+                    } label: {
+                        Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
+                    }
+                    
+                    Button {
+                        withAnimation {
+                            engine.setPaused(true)
+                            isSaveManagerPresented = true
+                            isTopBarVisible = false
+                        }
+                    } label: {
+                        Image(systemName: "tray.and.arrow.down")
+                    }
+                    
+                    Button {
+                        engine.reset()
+                    } label: {
+                        Image(systemName: "arrow.counterclockwise")
+                    }
+                    
+                    Button(role: .destructive) {
+                        engine.stop()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    
+                    Button {
+                        withAnimation {
+                            isTopBarVisible = false
+                        }
+                    } label: {
+                        Image(systemName: "chevron.up")
+                    }
+                }
             }
         }
-        .statusBarHidden(true)
         .sheet(isPresented: $isSaveManagerPresented) {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
         }
@@ -96,89 +144,7 @@ struct EmulatorView: View {
         }
     }
 
-    // ── Top Bar Implementation ────────────────────────────────────────────────
-    private var topBar: some View {
-        HStack(spacing: 12) {
-            // Game title
-            HStack {
-                Image(systemName: "gamecontroller.fill")
-                    .foregroundStyle(.blue)
-                Text(game.title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.secondary.opacity(0.15), in: Capsule())
 
-            Spacer()
-
-            // Pause
-            Button {
-                engine.setPaused(!engine.isPaused)
-            } label: {
-                Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-            
-            // Saves
-            Button {
-                withAnimation {
-                    engine.setPaused(true)
-                    isSaveManagerPresented = true
-                    isTopBarVisible = false
-                }
-            } label: {
-                Image(systemName: "tray.and.arrow.down")
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-
-            // Reset
-            Button {
-                engine.reset()
-            } label: {
-                Image(systemName: "arrow.counterclockwise")
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-
-            // Exit
-            Button(role: .destructive) {
-                engine.stop()
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.title2.bold())
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-
-            // Close Bar
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    isTopBarVisible = false
-                }
-            } label: {
-                Image(systemName: "chevron.up")
-                    .font(.title3.bold())
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 16)
-    }
 
     // ── ROM path resolution ───────────────────────────────────────────────────
     private func startEmulator() {
