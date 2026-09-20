@@ -98,7 +98,7 @@ struct EmulatorView: View {
 
     // ── Top Bar Implementation ────────────────────────────────────────────────
     private var topBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // Game title
             HStack {
                 Image(systemName: "gamecontroller.fill")
@@ -108,10 +108,9 @@ struct EmulatorView: View {
                     .foregroundStyle(.white)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color.white.opacity(0.1))
-            .clipShape(Capsule())
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .applyLiquidGlassCapsule()
 
             Spacer()
 
@@ -122,8 +121,9 @@ struct EmulatorView: View {
                 Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
                     .font(.title2)
                     .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .applyLiquidGlassCircle()
             }
-            .padding(.horizontal, 8)
             
             // Saves
             Button {
@@ -136,8 +136,9 @@ struct EmulatorView: View {
                 Image(systemName: "tray.and.arrow.down.fill")
                     .font(.title2)
                     .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .applyLiquidGlassCircle()
             }
-            .padding(.horizontal, 8)
 
             // Reset
             Button {
@@ -146,19 +147,21 @@ struct EmulatorView: View {
                 Image(systemName: "arrow.counterclockwise")
                     .font(.title2)
                     .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .applyLiquidGlassCircle()
             }
-            .padding(.horizontal, 8)
 
             // Exit
             Button {
                 engine.stop()
                 dismiss()
             } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(Color.red.opacity(0.8))
+                Image(systemName: "xmark")
+                    .font(.title2.bold())
+                    .foregroundStyle(.red)
+                    .frame(width: 44, height: 44)
+                    .applyLiquidGlassCircle()
             }
-            .padding(.horizontal, 8)
 
             // Close Bar
             Button {
@@ -168,17 +171,13 @@ struct EmulatorView: View {
             } label: {
                 Image(systemName: "chevron.up")
                     .font(.title3.bold())
-                    .foregroundStyle(.white.opacity(0.6))
-                    .padding(8)
-                    .background(Color.white.opacity(0.1))
-                    .clipShape(Circle())
+                    .foregroundStyle(.white.opacity(0.8))
+                    .frame(width: 44, height: 44)
+                    .applyLiquidGlassCircle()
             }
         }
         .padding(.horizontal, 24)
-        .padding(.vertical, 12)
-        .applyLiquidGlassCapsule()
-        .padding(.top, 8)
-        .padding(.horizontal)
+        .padding(.top, 16)
     }
 
     // ── ROM path resolution ───────────────────────────────────────────────────
