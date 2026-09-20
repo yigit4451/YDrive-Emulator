@@ -3,28 +3,76 @@ import SwiftUI
 extension View {
     @ViewBuilder
     func applyLiquidGlass(cornerRadius: CGFloat = 16) -> some View {
-        if #available(iOS 18.0, *) { // Targetting iOS 18+ to be safe
-            self.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        } else {
-            self.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        }
+        self
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(Color.white.opacity(0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.6), .white.opacity(0.1), .white.opacity(0.0), .white.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            )
+            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
     }
     
     @ViewBuilder
     func applyLiquidGlassCapsule() -> some View {
-        if #available(iOS 18.0, *) {
-            self.background(.ultraThinMaterial, in: Capsule())
-        } else {
-            self.background(.ultraThinMaterial, in: Capsule())
-        }
+        self
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            )
+            .background(
+                Capsule()
+                    .fill(Color.white.opacity(0.05))
+            )
+            .overlay(
+                Capsule()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.6), .white.opacity(0.1), .white.opacity(0.0), .white.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            )
+            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
     }
     
     @ViewBuilder
     func applyLiquidGlassCircle() -> some View {
-        if #available(iOS 18.0, *) {
-            self.background(.ultraThinMaterial, in: Circle())
-        } else {
-            self.background(.ultraThinMaterial, in: Circle())
-        }
+        self
+            .background(
+                Circle()
+                    .fill(.ultraThinMaterial)
+            )
+            .background(
+                Circle()
+                    .fill(Color.white.opacity(0.05))
+            )
+            .overlay(
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.7), .white.opacity(0.2), .white.opacity(0.0), .white.opacity(0.3)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            )
+            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
     }
 }
