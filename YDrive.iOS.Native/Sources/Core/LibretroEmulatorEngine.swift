@@ -38,6 +38,23 @@ final class LibretroEmulatorEngine: ObservableObject {
 
     /// Latest rendered frame — observed by MetalEmulatorView
     @Published private(set) var currentFrame: EmulatorFrame?
+    
+    /// Current frames per second
+    @Published private(set) var currentFPS: Double = 0.0
+    private var frameCount = 0
+    private var lastFPSTime = Date()
+    
+    var isAudioEnabled = true {
+        didSet {
+            if isAudioEnabled {
+                if isRunning && !isPaused {
+                    audioEngine.start(sampleRate: bridge.audioSampleRate)
+                }
+            } else {
+                audioEngine.stop()
+            }
+        }
+    }
 
     /// Geometry reported by the core
     private(set) var videoWidth:  Int   = 320
@@ -86,10 +103,18 @@ final class LibretroEmulatorEngine: ObservableObject {
                 pixelFormat: frame.pixelFormat
             )
 
-            log.debug("[VIDEO] frame \(frame.width)x\(frame.height) pitch=\(frame.pitch) fmt=\(frame.pixelFormat.rawValue)")
-
             Task { @MainActor [weak self] in
-                self?.currentFrame = ef
+                guard let self = self else { return }
+                self.currentFrame = ef
+                
+                self.frameCount += 1
+                let now = Date()
+                let elapsed = now.timeIntervalSince(self.lastFPSTime)
+                if elapsed >= 1.0 {
+                    self.currentFPS = Double(self.frameCount) / elapsed
+                    self.frameCount = 0
+                    self.lastFPSTime = now
+                }
             }
         }
         
@@ -136,7 +161,13 @@ final class LibretroEmulatorEngine: ObservableObject {
                     self.coreAvailable = true
                     self.isRunning   = true
                     
-                    self.audioEngine.start(sampleRate: bridgeRef.audioSampleRate)
+                    self.lastFPSTime = Date()
+                    self.frameCount = 0
+                    self.currentFPS = 0.0
+                    
+                    if self.isAudioEnabled {
+                        self.audioEngine.start(sampleRate: bridgeRef.audioSampleRate)
+                    }
                     self.startFrameTimer(on: queue, bridge: bridgeRef)
                 }
             } else {
@@ -191,7 +222,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         // bridge.isPaused is an atomic property, safe to write from MainActor
         bridge.isPaused = paused
         
-        if paused {
+        if paused || !isAudioEnabled {
             audioEngine.stop()
         } else {
             audioEngine.start(sampleRate: bridge.audioSampleRate)

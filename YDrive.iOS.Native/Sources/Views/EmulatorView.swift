@@ -12,6 +12,9 @@ struct EmulatorView: View {
     @State private var isTopBarVisible = false
     @State private var isSaveManagerPresented = false
     @State private var showingBiosAlert = false
+    
+    @AppStorage("showFPS") private var showFPS = false
+    @AppStorage("audioEnabled") private var audioEnabled = true
 
     var body: some View {
         NavigationStack {
@@ -23,6 +26,22 @@ struct EmulatorView: View {
                     // Real libretro core is running — show Metal output
                     MetalEmulatorView(engine: engine)
                         .ignoresSafeArea()
+                        .overlay(
+                            Group {
+                                if showFPS {
+                                    Text(String(format: "FPS: %.1f", engine.currentFPS))
+                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.green)
+                                        .padding(6)
+                                        .background(Color.black.opacity(0.6))
+                                        .cornerRadius(4)
+                                        .padding(.top, isTopBarVisible ? 60 : 10)
+                                        .padding(.leading, 10)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                            , alignment: .topLeading
+                        )
                 } else if let errorMsg = engine.errorMessage {
                     // Core not available or load failed — show diagnostic info
                     VStack(spacing: 12) {
@@ -142,8 +161,12 @@ struct EmulatorView: View {
             Text("SEGA CD oyunlarını başlatmak için ayarlardan BIOS yüklemelisiniz.")
         }
         .onAppear {
+            engine.isAudioEnabled = audioEnabled
             observeControllers()
             startEmulator()
+        }
+        .onChange(of: audioEnabled) { newValue in
+            engine.isAudioEnabled = newValue
         }
         .onDisappear {
             NotificationCenter.default.removeObserver(self)
