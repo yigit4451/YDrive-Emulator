@@ -14,7 +14,7 @@ struct SaveManagerView: View {
             List {
                 if existingSaves.isEmpty {
                     VStack(spacing: 12) {
-                        Image(systemName: "floppy.disk")
+                        Image(systemName: "externaldrive.fill")
                             .font(.system(size: 40))
                             .foregroundStyle(.blue)
                         Text("Henüz save kaydedilmedi")
@@ -36,7 +36,7 @@ struct SaveManagerView: View {
                                 }
                             }) {
                                 HStack(spacing: 12) {
-                                    Image(systemName: "floppy.disk")
+                                    Image(systemName: "externaldrive.fill")
                                         .foregroundColor(.blue)
                                     
                                     VStack(alignment: .leading, spacing: 4) {
