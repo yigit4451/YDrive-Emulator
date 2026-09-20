@@ -11,6 +11,7 @@ struct EmulatorView: View {
     @StateObject private var engine = LibretroEmulatorEngine()
     @State private var isTopBarVisible = false
     @State private var isSaveManagerPresented = false
+    @State private var showingBiosAlert = false
 
     var body: some View {
         NavigationStack {
@@ -133,6 +134,13 @@ struct EmulatorView: View {
         .sheet(isPresented: $isSaveManagerPresented) {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
         }
+        .alert("BIOS Gerekli", isPresented: $showingBiosAlert) {
+            Button("Tamam", role: .cancel) {
+                dismiss()
+            }
+        } message: {
+            Text("SEGA CD oyunlarını başlatmak için ayarlardan BIOS yüklemelisiniz.")
+        }
         .onAppear {
             observeControllers()
             startEmulator()
@@ -147,6 +155,11 @@ struct EmulatorView: View {
 
     // ── ROM path resolution ───────────────────────────────────────────────────
     private func startEmulator() {
+        if game.consoleName == "SEGA CD" && !BiosManager.shared.hasAnySegaCDBios() {
+            showingBiosAlert = true
+            return
+        }
+        
         // Resolve ROM to a full filesystem path.
         // GameLibraryViewModel.addRom stores only the fileName; the actual
         // copied file lives in the app's Documents directory.
@@ -184,6 +197,9 @@ struct EmulatorView: View {
 
 struct OnScreenControlsView: View {
     @ObservedObject var engine: LibretroEmulatorEngine
+    @AppStorage("controllerOpacity") private var controllerOpacity = 0.4
+    @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
+    @AppStorage("hapticFeedback") private var hapticFeedback = true
 
     // RetroPad IDs
     let ID_B: UInt32 = 0
@@ -292,16 +308,20 @@ struct OnScreenControlsView: View {
                     .position(centers.dpad)
                 
                 // A B C Buttons
-                let bgColor = Color(red: 0, green: 71/255, blue: 171/255) // #0047AB
-                let borderColor = Color(red: 100/255, green: 181/255, blue: 246/255) // #64B5F6
+                let defaultBg = Color(red: 0, green: 71/255, blue: 171/255) // #0047AB
+                let defaultBorder = Color(red: 100/255, green: 181/255, blue: 246/255) // #64B5F6
                 
-                actionButton("A", color: bgColor, borderColor: borderColor, visualSize: btnVisual, hitSize: btnHit) { engine.setButton(ID_Y, pressed: $0) }
+                let colorA = buttonColorsEnabled ? Color.red : defaultBg
+                let colorB = buttonColorsEnabled ? Color.yellow : defaultBg
+                let colorC = buttonColorsEnabled ? Color.blue : defaultBg
+                
+                actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_Y) }
                     .position(centers.a)
                 
-                actionButton("B", color: bgColor, borderColor: borderColor, visualSize: btnVisual, hitSize: btnHit) { engine.setButton(ID_B, pressed: $0) }
+                actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_B) }
                     .position(centers.b)
                 
-                actionButton("C", color: bgColor, borderColor: borderColor, visualSize: btnVisual, hitSize: btnHit) { engine.setButton(ID_A, pressed: $0) }
+                actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_A) }
                     .position(centers.c)
                 
                 // START Button
@@ -309,10 +329,23 @@ struct OnScreenControlsView: View {
                     .position(centers.start)
             }
         }
+        .opacity(controllerOpacity)
+    }
+    
+    private func press(_ isPressed: Bool, id: UInt32) {
+        if isPressed && hapticFeedback {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
+        engine.setButton(id, pressed: isPressed)
     }
     
     private func dpadArea(visualSize: CGFloat, hitSize: CGFloat) -> some View {
         MultiTouchDPad { up, down, left, right in
+            if (up || down || left || right) && hapticFeedback {
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            }
             engine.setButton(ID_UP, pressed: up)
             engine.setButton(ID_DOWN, pressed: down)
             engine.setButton(ID_LEFT, pressed: left)
@@ -392,7 +425,7 @@ struct OnScreenControlsView: View {
     
     private func startButton(visualWidth: CGFloat, visualHeight: CGFloat, hitWidth: CGFloat, hitHeight: CGFloat) -> some View {
         MultiTouchButton { isPressed in
-            engine.setButton(ID_START, pressed: isPressed)
+            press(isPressed, id: ID_START)
         }
         .frame(width: hitWidth, height: hitHeight)
         .background(

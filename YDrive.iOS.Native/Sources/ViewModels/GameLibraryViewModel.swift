@@ -52,9 +52,11 @@ final class GameLibraryViewModel: ObservableObject {
         }
 
         let name = url.deletingPathExtension().lastPathComponent
+        let ext = url.pathExtension.lowercased()
+        
         var item = GameItem(
             title: name,
-            consoleName: "SEGA Genesis",
+            consoleName: ext == "chd" ? "SEGA CD" : "SEGA Genesis",
             fileName: dest.path   // store the full absolute path
         )
         let id = item.id

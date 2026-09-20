@@ -49,7 +49,7 @@ jobs:
         git submodule update --init --recursive
         
         echo "Building PicoDrive for iOS arm64 as a static archive..."
-        make -f Makefile.libretro platform=ios-arm64 STATIC_LINKING_LINK=1 TARGET=libpicodrive_libretro_ios.a MINVERSION="-miphoneos-version-min=26.0" -j$(sysctl -n hw.ncpu)
+        make -f Makefile.libretro platform=ios-arm64 STATIC_LINKING_LINK=1 USE_LIBCHDR=1 TARGET=libpicodrive_libretro_ios.a MINVERSION="-miphoneos-version-min=26.0" -j$(sysctl -n hw.ncpu)
         
         echo "=== Verifying the static archive ==="
         file libpicodrive_libretro_ios.a

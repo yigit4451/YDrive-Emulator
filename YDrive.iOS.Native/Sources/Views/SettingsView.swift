@@ -5,6 +5,11 @@ struct SettingsView: View {
     @AppStorage("showFPS") private var showFPS = false
     @AppStorage("audioEnabled") private var audioEnabled = true
     @AppStorage("frameSkip") private var frameSkip = 0
+    @AppStorage("controllerOpacity") private var controllerOpacity = 0.4
+    @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
+    @AppStorage("videoFilter") private var videoFilter = "Off"
+    @AppStorage("m30MappingEnabled") private var m30MappingEnabled = false
+    @AppStorage("allRightShoulders") private var allRightShoulders = false
 
     var body: some View {
         NavigationStack {
@@ -14,6 +19,16 @@ struct SettingsView: View {
                 
                 Form {
                     Section(header: Text("Emülatör")) {
+                        NavigationLink("BIOS Files") {
+                            BiosManagerView()
+                        }
+                        
+                        Picker("Video Filter", selection: $videoFilter) {
+                            Text("Off").tag("Off")
+                            Text("CRT").tag("CRT")
+                            Text("Simple CRT").tag("Simple CRT")
+                        }
+                        
                         Toggle("Ses", isOn: $audioEnabled)
                             .tint(.blue)
                         
@@ -32,7 +47,22 @@ struct SettingsView: View {
                     .listRowBackground(Color.clear.background(.ultraThinMaterial))
                     
                     Section(header: Text("Kontrolcü")) {
+                        VStack(alignment: .leading) {
+                            Text("Controller Opacity: \(Int(controllerOpacity * 100))%")
+                            Slider(value: $controllerOpacity, in: 0.1...1.0, step: 0.05)
+                                .tint(.blue)
+                        }
+                        
+                        Toggle("Renkli Butonlar", isOn: $buttonColorsEnabled)
+                            .tint(.blue)
+                        
                         Toggle("Dokunsal Geri Bildirim", isOn: $hapticFeedback)
+                            .tint(.blue)
+                        
+                        Toggle("8BitDo M30 Düzeni", isOn: $m30MappingEnabled)
+                            .tint(.blue)
+                        
+                        Toggle("All-Right Omuz Tuşları", isOn: $allRightShoulders)
                             .tint(.blue)
                         
                         HStack {

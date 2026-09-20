@@ -34,6 +34,7 @@ enum retro_pixel_format {
 };
 
 // Libretro key constants
+#define RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY 9
 #define RETRO_ENVIRONMENT_SET_PIXEL_FORMAT 10
 #define RETRO_DEVICE_JOYPAD                1
 
@@ -90,6 +91,19 @@ static bool env_callback(unsigned cmd, void *data) {
             case RETRO_PIXEL_FORMAT_RGB565:   gCurrentPixelFormat = YDrivePixelFormatRGB565;   break;
         }
         os_log(gLog, "[CORE] SET_PIXEL_FORMAT: %d", (int)fmt);
+        return true;
+    } else if (cmd == RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY) {
+        const char **dir = (const char **)data;
+        static char systemDir[1024] = {0};
+        if (systemDir[0] == '\0') {
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString *docsDir = [paths firstObject];
+            NSString *sysPath = [docsDir stringByAppendingPathComponent:@"BIOS"];
+            [[NSFileManager defaultManager] createDirectoryAtPath:sysPath withIntermediateDirectories:YES attributes:nil error:nil];
+            strncpy(systemDir, [sysPath UTF8String], sizeof(systemDir) - 1);
+        }
+        *dir = systemDir;
+        os_log(gLog, "[CORE] GET_SYSTEM_DIRECTORY: %{public}s", systemDir);
         return true;
     }
     return false;

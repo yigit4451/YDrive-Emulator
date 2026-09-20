@@ -7,6 +7,7 @@ let romUTTypes: [UTType] = [
     UTType(filenameExtension: "gen"),
     UTType(filenameExtension: "smd"),
     UTType(filenameExtension: "zip"),
+    UTType(filenameExtension: "chd"),
 ].compactMap { $0 }
 
 struct GameLibraryView: View {
@@ -129,7 +130,7 @@ struct GameLibraryView: View {
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
-            Text("Genesis / Mega Drive ROM dosyası\n(.md .bin .gen .zip) ekleyin")
+            Text("Genesis veya SEGA CD ROM dosyası\n(.md .bin .gen .zip .chd) ekleyin")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
