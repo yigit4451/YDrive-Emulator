@@ -7,7 +7,6 @@ private let emulatorLog = Logger(subsystem: "com.yigit.ydrive", category: "Emula
 struct EmulatorView: View {
     let game: GameItem
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var isControllerConnected = false
     @StateObject private var engine = LibretroEmulatorEngine()
     @State private var isTopBarVisible = false
@@ -88,7 +87,7 @@ struct EmulatorView: View {
                         .foregroundColor(.primary))
                         .font(.subheadline.bold())
                         .lineLimit(1)
-                        .fixedSize(horizontal: verticalSizeClass == .compact, vertical: false)
+                        .fixedSize(horizontal: true, vertical: false)
                 }
                 
                 ToolbarItemGroup(placement: .topBarTrailing) {
