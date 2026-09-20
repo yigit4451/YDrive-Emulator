@@ -79,7 +79,7 @@ struct EmulatorView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image(systemName: "gamecontroller.fill")
                             .foregroundStyle(.blue)
