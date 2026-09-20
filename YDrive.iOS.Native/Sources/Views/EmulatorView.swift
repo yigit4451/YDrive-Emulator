@@ -7,6 +7,7 @@ private let emulatorLog = Logger(subsystem: "com.yigit.ydrive", category: "Emula
 struct EmulatorView: View {
     let game: GameItem
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var isControllerConnected = false
     @StateObject private var engine = LibretroEmulatorEngine()
     @State private var isTopBarVisible = false
@@ -87,14 +88,14 @@ struct EmulatorView: View {
                         .foregroundColor(.primary))
                         .font(.subheadline.bold())
                         .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
+                        .fixedSize(horizontal: verticalSizeClass == .compact, vertical: false)
                 }
-
+                
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
                         engine.setPaused(!engine.isPaused)
                     } label: {
-                        Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
+                        Label(engine.isPaused ? "Play" : "Pause", systemImage: engine.isPaused ? "play.fill" : "pause.fill")
                     }
                     
                     Button {
@@ -104,20 +105,20 @@ struct EmulatorView: View {
                             isTopBarVisible = false
                         }
                     } label: {
-                        Image(systemName: "tray.and.arrow.down")
+                        Label("Save State", systemImage: "tray.and.arrow.down")
                     }
                     
                     Button {
                         engine.reset()
                     } label: {
-                        Image(systemName: "arrow.counterclockwise")
+                        Label("Reset", systemImage: "arrow.counterclockwise")
                     }
                     
                     Button(role: .destructive) {
                         engine.stop()
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Label("Exit", systemImage: "xmark")
                     }
                     
                     Button {
@@ -125,7 +126,7 @@ struct EmulatorView: View {
                             isTopBarVisible = false
                         }
                     } label: {
-                        Image(systemName: "chevron.up")
+                        Label("Collapse", systemImage: "chevron.up")
                     }
                 }
             }
