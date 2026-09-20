@@ -4,7 +4,6 @@ struct SettingsView: View {
     @AppStorage("hapticFeedback") private var hapticFeedback = true
     @AppStorage("showFPS") private var showFPS = false
     @AppStorage("audioEnabled") private var audioEnabled = true
-    @AppStorage("frameSkip") private var frameSkip = 0
     @AppStorage("controllerOpacity") private var controllerOpacity = 0.4
     @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
     @AppStorage("videoFilter") private var videoFilter = "Off"
@@ -34,15 +33,6 @@ struct SettingsView: View {
                         
                         Toggle("FPS Göster", isOn: $showFPS)
                             .tint(.blue)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Frame Skip: \(frameSkip)")
-                            Slider(value: Binding(
-                                get: { Double(frameSkip) },
-                                set: { frameSkip = Int($0) }
-                            ), in: 0...5, step: 1)
-                            .tint(.blue)
-                        }
                     }
                     .listRowBackground(Color.clear.background(.ultraThinMaterial))
                     
