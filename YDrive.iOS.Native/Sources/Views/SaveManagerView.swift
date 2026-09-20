@@ -84,8 +84,6 @@ struct SaveManagerView: View {
                 }
             }
         }
-            }
-        }
         .onAppear {
             fetchAllSaves()
         }
