@@ -16,7 +16,7 @@ struct SaveManagerView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "floppy.disk")
                             .font(.system(size: 40))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.blue)
                         Text("Henüz save kaydedilmedi")
                             .foregroundStyle(.secondary)
                     }

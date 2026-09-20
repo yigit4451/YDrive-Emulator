@@ -26,11 +26,8 @@ final class YDriveAudioEngine: @unchecked Sendable {
 
     /// Configures the engine for the given sample rate and starts it.
     func start(sampleRate: Double) {
-        // Libretro usually outputs 16-bit interleaved stereo PCM
-        guard let format = AVAudioFormat(commonFormat: .pcmFormatInt16,
-                                         sampleRate: sampleRate,
-                                         channels: 2,
-                                         interleaved: true) else {
+        // AVAudioEngine prefers standard float32 non-interleaved format
+        guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2) else {
             audioLog.error("Failed to create AVAudioFormat")
             return
         }
@@ -69,13 +66,18 @@ final class YDriveAudioEngine: @unchecked Sendable {
             return
         }
 
-        // Copy the interleaved 16-bit int data to the buffer's int16ChannelData
         pcmBuffer.frameLength = frameCount
-        if let channelData = pcmBuffer.int16ChannelData {
-            // Because it's interleaved, both channels are in channelData[0].
-            // (AVAudioPCMBuffer with interleaved=true puts everything in the first channel pointer)
-            let byteSize = frames * 2 /* channels */ * MemoryLayout<Int16>.size
-            memcpy(channelData[0], data, byteSize)
+        
+        // Convert interleaved 16-bit to non-interleaved float32
+        if let floatData = pcmBuffer.floatChannelData {
+            let leftChannel = floatData[0]
+            let rightChannel = floatData[1]
+            
+            for i in 0..<frames {
+                // PCM values are from -32768 to 32767
+                leftChannel[i] = Float(data[i * 2]) / 32768.0
+                rightChannel[i] = Float(data[i * 2 + 1]) / 32768.0
+            }
             
             playerNode.scheduleBuffer(pcmBuffer, completionHandler: nil)
         }
