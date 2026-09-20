@@ -98,72 +98,56 @@ struct EmulatorView: View {
 
     // ── Top Bar Implementation ────────────────────────────────────────────────
     private var topBar: some View {
-        HStack(spacing: 12) {
+        HStack {
             // Game title
             HStack {
                 Image(systemName: "gamecontroller.fill")
                     .foregroundStyle(.blue)
                 Text(game.title)
                     .font(.subheadline.bold())
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .applyLiquidGlassCapsule()
+            .background(.ultraThinMaterial, in: Capsule())
 
             Spacer()
 
-            // Pause
-            Button {
-                engine.setPaused(!engine.isPaused)
-            } label: {
-                Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .applyLiquidGlassCircle()
-            }
-            
-            // Saves
-            Button {
-                withAnimation {
-                    engine.setPaused(true)
-                    isSaveManagerPresented = true
-                    isTopBarVisible = false
+            // Control Group Container for all emulation actions
+            ControlGroup {
+                Button {
+                    engine.setPaused(!engine.isPaused)
+                } label: {
+                    Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
                 }
-            } label: {
-                Image(systemName: "tray.and.arrow.down.fill")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .applyLiquidGlassCircle()
+                
+                Button {
+                    withAnimation {
+                        engine.setPaused(true)
+                        isSaveManagerPresented = true
+                        isTopBarVisible = false
+                    }
+                } label: {
+                    Image(systemName: "tray.and.arrow.down")
+                }
+                
+                Button {
+                    engine.reset()
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+                
+                Button(role: .destructive) {
+                    engine.stop()
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                }
             }
-
-            // Reset
-            Button {
-                engine.reset()
-            } label: {
-                Image(systemName: "arrow.counterclockwise")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .applyLiquidGlassCircle()
-            }
-
-            // Exit
-            Button {
-                engine.stop()
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.title2.bold())
-                    .foregroundStyle(.red)
-                    .frame(width: 44, height: 44)
-                    .applyLiquidGlassCircle()
-            }
-
-            // Close Bar
+            .controlGroupStyle(.navigation) // Uses native iOS translucent capsule grouping
+            
+            // Separate glass button for collapsing the bar
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     isTopBarVisible = false
@@ -171,10 +155,11 @@ struct EmulatorView: View {
             } label: {
                 Image(systemName: "chevron.up")
                     .font(.title3.bold())
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(.primary)
                     .frame(width: 44, height: 44)
-                    .applyLiquidGlassCircle()
             }
+            .background(.ultraThinMaterial, in: Circle())
+            .padding(.leading, 8)
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
