@@ -139,8 +139,8 @@ struct GameLibraryView: View {
                                 .font(.title2.weight(.bold))
                                 .foregroundStyle(.primary)
                                 .padding()
-                                .background(.regularMaterial, in: Circle())
-                                .shadow(color: .black.opacity(0.1), radius: 5, y: 2)
+                                .background(Material.ultraThin, in: Circle())
+                                .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
                         }
                         .padding(.leading, 24)
                         .padding(.bottom, 24)
@@ -178,8 +178,8 @@ struct GameLibraryView: View {
                         .foregroundStyle(Color.accentColor)
                     }
                     .padding(12)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                    .background(Material.ultraThin, in: RoundedRectangle(cornerRadius: 18))
+                    .shadow(color: .black.opacity(0.15), radius: 15, y: 8)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
