@@ -20,6 +20,8 @@ struct GameLibraryView: View {
     @State private var playingGame: GameItem?
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
+    @State private var isSearchActive = false
+    @FocusState private var isSearchFocused: Bool
 
     private let columns = [
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
@@ -27,7 +29,8 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            mainContent
+            ZStack(alignment: .bottom) {
+                mainContent
                 .navigationTitle("YDrive")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -108,6 +111,68 @@ struct GameLibraryView: View {
                     }
                     .presentationDetents([.large])
                 }
+                
+                // Floating search button at bottom-left
+                if !isSearchActive {
+                    HStack {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isSearchActive = true
+                                isSearchFocused = true
+                            }
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title2.weight(.bold))
+                                .foregroundStyle(.white)
+                                .padding()
+                                .background(Color.accentColor)
+                                .clipShape(Circle())
+                                .shadow(radius: 4, y: 2)
+                        }
+                        .padding(.leading, 24)
+                        .padding(.bottom, 24)
+                        
+                        Spacer()
+                    }
+                }
+                
+                // Custom Search Bar at the bottom
+                if isSearchActive {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(.secondary)
+                        
+                        TextField("Ara...", text: $viewModel.searchText)
+                            .focused($isSearchFocused)
+                            .submitLabel(.search)
+                        
+                        if !viewModel.searchText.isEmpty {
+                            Button {
+                                viewModel.searchText = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        
+                        Button("Kapat") {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isSearchActive = false
+                                isSearchFocused = false
+                            }
+                        }
+                        .padding(.leading, 8)
+                        .foregroundStyle(Color.accentColor)
+                    }
+                    .padding(12)
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(radius: 10, y: 5)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
         }
     }
     
@@ -120,7 +185,6 @@ struct GameLibraryView: View {
                 ScrollView {
                     gameGrid
                 }
-                .searchable(text: $viewModel.searchText, prompt: "Ara...")
             }
         }
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())

@@ -20,6 +20,14 @@ struct SettingsView: View {
     @AppStorage("allRightShoulders")   private var allRightShoulders   = false
 
     var body: some View {
+        let colorScheme: ColorScheme? = {
+            switch appTheme {
+            case "dark": return .dark
+            case "light": return .light
+            default: return nil
+            }
+        }()
+        
         ZStack {
             // Adaptive background
             Color(UIColor.systemGroupedBackground)
@@ -35,12 +43,6 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.menu)
 
-                    Picker("settings.language", selection: $appLanguage) {
-                        Text("settings.language.system").tag("system")
-                        Text("settings.language.tr").tag("tr")
-                        Text("settings.language.en").tag("en")
-                    }
-                    .pickerStyle(.menu)
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
@@ -176,6 +178,7 @@ struct SettingsView: View {
             }
             .scrollContentBackground(.hidden)
         }
+        .preferredColorScheme(colorScheme)
         .navigationTitle("settings")
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
     }
