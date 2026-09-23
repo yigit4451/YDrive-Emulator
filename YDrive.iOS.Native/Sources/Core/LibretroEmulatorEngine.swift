@@ -305,9 +305,32 @@ final class LibretroEmulatorEngine: ObservableObject {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // MARK: - Screenshot
+    // MARK: - Private — frame timing loop
     // ─────────────────────────────────────────────────────────────────────────
-    
+
+    private func startFrameTimer(on queue: DispatchQueue, bridge: YDriveLibretroBridge) {
+        let fps  = targetFPS > 0 ? targetFPS : 60.0
+        let interval = DispatchTimeInterval.nanoseconds(Int(1_000_000_000.0 / fps))
+
+        let bridgeRef = bridge
+
+        let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
+        timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
+        timer.setEventHandler { @Sendable in
+            guard !bridgeRef.isPaused else { return }
+            bridgeRef.runFrame()
+        }
+        timer.resume()
+        self.frameTimer = timer
+        log.info("[ENGINE] Frame timer started at \(fps, format: .fixed(precision: 2)) fps")
+    }
+
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK: - Screenshot Generator
+// ─────────────────────────────────────────────────────────────────────────────
+enum ScreenshotGenerator {
     static func generateScreenshotImage(from frame: EmulatorFrame) -> UIImage? {
         guard let data = frame.data else { return nil }
         
@@ -378,26 +401,4 @@ final class LibretroEmulatorEngine: ObservableObject {
               
         return UIImage(cgImage: cgImage)
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // MARK: - Private — frame timing loop
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private func startFrameTimer(on queue: DispatchQueue, bridge: YDriveLibretroBridge) {
-        let fps  = targetFPS > 0 ? targetFPS : 60.0
-        let interval = DispatchTimeInterval.nanoseconds(Int(1_000_000_000.0 / fps))
-
-        let bridgeRef = bridge
-
-        let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
-        timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
-        timer.setEventHandler { @Sendable in
-            guard !bridgeRef.isPaused else { return }
-            bridgeRef.runFrame()
-        }
-        timer.resume()
-        self.frameTimer = timer
-        log.info("[ENGINE] Frame timer started at \(fps, format: .fixed(precision: 2)) fps")
-    }
-
 }
