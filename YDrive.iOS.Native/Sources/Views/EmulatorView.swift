@@ -354,66 +354,66 @@ struct OnScreenControlsView: View {
             let spacing = btnVisual * (isLandscape ? 1.3 : 1.15)
 
             // ── Computed centers ──────────────────────────────────────────────
-            var dpadCenter  = CGPoint.zero
-            var aCenter     = CGPoint.zero
-            var bCenter     = CGPoint.zero
-            var cCenter     = CGPoint.zero
-            var startCenter = CGPoint.zero
-            var modeCenter  = CGPoint.zero
+            // ── Computed centers ──────────────────────────────────────────────
+            let centers: (dpad: CGPoint, a: CGPoint, b: CGPoint, c: CGPoint, start: CGPoint, mode: CGPoint) = {
+                if isLandscape {
+                    let padX: CGFloat = 16
+                    let padY: CGFloat = 16
 
-            if isLandscape {
-                let padX: CGFloat = 16
-                let padY: CGFloat = 16
+                    let dpadX = safeLeft + padX + (dpadHit / 2)
+                    let dpadY = h - safeBottom - padY - (dpadHit / 2)
+                    let dpadCenter = CGPoint(x: dpadX, y: dpadY)
 
-                let dpadX = safeLeft + padX + (dpadHit / 2)
-                let dpadY = h - safeBottom - padY - (dpadHit / 2)
-                dpadCenter = CGPoint(x: dpadX, y: dpadY)
+                    let cX = w - safeRight - padX - (btnHit / 2)
+                    let aY = h - safeBottom - padY - (btnHit / 2)
+                    let aX = cX - (2 * spacing)
+                    let cY = aY - spacing
+                    let bX = cX - spacing
+                    let bY = aY - (spacing * 0.5)
 
-                let cX = w - safeRight - padX - (btnHit / 2)
-                let aY = h - safeBottom - padY - (btnHit / 2)
-                let aX = cX - (2 * spacing)
-                let cY = aY - spacing
-                let bX = cX - spacing
-                let bY = aY - (spacing * 0.5)
+                    let aCenter = CGPoint(x: aX, y: aY)
+                    let bCenter = CGPoint(x: bX, y: bY)
+                    let cCenter = CGPoint(x: cX, y: cY)
 
-                aCenter = CGPoint(x: aX, y: aY)
-                bCenter = CGPoint(x: bX, y: bY)
-                cCenter = CGPoint(x: cX, y: cY)
+                    let startX = w / 2
+                    let startY = h - safeBottom - 16 - (startVisualH / 2)
+                    let startCenter = CGPoint(x: startX, y: startY)
+                    let modeCenter  = CGPoint(x: startX + startVisualW * 0.8, y: startY)
+                    
+                    return (dpadCenter, aCenter, bCenter, cCenter, startCenter, modeCenter)
+                } else {
+                    let padBottom = max(safeBottom + 16, 24)
 
-                let startX = w / 2
-                let startY = h - safeBottom - 16 - (startVisualH / 2)
-                startCenter = CGPoint(x: startX, y: startY)
-                modeCenter  = CGPoint(x: startX + startVisualW * 0.8, y: startY)
-            } else {
-                let padBottom = max(safeBottom + 16, 24)
+                    let startX = w / 2
+                    let startY = h - padBottom - (startVisualH / 2)
+                    let startCenter = CGPoint(x: startX, y: startY)
+                    let modeCenter  = CGPoint(x: startX + startVisualW * 0.8, y: startY)
 
-                let startX = w / 2
-                let startY = h - padBottom - (startVisualH / 2)
-                startCenter = CGPoint(x: startX, y: startY)
-                modeCenter  = CGPoint(x: startX + startVisualW * 0.8, y: startY)
+                    let controlsBaseY = startY - (startVisualH / 2) - 24
 
-                let controlsBaseY = startY - (startVisualH / 2) - 24
+                    let dpadX = safeLeft + 16 + (dpadHit / 2)
+                    let dpadY = controlsBaseY - (dpadHit / 2)
+                    let dpadCenter = CGPoint(x: dpadX, y: dpadY)
 
-                let dpadX = safeLeft + 16 + (dpadHit / 2)
-                let dpadY = controlsBaseY - (dpadHit / 2)
-                dpadCenter = CGPoint(x: dpadX, y: dpadY)
+                    let cX = w - safeRight - 16 - (btnHit / 2)
+                    let aY = controlsBaseY - (btnHit / 2)
+                    let cY = aY - spacing
+                    let aX = cX - (2 * spacing)
+                    let bX = cX - spacing
+                    let bY = aY - (spacing * 0.5)
 
-                let cX = w - safeRight - 16 - (btnHit / 2)
-                let aY = controlsBaseY - (btnHit / 2)
-                let cY = aY - spacing
-                let aX = cX - (2 * spacing)
-                let bX = cX - spacing
-                let bY = aY - (spacing * 0.5)
-
-                aCenter = CGPoint(x: aX, y: aY)
-                bCenter = CGPoint(x: bX, y: bY)
-                cCenter = CGPoint(x: cX, y: cY)
-            }
+                    let aCenter = CGPoint(x: aX, y: aY)
+                    let bCenter = CGPoint(x: bX, y: bY)
+                    let cCenter = CGPoint(x: cX, y: cY)
+                    
+                    return (dpadCenter, aCenter, bCenter, cCenter, startCenter, modeCenter)
+                }
+            }()
 
             // 6-button upper row (X Y Z sit one row above A B C)
-            let xCenter = CGPoint(x: aCenter.x, y: aCenter.y - spacing)
-            let yCenter = CGPoint(x: bCenter.x, y: bCenter.y - spacing)
-            let zCenter = CGPoint(x: cCenter.x, y: cCenter.y - spacing)
+            let xCenter = CGPoint(x: centers.a.x, y: centers.a.y - spacing)
+            let yCenter = CGPoint(x: centers.b.x, y: centers.b.y - spacing)
+            let zCenter = CGPoint(x: centers.c.x, y: centers.c.y - spacing)
 
             // Colors
             let defaultBg     = Color(red: 0, green: 71/255, blue: 171/255)
@@ -429,15 +429,15 @@ struct OnScreenControlsView: View {
             ZStack(alignment: .topLeading) {
                 // D-Pad
                 dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
-                    .position(dpadCenter)
+                    .position(centers.dpad)
 
                 // A B C
                 actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_Y) }
-                    .position(aCenter)
+                    .position(centers.a)
                 actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_B) }
-                    .position(bCenter)
+                    .position(centers.b)
                 actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_A) }
-                    .position(cCenter)
+                    .position(centers.c)
 
                 // X Y Z (6-button only)
                 if is6Button {
@@ -452,11 +452,11 @@ struct OnScreenControlsView: View {
                 // START + MODE
                 startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
                             hitWidth: startVisualW + 40, hitHeight: startVisualH + 40) { press($0, id: ID_START) }
-                    .position(startCenter)
+                    .position(centers.start)
 
                 smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
                             hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32) { press($0, id: ID_SELECT) }
-                    .position(modeCenter)
+                    .position(centers.mode)
             }
         }
         .opacity(controllerOpacity)
