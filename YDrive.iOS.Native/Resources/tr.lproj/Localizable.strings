@@ -64,7 +64,7 @@
 "settings.show_fps" = "FPS Göster";
 
 // Settings — Controller
-"settings.opacity" = "Opaklık: %%lld%%";
+"settings.opacity" = "Opaklık: %lld%%";
 "settings.button_size" = "Tuş Boyutu";
 "settings.button_size.small" = "Küçük";
 "settings.button_size.normal" = "Normal";

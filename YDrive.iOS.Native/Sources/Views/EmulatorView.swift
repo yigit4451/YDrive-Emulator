@@ -334,7 +334,6 @@ struct OnScreenControlsView: View {
             let h = geo.size.height
             let isLandscape = w > h
 
-            let safeTop    = geo.safeAreaInsets.top
             let safeBottom = geo.safeAreaInsets.bottom
             let safeLeft   = geo.safeAreaInsets.leading
             let safeRight  = geo.safeAreaInsets.trailing
@@ -355,10 +354,12 @@ struct OnScreenControlsView: View {
             let spacing = btnVisual * (isLandscape ? 1.3 : 1.15)
 
             // ── Computed centers ──────────────────────────────────────────────
-            let dpadCenter: CGPoint
-            let aCenter, bCenter, cCenter: CGPoint
-            let startCenter: CGPoint
-            let modeCenter: CGPoint
+            var dpadCenter  = CGPoint.zero
+            var aCenter     = CGPoint.zero
+            var bCenter     = CGPoint.zero
+            var cCenter     = CGPoint.zero
+            var startCenter = CGPoint.zero
+            var modeCenter  = CGPoint.zero
 
             if isLandscape {
                 let padX: CGFloat = 16

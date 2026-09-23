@@ -93,8 +93,6 @@ struct GameLibraryView: View {
                 .sheet(isPresented: $showingSettings) {
                     NavigationStack {
                         SettingsView()
-                            .navigationTitle("Ayarlar")
-                            .navigationBarTitleDisplayMode(.inline)
                             .toolbar {
                                 ToolbarItem(placement: .topBarTrailing) {
                                     Button {
@@ -103,7 +101,7 @@ struct GameLibraryView: View {
                                         Image(systemName: "xmark")
                                             .fontWeight(.semibold)
                                     }
-                                    .accessibilityLabel("Kapat")
+                                    .accessibilityLabel(NSLocalizedString("close", comment: ""))
                                     .tint(.white)
                                 }
                             }
