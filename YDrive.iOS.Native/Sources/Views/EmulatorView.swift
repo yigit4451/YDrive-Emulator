@@ -178,7 +178,7 @@ struct EmulatorView: View {
 
     // ── Screenshot ────────────────────────────────────────────────────────────
     private func takeScreenshot() {
-        guard let image = engine.generateScreenshotImage() else { return }
+        guard let frame = engine.currentFrame else { return }
 
         // Haptic feedback
         if hapticFeedback {
@@ -193,6 +193,7 @@ struct EmulatorView: View {
 
         // Save to Photos in background to avoid blocking main thread / engine
         Task.detached {
+            guard let image = LibretroEmulatorEngine.generateScreenshotImage(from: frame) else { return }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else { return }
             

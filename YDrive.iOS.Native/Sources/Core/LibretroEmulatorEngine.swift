@@ -17,7 +17,7 @@ import os
 private let log = Logger(subsystem: "com.yigit.ydrive", category: "EmulatorEngine")
 
 // ── Frame buffer passed to MetalEmulatorView ──────────────────────────────────
-struct EmulatorFrame {
+struct EmulatorFrame: Sendable {
     /// Raw pixel data. May be nil on duplicate frames (libretro spec).
     let data: Data?
     let width: Int
@@ -44,10 +44,6 @@ final class LibretroEmulatorEngine: ObservableObject {
     @Published private(set) var currentFPS: Double = 0.0
     private var frameCount = 0
     private var lastFPSTime = Date()
-    
-    // Lock-protected snapshot for screenshots (Thread-Safe / Emulation-Owned)
-    private let screenshotLock = NSLock()
-    private var latestCompletedFrame: EmulatorFrame?
     
     var isAudioEnabled = true {
         didSet {
@@ -107,13 +103,6 @@ final class LibretroEmulatorEngine: ObservableObject {
                 pitch:       Int(frame.pitch),
                 pixelFormat: frame.pixelFormat
             )
-
-            // Thread-safe snapshot for screenshots
-            if let _ = copied {
-                self?.screenshotLock.lock()
-                self?.latestCompletedFrame = ef
-                self?.screenshotLock.unlock()
-            }
 
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
@@ -319,12 +308,8 @@ final class LibretroEmulatorEngine: ObservableObject {
     // MARK: - Screenshot
     // ─────────────────────────────────────────────────────────────────────────
     
-    nonisolated func generateScreenshotImage() -> UIImage? {
-        screenshotLock.lock()
-        let frameSnapshot = latestCompletedFrame
-        screenshotLock.unlock()
-        
-        guard let frame = frameSnapshot, let data = frame.data else { return nil }
+    static func generateScreenshotImage(from frame: EmulatorFrame) -> UIImage? {
+        guard let data = frame.data else { return nil }
         
         let w = frame.width
         let h = frame.height
