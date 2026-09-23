@@ -102,7 +102,7 @@ struct GameLibraryView: View {
                                             .fontWeight(.semibold)
                                     }
                                     .accessibilityLabel(NSLocalizedString("close", comment: ""))
-                                    .tint(.white)
+                                    .tint(.primary)
                                 }
                             }
                     }
