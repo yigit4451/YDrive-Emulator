@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PhotosUI
 
 let romUTTypes: [UTType] = [
     UTType(filenameExtension: "md"),
@@ -22,6 +23,9 @@ struct GameLibraryView: View {
     @State private var showingSettings = false
     @State private var isSearchActive = false
     @FocusState private var isSearchFocused: Bool
+    
+    @State private var selectedCoverItem: PhotosPickerItem?
+    @State private var coverTarget: GameItem?
 
     private let columns = [
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
@@ -110,6 +114,16 @@ struct GameLibraryView: View {
                             }
                     }
                     .presentationDetents([.large])
+                }
+                .onChange(of: selectedCoverItem) { newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self),
+                           let game = coverTarget {
+                            viewModel.updateCoverImageData(for: game, imageData: data)
+                        }
+                        selectedCoverItem = nil
+                        coverTarget = nil
+                    }
                 }
                 
                 // Floating search button at bottom-left
@@ -237,11 +251,12 @@ struct GameLibraryView: View {
                         Label("Oyun Bilgileri", systemImage: "info.circle")
                     }
                     
-                    Button {
-                        // Kapağı değiştir eylemi (ileride bağlanacak)
-                    } label: {
+                    PhotosPicker(selection: $selectedCoverItem, matching: .images, photoLibrary: .shared()) {
                         Label("Kapağı Değiştir", systemImage: "photo.on.rectangle")
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        coverTarget = game
+                    })
                     
                     Button {
                         renameTarget = game

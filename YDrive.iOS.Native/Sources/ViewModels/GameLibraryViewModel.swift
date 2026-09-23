@@ -99,6 +99,23 @@ final class GameLibraryViewModel: ObservableObject {
         }
     }
 
+    func updateCoverImageData(for game: GameItem, imageData: Data) {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let imgName = UUID().uuidString + ".jpg"
+        let imgDest = docs.appendingPathComponent(imgName)
+        
+        do {
+            try imageData.write(to: imgDest)
+            if let index = games.firstIndex(of: game) {
+                // If there's an existing custom cover, we could remove it, but for simplicity just overwrite the path.
+                games[index].coverImagePath = imgDest.path
+                saveLibrary()
+            }
+        } catch {
+            print("[ViewModel] Failed to save custom cover image: \(error)")
+        }
+    }
+
     func refreshMetadata() {
         for (i, game) in games.enumerated() {
             let id = game.id
