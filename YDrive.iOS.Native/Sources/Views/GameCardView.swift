@@ -51,8 +51,8 @@ struct GameCardView: View {
             Spacer(minLength: 0)
         }
         .frame(minHeight: 230, alignment: .top)
-        // iOS 26 True Liquid Glass API
-        .applyLiquidGlass(cornerRadius: 18)
+        // iOS native material
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 }
