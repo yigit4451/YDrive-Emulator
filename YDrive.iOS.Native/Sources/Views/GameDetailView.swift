@@ -106,7 +106,8 @@ struct GameDetailView: View {
                         .font(.body.weight(.bold))
                         .foregroundStyle(.primary)
                         .padding(12)
-                        .background(.ultraThinMaterial, in: Circle())
+                        .background(.regularMaterial, in: Circle())
+                        .shadow(color: .black.opacity(0.1), radius: 5, y: 2)
                 }
                 Spacer()
             }
