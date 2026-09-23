@@ -1,5 +1,6 @@
 import SwiftUI
 import GameController
+import Photos
 import os
 
 private let emulatorLog = Logger(subsystem: "com.yigit.ydrive", category: "EmulatorView")
@@ -12,19 +13,19 @@ struct EmulatorView: View {
     @State private var isTopBarVisible = false
     @State private var isSaveManagerPresented = false
     @State private var showingBiosAlert = false
-    
-    @AppStorage("showFPS") private var showFPS = false
-    @AppStorage("audioEnabled") private var audioEnabled = true
-    @AppStorage("videoFilter") private var videoFilter = "Off"
+    @State private var showFlash = false
+
+    @AppStorage("showFPS")       private var showFPS       = false
+    @AppStorage("audioEnabled")  private var audioEnabled  = true
+    @AppStorage("videoFilter")   private var videoFilter   = "Off"
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.black.ignoresSafeArea()
 
-                // ── Game render surface ───────────────────────────────────────────
+                // ── Game render surface ──────────────────────────────────────
                 if engine.coreAvailable {
-                    // Real libretro core is running — show Metal output
                     MetalEmulatorView(engine: engine, videoFilter: videoFilter)
                         .ignoresSafeArea()
                         .overlay(
@@ -44,12 +45,11 @@ struct EmulatorView: View {
                             , alignment: .topLeading
                         )
                 } else if let errorMsg = engine.errorMessage {
-                    // Core not available or load failed — show diagnostic info
                     VStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 40))
                             .foregroundStyle(.yellow)
-                        Text("Emulator Core Unavailable")
+                        Text(NSLocalizedString("emulator.core_unavailable", comment: ""))
                             .font(.headline)
                             .foregroundStyle(.white)
                         Text(errorMsg)
@@ -59,26 +59,30 @@ struct EmulatorView: View {
                             .padding(.horizontal, 32)
                     }
                 } else {
-                    // Loading state
-                    ProgressView()
-                        .tint(.white)
+                    ProgressView().tint(.white)
                 }
 
-                // ── On-screen controls ───────────────────────────────────────────
+                // ── On-screen controls ───────────────────────────────────────
                 if !isControllerConnected {
                     OnScreenControlsView(engine: engine)
                         .ignoresSafeArea()
                 }
 
-                // ── Floating Menu Button (Collapsed State) ───────────────────────
+                // ── Screenshot flash overlay ─────────────────────────────────
+                if showFlash {
+                    Color.white
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                }
+
+                // ── Floating collapse button ─────────────────────────────────
                 if !isTopBarVisible {
                     VStack {
                         HStack {
                             Spacer()
                             Button {
-                                withAnimation {
-                                    isTopBarVisible = true
-                                }
+                                withAnimation { isTopBarVisible = true }
                             } label: {
                                 Image(systemName: "chevron.down")
                                     .font(.title3.bold())
@@ -110,14 +114,21 @@ struct EmulatorView: View {
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                 }
-                
+
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    // Pause / Play
                     Button {
                         engine.setPaused(!engine.isPaused)
                     } label: {
-                        Label(engine.isPaused ? "Play" : "Pause", systemImage: engine.isPaused ? "play.fill" : "pause.fill")
+                        Label(
+                            engine.isPaused
+                                ? NSLocalizedString("emulator.play", comment: "")
+                                : NSLocalizedString("emulator.pause", comment: ""),
+                            systemImage: engine.isPaused ? "play.fill" : "pause.fill"
+                        )
                     }
-                    
+
+                    // Save State
                     Button {
                         withAnimation {
                             engine.setPaused(true)
@@ -125,29 +136,42 @@ struct EmulatorView: View {
                             isTopBarVisible = false
                         }
                     } label: {
-                        Label("Save State", systemImage: "tray.and.arrow.down")
+                        Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down")
                     }
-                    
+
+                    // Quick Load
+                    Button {
+                        quickLoad()
+                    } label: {
+                        Label(NSLocalizedString("saves.quick_load", comment: ""), systemImage: "tray.and.arrow.up")
+                    }
+
+                    // Screenshot
+                    Button {
+                        takeScreenshot()
+                    } label: {
+                        Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill")
+                    }
+
+                    // Reset
                     Button {
                         engine.reset()
-                        if engine.isPaused {
-                            engine.setPaused(false)
-                        }
+                        if engine.isPaused { engine.setPaused(false) }
                     } label: {
-                        Label("Reset", systemImage: "arrow.counterclockwise")
+                        Label(NSLocalizedString("emulator.reset", comment: ""), systemImage: "arrow.counterclockwise")
                     }
-                    
+
+                    // Exit
                     Button(role: .destructive) {
                         engine.stop()
                         dismiss()
                     } label: {
-                        Label("Exit", systemImage: "xmark")
+                        Label(NSLocalizedString("emulator.exit", comment: ""), systemImage: "xmark")
                     }
-                    
+
+                    // Collapse
                     Button {
-                        withAnimation {
-                            isTopBarVisible = false
-                        }
+                        withAnimation { isTopBarVisible = false }
                     } label: {
                         Label("Collapse", systemImage: "chevron.up")
                     }
@@ -157,12 +181,10 @@ struct EmulatorView: View {
         .sheet(isPresented: $isSaveManagerPresented) {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
         }
-        .alert("BIOS Gerekli", isPresented: $showingBiosAlert) {
-            Button("Tamam", role: .cancel) {
-                dismiss()
-            }
+        .alert(NSLocalizedString("emulator.bios_required", comment: ""), isPresented: $showingBiosAlert) {
+            Button(NSLocalizedString("emulator.ok", comment: ""), role: .cancel) { dismiss() }
         } message: {
-            Text("SEGA CD oyunlarını başlatmak için ayarlardan BIOS yüklemelisiniz.")
+            Text(NSLocalizedString("emulator.bios_message", comment: ""))
         }
         .onAppear {
             engine.isAudioEnabled = audioEnabled
@@ -178,7 +200,67 @@ struct EmulatorView: View {
         }
     }
 
+    // ── Screenshot ────────────────────────────────────────────────────────────
+    private func takeScreenshot() {
+        guard let windowScene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }),
+              let window = windowScene.windows.first(where: { $0.isKeyWindow })
+        else { return }
 
+        let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+        let image = renderer.image { ctx in
+            window.layer.render(in: ctx.cgContext)
+        }
+
+        // Haptic feedback
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        // Flash overlay
+        withAnimation(.easeOut(duration: 0.15)) { showFlash = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            withAnimation(.easeIn(duration: 0.2)) { showFlash = false }
+        }
+
+        // Save to Photos
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+            guard status == .authorized || status == .limited else { return }
+            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        }
+    }
+
+    // ── Quick Load ────────────────────────────────────────────────────────────
+    private func quickLoad() {
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+        let safeName = game.fileName.replacingOccurrences(of: "/", with: "_")
+
+        // Find the latest save slot
+        var latestSlot: Int? = nil
+        var latestDate: Date = .distantPast
+
+        if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+            for file in files {
+                guard file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") else { continue }
+                let numberStr = file
+                    .replacingOccurrences(of: "\(safeName)_slot", with: "")
+                    .replacingOccurrences(of: ".state", with: "")
+                guard let slot = Int(numberStr) else { continue }
+                if let attr = try? FileManager.default.attributesOfItem(atPath: savesDir.appendingPathComponent(file).path),
+                   let date = attr[.modificationDate] as? Date, date > latestDate {
+                    latestDate = date
+                    latestSlot = slot
+                }
+            }
+        }
+
+        guard let slot = latestSlot else { return }
+
+        Task {
+            let success = await engine.loadState(for: game.fileName, slot: slot)
+            if success { engine.setPaused(false) }
+        }
+    }
 
     // ── ROM path resolution ───────────────────────────────────────────────────
     private func startEmulator() {
@@ -186,10 +268,6 @@ struct EmulatorView: View {
             showingBiosAlert = true
             return
         }
-        
-        // Resolve ROM to a full filesystem path.
-        // GameLibraryViewModel.addRom stores only the fileName; the actual
-        // copied file lives in the app's Documents directory.
         let romPath = resolveRomPath(for: game.fileName)
         emulatorLog.info("[VIEW] Starting emulator for: \(game.title, privacy: .public)")
         emulatorLog.info("[VIEW] ROM path: \(romPath, privacy: .public)")
@@ -197,10 +275,7 @@ struct EmulatorView: View {
     }
 
     private func resolveRomPath(for fileName: String) -> String {
-        // If fileName is already an absolute path, use it directly.
         if fileName.hasPrefix("/") { return fileName }
-
-        // Otherwise look in Documents (where the file importer copies ROMs).
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         return docs?.appendingPathComponent(fileName).path ?? fileName
     }
@@ -213,10 +288,8 @@ struct EmulatorView: View {
             }
         }
         check()
-        NotificationCenter.default.addObserver(
-            forName: .GCControllerDidConnect, object: nil, queue: .main) { _ in check() }
-        NotificationCenter.default.addObserver(
-            forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in check() }
+        NotificationCenter.default.addObserver(forName: .GCControllerDidConnect,    object: nil, queue: .main) { _ in check() }
+        NotificationCenter.default.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in check() }
     }
 }
 
@@ -224,251 +297,269 @@ struct EmulatorView: View {
 
 struct OnScreenControlsView: View {
     @ObservedObject var engine: LibretroEmulatorEngine
-    @AppStorage("controllerOpacity") private var controllerOpacity = 0.4
+
+    @AppStorage("controllerOpacity")   private var controllerOpacity   = 0.4
     @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
-    @AppStorage("hapticFeedback") private var hapticFeedback = true
+    @AppStorage("hapticFeedback")      private var hapticFeedback      = true
+    @AppStorage("controllerLayout")    private var controllerLayout    = "3-Button"
+    @AppStorage("buttonSize")          private var buttonSize          = "Normal"
 
     // RetroPad IDs
-    let ID_B: UInt32 = 0
-    let ID_Y: UInt32 = 1
+    let ID_B:      UInt32 = 0
+    let ID_Y:      UInt32 = 1
     let ID_SELECT: UInt32 = 2
-    let ID_START: UInt32 = 3
-    let ID_UP: UInt32 = 4
-    let ID_DOWN: UInt32 = 5
-    let ID_LEFT: UInt32 = 6
-    let ID_RIGHT: UInt32 = 7
-    let ID_A: UInt32 = 8
+    let ID_START:  UInt32 = 3
+    let ID_UP:     UInt32 = 4
+    let ID_DOWN:   UInt32 = 5
+    let ID_LEFT:   UInt32 = 6
+    let ID_RIGHT:  UInt32 = 7
+    let ID_A:      UInt32 = 8
+    let ID_X:      UInt32 = 9
+    let ID_L:      UInt32 = 10
+    let ID_R:      UInt32 = 11
+
+    private var sizeMultiplier: CGFloat {
+        switch buttonSize {
+        case "Small": return 0.80
+        case "Large": return 1.20
+        default:      return 1.00
+        }
+    }
+
+    private var is6Button: Bool { controllerLayout == "6-Button" }
 
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
             let h = geo.size.height
             let isLandscape = w > h
-            
-            let safeTop = geo.safeAreaInsets.top
-            let safeBottom = geo.safeAreaInsets.bottom
-            let safeLeft = geo.safeAreaInsets.leading
-            let safeRight = geo.safeAreaInsets.trailing
-            
-            let minDim = min(w, h)
-            
-            // Dynamic proportional sizes based on screen size
-            let btnVisual = minDim * (isLandscape ? 0.17 : 0.15)
-            let btnHit = btnVisual + 24
-            
-            let dpadVisual = minDim * (isLandscape ? 0.40 : 0.35)
-            let dpadHit = dpadVisual + 40
-            
-            let startVisualW = minDim * 0.22
-            let startVisualH = minDim * 0.11
-            
-            let buttonSpacing = btnVisual * (isLandscape ? 1.3 : 1.15)
 
-            // Compute exact Centers guaranteeing no overlaps and strict safe area adherence
-            let centers: (dpad: CGPoint, a: CGPoint, b: CGPoint, c: CGPoint, start: CGPoint) = {
-                if isLandscape {
-                    let padX: CGFloat = 16
-                    let padY: CGFloat = 16
-                    
-                    // DPad anchors to Bottom-Left
-                    let dpadX = safeLeft + padX + (dpadHit / 2)
-                    let dpadY = h - safeBottom - padY - (dpadHit / 2)
-                    
-                    // Action Buttons anchor to Bottom-Right
-                    // We anchor C (top-right most button) to the right edge
-                    let cX = w - safeRight - padX - (btnHit / 2)
-                    // We anchor A (bottom-left most button) to the bottom edge
-                    let aY = h - safeBottom - padY - (btnHit / 2)
-                    
-                    // B is exactly in between A and C diagonally
-                    let aX = cX - (2 * buttonSpacing)
-                    let cY = aY - buttonSpacing
-                    
-                    let bX = cX - buttonSpacing
-                    let bY = aY - (buttonSpacing * 0.5)
-                    
-                    let startX = w / 2
-                    let startY = h - safeBottom - 16 - (startVisualH / 2)
-                    
-                    return (
-                        dpad: CGPoint(x: dpadX, y: dpadY),
-                        a: CGPoint(x: aX, y: aY),
-                        b: CGPoint(x: bX, y: bY),
-                        c: CGPoint(x: cX, y: cY),
-                        start: CGPoint(x: startX, y: startY)
-                    )
-                } else {
-                    // Portrait Mode
-                    let padBottom = max(safeBottom + 16, 24)
-                    
-                    let startX = w / 2
-                    let startY = h - padBottom - (startVisualH / 2)
-                    
-                    let controlsBaseY = startY - (startVisualH / 2) - 24
-                    
-                    // DPad anchors to left
-                    let dpadX = safeLeft + 16 + (dpadHit / 2)
-                    let dpadY = controlsBaseY - (dpadHit / 2)
-                    
-                    // Action buttons anchor to right
-                    let cX = w - safeRight - 16 - (btnHit / 2)
-                    let aY = controlsBaseY - (btnHit / 2)
-                    let cY = aY - buttonSpacing
-                    
-                    let aX = cX - (2 * buttonSpacing)
-                    let bX = cX - buttonSpacing
-                    let bY = aY - (buttonSpacing * 0.5)
-                    
-                    return (
-                        dpad: CGPoint(x: dpadX, y: dpadY),
-                        a: CGPoint(x: aX, y: aY),
-                        b: CGPoint(x: bX, y: bY),
-                        c: CGPoint(x: cX, y: cY),
-                        start: CGPoint(x: startX, y: startY)
-                    )
-                }
-            }()
+            let safeTop    = geo.safeAreaInsets.top
+            let safeBottom = geo.safeAreaInsets.bottom
+            let safeLeft   = geo.safeAreaInsets.leading
+            let safeRight  = geo.safeAreaInsets.trailing
+
+            let minDim = min(w, h)
+
+            let btnVisual   = minDim * (isLandscape ? 0.17 : 0.15) * sizeMultiplier
+            let btnHit      = btnVisual + 24
+            let btnSmall    = btnVisual * 0.75          // X/Y/Z and MODE
+            let btnSmallHit = btnSmall + 20
+
+            let dpadVisual = minDim * (isLandscape ? 0.40 : 0.35) * sizeMultiplier
+            let dpadHit    = dpadVisual + 40
+
+            let startVisualW = minDim * 0.22 * sizeMultiplier
+            let startVisualH = minDim * 0.11 * sizeMultiplier
+
+            let spacing = btnVisual * (isLandscape ? 1.3 : 1.15)
+
+            // ── Computed centers ──────────────────────────────────────────────
+            let dpadCenter: CGPoint
+            let aCenter, bCenter, cCenter: CGPoint
+            let startCenter: CGPoint
+            let modeCenter: CGPoint
+
+            if isLandscape {
+                let padX: CGFloat = 16
+                let padY: CGFloat = 16
+
+                let dpadX = safeLeft + padX + (dpadHit / 2)
+                let dpadY = h - safeBottom - padY - (dpadHit / 2)
+                dpadCenter = CGPoint(x: dpadX, y: dpadY)
+
+                let cX = w - safeRight - padX - (btnHit / 2)
+                let aY = h - safeBottom - padY - (btnHit / 2)
+                let aX = cX - (2 * spacing)
+                let cY = aY - spacing
+                let bX = cX - spacing
+                let bY = aY - (spacing * 0.5)
+
+                aCenter = CGPoint(x: aX, y: aY)
+                bCenter = CGPoint(x: bX, y: bY)
+                cCenter = CGPoint(x: cX, y: cY)
+
+                let startX = w / 2
+                let startY = h - safeBottom - 16 - (startVisualH / 2)
+                startCenter = CGPoint(x: startX, y: startY)
+                modeCenter  = CGPoint(x: startX + startVisualW * 0.8, y: startY)
+            } else {
+                let padBottom = max(safeBottom + 16, 24)
+
+                let startX = w / 2
+                let startY = h - padBottom - (startVisualH / 2)
+                startCenter = CGPoint(x: startX, y: startY)
+                modeCenter  = CGPoint(x: startX + startVisualW * 0.8, y: startY)
+
+                let controlsBaseY = startY - (startVisualH / 2) - 24
+
+                let dpadX = safeLeft + 16 + (dpadHit / 2)
+                let dpadY = controlsBaseY - (dpadHit / 2)
+                dpadCenter = CGPoint(x: dpadX, y: dpadY)
+
+                let cX = w - safeRight - 16 - (btnHit / 2)
+                let aY = controlsBaseY - (btnHit / 2)
+                let cY = aY - spacing
+                let aX = cX - (2 * spacing)
+                let bX = cX - spacing
+                let bY = aY - (spacing * 0.5)
+
+                aCenter = CGPoint(x: aX, y: aY)
+                bCenter = CGPoint(x: bX, y: bY)
+                cCenter = CGPoint(x: cX, y: cY)
+            }
+
+            // 6-button upper row (X Y Z sit one row above A B C)
+            let xCenter = CGPoint(x: aCenter.x, y: aCenter.y - spacing)
+            let yCenter = CGPoint(x: bCenter.x, y: bCenter.y - spacing)
+            let zCenter = CGPoint(x: cCenter.x, y: cCenter.y - spacing)
+
+            // Colors
+            let defaultBg     = Color(red: 0, green: 71/255, blue: 171/255)
+            let defaultBorder = Color(red: 100/255, green: 181/255, blue: 246/255)
+
+            let colorA = buttonColorsEnabled ? Color.red    : defaultBg
+            let colorB = buttonColorsEnabled ? Color.yellow : defaultBg
+            let colorC = buttonColorsEnabled ? Color.blue   : defaultBg
+            let colorX = buttonColorsEnabled ? Color(red: 0.5, green: 0, blue: 1) : defaultBg
+            let colorY = buttonColorsEnabled ? Color.green  : defaultBg
+            let colorZ = buttonColorsEnabled ? Color.orange : defaultBg
 
             ZStack(alignment: .topLeading) {
                 // D-Pad
                 dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
-                    .position(centers.dpad)
-                
-                // A B C Buttons
-                let defaultBg = Color(red: 0, green: 71/255, blue: 171/255) // #0047AB
-                let defaultBorder = Color(red: 100/255, green: 181/255, blue: 246/255) // #64B5F6
-                
-                let colorA = buttonColorsEnabled ? Color.red : defaultBg
-                let colorB = buttonColorsEnabled ? Color.yellow : defaultBg
-                let colorC = buttonColorsEnabled ? Color.blue : defaultBg
-                
+                    .position(dpadCenter)
+
+                // A B C
                 actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_Y) }
-                    .position(centers.a)
-                
+                    .position(aCenter)
                 actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_B) }
-                    .position(centers.b)
-                
+                    .position(bCenter)
                 actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_A) }
-                    .position(centers.c)
-                
-                // START Button
-                startButton(visualWidth: startVisualW, visualHeight: startVisualH, hitWidth: startVisualW + 40, hitHeight: startVisualH + 40)
-                    .position(centers.start)
+                    .position(cCenter)
+
+                // X Y Z (6-button only)
+                if is6Button {
+                    actionButton("X", color: colorX, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_X) }
+                        .position(xCenter)
+                    actionButton("Y", color: colorY, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_L) }
+                        .position(yCenter)
+                    actionButton("Z", color: colorZ, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_R) }
+                        .position(zCenter)
+                }
+
+                // START + MODE
+                startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
+                            hitWidth: startVisualW + 40, hitHeight: startVisualH + 40) { press($0, id: ID_START) }
+                    .position(startCenter)
+
+                smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
+                            hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32) { press($0, id: ID_SELECT) }
+                    .position(modeCenter)
             }
         }
         .opacity(controllerOpacity)
     }
-    
+
     private func press(_ isPressed: Bool, id: UInt32) {
         if isPressed && hapticFeedback {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
         engine.setButton(id, pressed: isPressed)
     }
-    
+
     private func dpadArea(visualSize: CGFloat, hitSize: CGFloat) -> some View {
         MultiTouchDPad { up, down, left, right in
             if (up || down || left || right) && hapticFeedback {
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
-            engine.setButton(ID_UP, pressed: up)
-            engine.setButton(ID_DOWN, pressed: down)
-            engine.setButton(ID_LEFT, pressed: left)
+            engine.setButton(ID_UP,    pressed: up)
+            engine.setButton(ID_DOWN,  pressed: down)
+            engine.setButton(ID_LEFT,  pressed: left)
             engine.setButton(ID_RIGHT, pressed: right)
         }
         .frame(width: hitSize, height: hitSize)
         .background(
             ZStack {
-                // Base Circle (Frosted Glass D-Pad Base)
                 Circle()
                     .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44))
                     .frame(width: visualSize, height: visualSize)
-                    .overlay(
-                        Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2)
-                    )
-                
-                // Center Thumb Hub
+                    .overlay(Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2))
                 Circle()
                     .fill(Color.white.opacity(0.19))
                     .frame(width: visualSize * 0.31, height: visualSize * 0.31)
-                
-                // Directional Arrows
-                let offset = visualSize * 0.32
-                let iconSize = visualSize * 0.14
+
+                let offset    = visualSize * 0.32
+                let iconSize  = visualSize * 0.14
                 let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
-                
-                Image(systemName: "arrowtriangle.up.fill")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(iconColor)
-                    .offset(y: -offset)
-                
-                Image(systemName: "arrowtriangle.down.fill")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(iconColor)
-                    .offset(y: offset)
-                
-                Image(systemName: "arrowtriangle.left.fill")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(iconColor)
-                    .offset(x: -offset)
-                
-                Image(systemName: "arrowtriangle.right.fill")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(iconColor)
-                    .offset(x: offset)
+                Image(systemName: "arrowtriangle.up.fill")    .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y: -offset)
+                Image(systemName: "arrowtriangle.down.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y:  offset)
+                Image(systemName: "arrowtriangle.left.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x: -offset)
+                Image(systemName: "arrowtriangle.right.fill") .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x:  offset)
             }
         )
     }
 
     private func actionButton(
-        _ label: String,
-        color: Color,
-        borderColor: Color,
-        visualSize: CGFloat,
-        hitSize: CGFloat,
+        _ label: String, color: Color, borderColor: Color,
+        visualSize: CGFloat, hitSize: CGFloat,
         onPress: @escaping (Bool) -> Void
     ) -> some View {
-        MultiTouchButton { isPressed in
-            onPress(isPressed)
-        }
-        .frame(width: hitSize, height: hitSize)
-        .background(
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.4))
-                    .frame(width: visualSize, height: visualSize)
-                    .overlay(
-                        Circle().stroke(borderColor.opacity(0.8), lineWidth: 2)
-                    )
-                
-                Text(label)
-                    .font(.system(size: visualSize * 0.35, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-            }
-        )
+        MultiTouchButton { isPressed in onPress(isPressed) }
+            .frame(width: hitSize, height: hitSize)
+            .background(
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.4))
+                        .frame(width: visualSize, height: visualSize)
+                        .overlay(Circle().stroke(borderColor.opacity(0.8), lineWidth: 2))
+                    Text(label)
+                        .font(.system(size: visualSize * 0.35, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                }
+            )
     }
-    
-    private func startButton(visualWidth: CGFloat, visualHeight: CGFloat, hitWidth: CGFloat, hitHeight: CGFloat) -> some View {
-        MultiTouchButton { isPressed in
-            press(isPressed, id: ID_START)
-        }
-        .frame(width: hitWidth, height: hitHeight)
-        .background(
-            ZStack {
-                Capsule()
-                    .fill(Color(white: 0.13).opacity(0.4))
-                    .frame(width: visualWidth, height: visualHeight)
-                    .overlay(
-                        Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5)
-                    )
-                
-                Text("START")
-                    .font(.system(size: visualHeight * 0.35, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(white: 0.93))
-            }
-        )
+
+    private func startButton(
+        label: String,
+        visualWidth: CGFloat, visualHeight: CGFloat,
+        hitWidth: CGFloat, hitHeight: CGFloat,
+        onPress: @escaping (Bool) -> Void
+    ) -> some View {
+        MultiTouchButton { isPressed in onPress(isPressed) }
+            .frame(width: hitWidth, height: hitHeight)
+            .background(
+                ZStack {
+                    Capsule()
+                        .fill(Color(white: 0.13).opacity(0.4))
+                        .frame(width: visualWidth, height: visualHeight)
+                        .overlay(Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5))
+                    Text(label)
+                        .font(.system(size: visualHeight * 0.35, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(white: 0.93))
+                }
+            )
+    }
+
+    private func smallButton(
+        label: String,
+        visualWidth: CGFloat, visualHeight: CGFloat,
+        hitWidth: CGFloat, hitHeight: CGFloat,
+        onPress: @escaping (Bool) -> Void
+    ) -> some View {
+        MultiTouchButton { isPressed in onPress(isPressed) }
+            .frame(width: hitWidth, height: hitHeight)
+            .background(
+                ZStack {
+                    Capsule()
+                        .fill(Color(white: 0.10).opacity(0.35))
+                        .frame(width: visualWidth, height: visualHeight)
+                        .overlay(Capsule().stroke(Color(white: 0.75).opacity(0.5), lineWidth: 1))
+                    Text(label)
+                        .font(.system(size: visualHeight * 0.30, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(white: 0.80))
+                }
+            )
     }
 }
 

@@ -24,6 +24,8 @@ targets:
     sources:
       - Sources
       - Resources/Assets.xcassets
+      - Resources/en.lproj
+      - Resources/tr.lproj
     settings:
       base:
         INFOPLIST_FILE: Resources/Info.plist
@@ -39,8 +41,11 @@ targets:
         OTHER_CFLAGS: "-DYDRIVE_CORE_AVAILABLE=1"
         OTHER_LDFLAGS: "-lpicodrive -lz"
         LIBRARY_SEARCH_PATHS: "$(SRCROOT)/Sources/Core"
+        KNOWN_REGIONS: "en tr"
+        DEVELOPMENT_LANGUAGE: en
     dependencies:
       - sdk: Metal.framework
       - sdk: MetalKit.framework
       - sdk: GameController.framework
+      - sdk: Photos.framework
 

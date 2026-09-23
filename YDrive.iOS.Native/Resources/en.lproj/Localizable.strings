@@ -1,0 +1,96 @@
+/* ─── Localization: English ─────────────────────────────────── */
+
+// Navigation / General
+"settings" = "Settings";
+"library" = "Library";
+"close" = "Close";
+"save" = "Save";
+"cancel" = "Cancel";
+"delete" = "Delete";
+"rename" = "Rename";
+"confirm_delete" = "Are you sure you want to delete this?";
+
+// Library
+"library.empty.title" = "No Games in Library";
+"library.empty.subtitle" = "Add a Genesis or SEGA CD ROM\n(.md .bin .gen .zip .chd)";
+"library.add_rom" = "Add ROM";
+"library.search" = "Search...";
+"library.refresh" = "Refresh Metadata";
+"library.game_info" = "Game Info";
+"library.rename" = "Rename";
+"library.delete" = "Delete";
+"library.rename_title" = "Rename";
+"library.new_name" = "New name";
+
+// Save Manager
+"saves.title" = "Saves";
+"saves.empty" = "No saves yet";
+"saves.slot" = "Save %lld";
+"saves.quick_load" = "Quick Load";
+
+// Emulator
+"emulator.bios_required" = "BIOS Required";
+"emulator.bios_message" = "You must load a BIOS from Settings to launch SEGA CD games.";
+"emulator.ok" = "OK";
+"emulator.exit" = "Exit";
+"emulator.reset" = "Reset";
+"emulator.pause" = "Pause";
+"emulator.play" = "Play";
+"emulator.save_state" = "Save State";
+"emulator.screenshot" = "Screenshot";
+"emulator.screenshot_saved" = "Screenshot saved to Photos";
+"emulator.core_unavailable" = "Emulator Core Unavailable";
+
+// Settings — Sections
+"settings.appearance" = "Appearance";
+"settings.emulation" = "Emulation & Audio";
+"settings.controller" = "Controller";
+"settings.about" = "About";
+
+// Settings — Appearance
+"settings.theme" = "Theme";
+"settings.theme.system" = "System";
+"settings.theme.dark" = "Dark";
+"settings.theme.light" = "Light";
+"settings.language" = "Language";
+"settings.language.system" = "System Default";
+"settings.language.tr" = "Türkçe";
+"settings.language.en" = "English";
+
+// Settings — Emulation
+"settings.bios_files" = "BIOS Files";
+"settings.video_filter" = "Video Filter";
+"settings.audio" = "Audio";
+"settings.show_fps" = "Show FPS";
+
+// Settings — Controller
+"settings.opacity" = "Opacity: %lld%%";
+"settings.button_size" = "Button Size";
+"settings.button_size.small" = "Small";
+"settings.button_size.normal" = "Normal";
+"settings.button_size.large" = "Large";
+"settings.colored_buttons" = "Colored Buttons";
+"settings.haptic" = "Haptic Feedback";
+"settings.layout" = "Layout";
+"settings.layout.3btn" = "3-Button";
+"settings.layout.6btn" = "6-Button";
+"settings.m30" = "8BitDo M30 Layout";
+"settings.shoulders" = "All-Right Shoulders";
+"settings.mfi" = "MFi / GCController";
+"settings.mfi.auto" = "Automatic";
+
+// Settings — About
+"settings.version" = "Version";
+"settings.platform" = "Platform";
+"settings.core" = "Core";
+"settings.core.value" = "PicoDrive & Genesis Plus GX";
+"settings.github" = "GitHub Repository";
+"settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
+"settings.thanks" = "Thanks & Licenses";
+"settings.thanks.text" = "PicoDrive © notaz. Genesis Plus GX © ekeeke.\nAll game ROMs and BIOS files are the property of their respective owners.";
+
+// BIOS
+"bios.title" = "BIOS Files";
+"bios.footer" = "A correct regional BIOS (.bin) must be installed to run SEGA CD games.";
+"bios.import" = "Import BIOS...";
+"bios.delete_confirm" = "Are you sure you want to delete this BIOS?";

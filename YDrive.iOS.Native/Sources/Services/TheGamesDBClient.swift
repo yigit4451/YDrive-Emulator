@@ -4,89 +4,99 @@ import Foundation
 final class TheGamesDBClient {
     static let shared = TheGamesDBClient()
     private let apiKey = "163b4c08edcb64c0b9e5792d9667ff117159372039296b3d0d74b1234757f818"
-    // Sega Genesis = 18, Sega CD = 20
-    private let platforms = "18,20"
+
+    /// TheGamesDB platform IDs
+    /// 18 = Sega Genesis/Mega Drive
+    /// 21 = Sega CD / Mega-CD
+    /// 35 = Sega Master System
+    private let platformIDs: [String: Int] = [
+        "md": 18, "gen": 18, "smd": 18, "bin": 18, "zip": 18,
+        "chd": 21
+    ]
 
     private init() {}
 
-    /// Normalizes ROM filename for search
-    /// E.g., "Sonic The Hedgehog 2 (World) [!].md" -> "Sonic The Hedgehog 2"
+    // ── Platform ID resolution ────────────────────────────────────────────────
+    /// Determines the platform ID from the file extension.
+    /// Defaults to Genesis (18) if unknown.
+    func platformID(for filename: String) -> Int {
+        let ext = (filename as NSString).pathExtension.lowercased()
+        return platformIDs[ext] ?? 18
+    }
+
+    // ── Name normalization ────────────────────────────────────────────────────
     func normalizeName(_ filename: String) -> String {
-        var name = filename
-        
-        // Remove known ROM extensions
-        let extensions = [".md", ".bin", ".gen", ".smd", ".zip"]
-        for ext in extensions {
-            if name.lowercased().hasSuffix(ext) {
-                name = String(name.dropLast(ext.count))
-            }
-        }
-        
-        // Remove tags like (World), (USA), [!], [b1], etc. using Regex
+        var name = (filename as NSString).deletingPathExtension
+
+        // Remove region/version tags like (World), (USA), [!], etc.
         name = name.replacingOccurrences(of: "\\s*\\(.*?\\)", with: "", options: .regularExpression)
         name = name.replacingOccurrences(of: "\\s*\\[.*?\\]", with: "", options: .regularExpression)
-        
-        // Replace underscores with spaces
         name = name.replacingOccurrences(of: "_", with: " ")
-        
-        // Clean up multiple spaces
         name = name.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-        
+
         return name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // ── Fetch ─────────────────────────────────────────────────────────────────
     struct FetchResult {
         let summary: String?
         let developer: String?
         let releaseYear: String?
-        let coverImageUrl: String? // We provide the full URL, the ViewModel handles downloading
+        let coverImageUrl: String?
     }
 
     func fetchMetadata(for rawName: String) async -> FetchResult? {
-        let query = normalizeName(rawName)
+        let query    = normalizeName(rawName)
+        let platform = platformID(for: rawName)
         guard !query.isEmpty else { return nil }
 
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "https://api.thegamesdb.net/v1/Games/ByGameName?apikey=\(apiKey)&name=\(encodedQuery)&filter%5Bplatform%5D=\(platforms)&fields=overview,developers,publishers&lang=en") else {
-            return nil
-        }
+              let url = URL(string:
+                "https://api.thegamesdb.net/v1/Games/ByGameName"
+                + "?apikey=\(apiKey)"
+                + "&name=\(encodedQuery)"
+                + "&filter%5Bplatform%5D=\(platform)"
+                + "&fields=overview,developers,publishers&lang=en"
+              )
+        else { return nil }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            
             let decoder = JSONDecoder()
             guard let response = try? decoder.decode(GamesDBResponse.self, from: data),
-                  !response.data.games.isEmpty else {
-                return nil
-            }
+                  !response.data.games.isEmpty else { return nil }
 
-            // Find best match based on scoring
+            // Best match by title scoring — penalise cross-platform mismatches
             let bestGame = response.data.games.max { g1, g2 in
-                scoreMatch(title: g1.game_title, query: query) < scoreMatch(title: g2.game_title, query: query)
+                scoreMatch(title: g1.game_title, query: query) <
+                scoreMatch(title: g2.game_title, query: query)
             }
-            
             guard let game = bestGame else { return nil }
 
-            // Extract Release Year
+            // Release year
             var releaseYear: String? = nil
-            if let releaseDate = game.release_date, releaseDate.count >= 4 {
-                releaseYear = String(releaseDate.prefix(4))
-            }
+            if let d = game.release_date, d.count >= 4 { releaseYear = String(d.prefix(4)) }
 
-            // Extract Developer
+            // Developer
             var developerName: String? = nil
             if let devId = game.developers?.first, let devs = response.include?.developer {
                 developerName = devs[String(devId)]?.name
             }
 
-            // Fetch Boxart (Requires separate call)
+            // Box art — front face only
             var coverImageUrl: String? = nil
-            if let imagesUrl = URL(string: "https://api.thegamesdb.net/v1/Games/Images?apikey=\(apiKey)&games_id=\(game.id)&filter%5Btype%5D=boxart") {
+            if let imagesUrl = URL(string:
+                "https://api.thegamesdb.net/v1/Games/Images"
+                + "?apikey=\(apiKey)"
+                + "&games_id=\(game.id)"
+                + "&filter%5Btype%5D=boxart"
+            ) {
                 if let (imgData, _) = try? await URLSession.shared.data(from: imagesUrl),
                    let imgResponse = try? decoder.decode(GamesDBImagesResponse.self, from: imgData) {
-                    
-                    if let boxart = imgResponse.data.images[String(game.id)]?.first(where: { $0.side == "front" }) {
-                        let baseUrl = imgResponse.data.base_url.original
+                    let baseUrl = imgResponse.data.base_url.original
+                    // Prefer "front" side; fallback to first available
+                    if let boxart = imgResponse.data.images[String(game.id)]?.first(where: { $0.side == "front" })
+                        ?? imgResponse.data.images[String(game.id)]?.first {
                         coverImageUrl = baseUrl + boxart.filename
                     }
                 }
@@ -104,37 +114,23 @@ final class TheGamesDBClient {
         }
     }
 
+    // ── Scoring ───────────────────────────────────────────────────────────────
     private func scoreMatch(title: String, query: String) -> Int {
-        let normalizedTitle = normalizeName(title).lowercased()
-        let normalizedQuery = query.lowercased()
-        
-        if normalizedTitle == normalizedQuery {
-            return 100 // Exact match
+        let t = normalizeName(title).lowercased()
+        let q = query.lowercased()
+
+        if t == q { return 100 }
+
+        // Penalise if critical identifiers mismatch (sequel numbers, platform hints)
+        let identifiers = ["2", "3", "4", "5", "ii", "iii", "iv", "v",
+                           "cd", "3d", "32x", "plus", "deluxe", "& knuckles"]
+        for id in identifiers {
+            let tHas = t.components(separatedBy: .whitespaces).contains(id) || (id.contains(" ") && t.contains(id))
+            let qHas = q.components(separatedBy: .whitespaces).contains(id) || (id.contains(" ") && q.contains(id))
+            if tHas != qHas { return -100 }
         }
-        
-        // Penalize if sequel numbers / key identifiers don't match
-        let digitsAndRoman = ["2", "3", "4", "5", "ii", "iii", "iv", "v", "& knuckles", "cd", "3d", "32x", "plus", "deluxe"]
-        for identifier in digitsAndRoman {
-            let titleHasIt = normalizedTitle.contains(identifier)
-            let queryHasIt = normalizedQuery.contains(identifier)
-            
-            // If one has a critical identifier and the other doesn't, huge penalty
-            if titleHasIt != queryHasIt {
-                // Ensure it's isolated as a word, e.g. "Sonic 2" vs "Sonic 2006"
-                let titleWords = normalizedTitle.components(separatedBy: .whitespaces)
-                let queryWords = normalizedQuery.components(separatedBy: .whitespaces)
-                
-                if titleWords.contains(identifier) || queryWords.contains(identifier) || identifier.contains(" ") {
-                    return -100 
-                }
-            }
-        }
-        
-        // Basic substring match fallback
-        if normalizedTitle.contains(normalizedQuery) || normalizedQuery.contains(normalizedTitle) {
-            return 50
-        }
-        
+
+        if t.contains(q) || q.contains(t) { return 50 }
         return 0
     }
 }
@@ -143,11 +139,11 @@ final class TheGamesDBClient {
 fileprivate struct GamesDBResponse: Decodable {
     let data: GamesDBData
     let include: GamesDBInclude?
-    
+
     struct GamesDBData: Decodable {
         let games: [GamesDBGame]
     }
-    
+
     struct GamesDBGame: Decodable {
         let id: Int
         let game_title: String
@@ -155,11 +151,11 @@ fileprivate struct GamesDBResponse: Decodable {
         let overview: String?
         let developers: [Int]?
     }
-    
+
     struct GamesDBInclude: Decodable {
         let developer: [String: GamesDBDeveloper]?
     }
-    
+
     struct GamesDBDeveloper: Decodable {
         let name: String
     }
@@ -167,16 +163,16 @@ fileprivate struct GamesDBResponse: Decodable {
 
 fileprivate struct GamesDBImagesResponse: Decodable {
     let data: GamesDBImageData
-    
+
     struct GamesDBImageData: Decodable {
         let base_url: BaseUrlInfo
         let images: [String: [GameImage]]
     }
-    
+
     struct BaseUrlInfo: Decodable {
         let original: String
     }
-    
+
     struct GameImage: Decodable {
         let type: String
         let side: String?

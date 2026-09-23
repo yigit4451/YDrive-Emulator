@@ -1,0 +1,96 @@
+/* ─── Localization: Turkish ─────────────────────────────────── */
+
+// Navigation / General
+"settings" = "Ayarlar";
+"library" = "Kütüphane";
+"close" = "Kapat";
+"save" = "Kaydet";
+"cancel" = "İptal";
+"delete" = "Sil";
+"rename" = "Yeniden Adlandır";
+"confirm_delete" = "Silmek istediğinize emin misiniz?";
+
+// Library
+"library.empty.title" = "Kütüphanede Oyun Yok";
+"library.empty.subtitle" = "Genesis veya SEGA CD ROM dosyası\n(.md .bin .gen .zip .chd) ekleyin";
+"library.add_rom" = "ROM Ekle";
+"library.search" = "Ara...";
+"library.refresh" = "Meta Veriyi Yenile";
+"library.game_info" = "Oyun Bilgileri";
+"library.rename" = "Yeniden Adlandır";
+"library.delete" = "Sil";
+"library.rename_title" = "Yeniden Adlandır";
+"library.new_name" = "Yeni ad";
+
+// Save Manager
+"saves.title" = "Kayıtlar";
+"saves.empty" = "Henüz save kaydedilmedi";
+"saves.slot" = "Kayıt %lld";
+"saves.quick_load" = "Hızlı Yükle";
+
+// Emulator
+"emulator.bios_required" = "BIOS Gerekli";
+"emulator.bios_message" = "SEGA CD oyunlarını başlatmak için ayarlardan BIOS yüklemelisiniz.";
+"emulator.ok" = "Tamam";
+"emulator.exit" = "Çıkış";
+"emulator.reset" = "Yeniden Başlat";
+"emulator.pause" = "Duraklat";
+"emulator.play" = "Oynat";
+"emulator.save_state" = "Kayıt Al";
+"emulator.screenshot" = "Ekran Görüntüsü";
+"emulator.screenshot_saved" = "Ekran görüntüsü Fotoğraflar'a kaydedildi";
+"emulator.core_unavailable" = "Emülatör Çekirdeği Kullanılamıyor";
+
+// Settings — Sections
+"settings.appearance" = "Görünüm";
+"settings.emulation" = "Emülasyon & Ses";
+"settings.controller" = "Kontrolcü";
+"settings.about" = "Hakkında";
+
+// Settings — Appearance
+"settings.theme" = "Tema";
+"settings.theme.system" = "Sistem";
+"settings.theme.dark" = "Koyu";
+"settings.theme.light" = "Açık";
+"settings.language" = "Dil / Language";
+"settings.language.system" = "Sistem Varsayılanı";
+"settings.language.tr" = "Türkçe";
+"settings.language.en" = "English";
+
+// Settings — Emulation
+"settings.bios_files" = "BIOS Dosyaları";
+"settings.video_filter" = "Video Filtresi";
+"settings.audio" = "Ses";
+"settings.show_fps" = "FPS Göster";
+
+// Settings — Controller
+"settings.opacity" = "Opaklık: %%lld%%";
+"settings.button_size" = "Tuş Boyutu";
+"settings.button_size.small" = "Küçük";
+"settings.button_size.normal" = "Normal";
+"settings.button_size.large" = "Büyük";
+"settings.colored_buttons" = "Renkli Butonlar";
+"settings.haptic" = "Dokunsal Geri Bildirim";
+"settings.layout" = "Düzen";
+"settings.layout.3btn" = "3-Tuş";
+"settings.layout.6btn" = "6-Tuş";
+"settings.m30" = "8BitDo M30 Düzeni";
+"settings.shoulders" = "All-Right Omuz Tuşları";
+"settings.mfi" = "MFi / GCController";
+"settings.mfi.auto" = "Otomatik";
+
+// Settings — About
+"settings.version" = "Versiyon";
+"settings.platform" = "Platform";
+"settings.core" = "Çekirdek";
+"settings.core.value" = "PicoDrive & Genesis Plus GX";
+"settings.github" = "GitHub Deposu";
+"settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
+"settings.thanks" = "Teşekkürler & Lisanslar";
+"settings.thanks.text" = "PicoDrive © notaz. Genesis Plus GX © ekeeke.\nTüm ROM ve BIOS dosyaları ilgili sahiplerine aittir.";
+
+// BIOS
+"bios.title" = "BIOS Dosyaları";
+"bios.footer" = "SEGA CD oyunlarının çalışması için doğru bölgeye ait BIOS dosyasının (.bin) yüklü olması gerekir.";
+"bios.import" = "BIOS İçe Aktar...";
+"bios.delete_confirm" = "Bu BIOS dosyasını silmek istediğinize emin misiniz?";

@@ -49,5 +49,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Oyun içi ekran görüntülerini kaydetmek için galeri erişimi gerekir.</string>
 </dict>
 </plist>
