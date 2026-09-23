@@ -180,6 +180,8 @@ struct EmulatorView: View {
             NotificationCenter.default.removeObserver(self)
             engine.stop()
         }
+        .defersSystemGestures(on: .bottom)
+        .persistentSystemOverlays(.hidden)
     }
 
     // ── Screenshot ────────────────────────────────────────────────────────────
