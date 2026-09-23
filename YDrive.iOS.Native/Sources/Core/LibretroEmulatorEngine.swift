@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import Foundation
+import UIKit
 import os
 
 private let log = Logger(subsystem: "com.yigit.ydrive", category: "EmulatorEngine")
@@ -301,6 +302,81 @@ final class LibretroEmulatorEngine: ObservableObject {
                 continuation.resume(returning: success)
             }
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MARK: - Screenshot
+    // ─────────────────────────────────────────────────────────────────────────
+    
+    nonisolated func generateScreenshotImage() -> UIImage? {
+        guard let frame = currentFrame, let data = frame.data else { return nil }
+        
+        let w = frame.width
+        let h = frame.height
+        let pitch = frame.pitch
+        let format = frame.pixelFormat
+        
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.noneSkipFirst.rawValue
+        
+        let dest = UnsafeMutablePointer<UInt32>.allocate(capacity: w * h)
+        defer { dest.deallocate() }
+        
+        switch format {
+        case .xrgb8888:
+            data.withUnsafeBytes { ptr in
+                dest.update(from: ptr.bindMemory(to: UInt32.self).baseAddress!, count: w * h)
+            }
+        case .rgb565:
+            data.withUnsafeBytes { src in
+                let src16 = src.bindMemory(to: UInt16.self)
+                for y in 0..<h {
+                    let rowSrc = src16.baseAddress!.advanced(by: y * (pitch / 2))
+                    let rowDst = dest.advanced(by: y * w)
+                    for x in 0..<w {
+                        let p  = rowSrc[x]
+                        let r5 = UInt32((p >> 11) & 0x1F)
+                        let g6 = UInt32((p >> 5)  & 0x3F)
+                        let b5 = UInt32( p         & 0x1F)
+                        let r8 = (r5 << 3) | (r5 >> 2)
+                        let g8 = (g6 << 2) | (g6 >> 4)
+                        let b8 = (b5 << 3) | (b5 >> 2)
+                        rowDst[x] = 0xFF000000 | (r8 << 16) | (g8 << 8) | b8
+                    }
+                }
+            }
+        case .trgb1555:
+            data.withUnsafeBytes { src in
+                let src16 = src.bindMemory(to: UInt16.self)
+                for y in 0..<h {
+                    let rowSrc = src16.baseAddress!.advanced(by: y * (pitch / 2))
+                    let rowDst = dest.advanced(by: y * w)
+                    for x in 0..<w {
+                        let p  = rowSrc[x]
+                        let r5 = UInt32((p >> 10) & 0x1F)
+                        let g5 = UInt32((p >> 5)  & 0x1F)
+                        let b5 = UInt32( p         & 0x1F)
+                        let r8 = (r5 << 3) | (r5 >> 2)
+                        let g8 = (g5 << 3) | (g5 >> 2)
+                        let b8 = (b5 << 3) | (b5 >> 2)
+                        rowDst[x] = 0xFF000000 | (r8 << 16) | (g8 << 8) | b8
+                    }
+                }
+            }
+        @unknown default:
+            return nil
+        }
+        
+        guard let context = CGContext(data: dest,
+                                      width: w,
+                                      height: h,
+                                      bitsPerComponent: 8,
+                                      bytesPerRow: w * 4,
+                                      space: colorSpace,
+                                      bitmapInfo: bitmapInfo),
+              let cgImage = context.makeImage() else { return nil }
+              
+        return UIImage(cgImage: cgImage)
     }
 
     // ─────────────────────────────────────────────────────────────────────────

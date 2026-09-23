@@ -27,92 +27,92 @@ struct SettingsView: View {
 
             Form {
                 // ── GÖRÜNÜM ───────────────────────────────────────────────────
-                Section(header: Label(NSLocalizedString("settings.appearance", comment: ""), systemImage: "paintbrush.fill")) {
-                    Picker(NSLocalizedString("settings.theme", comment: ""), selection: $appTheme) {
-                        Text(NSLocalizedString("settings.theme.system", comment: "")).tag("system")
-                        Text(NSLocalizedString("settings.theme.dark",   comment: "")).tag("dark")
-                        Text(NSLocalizedString("settings.theme.light",  comment: "")).tag("light")
+                Section(header: Label("settings.appearance", systemImage: "paintbrush.fill")) {
+                    Picker("settings.theme", selection: $appTheme) {
+                        Text("settings.theme.system").tag("system")
+                        Text("settings.theme.dark").tag("dark")
+                        Text("settings.theme.light").tag("light")
                     }
                     .pickerStyle(.menu)
 
-                    Picker(NSLocalizedString("settings.language", comment: ""), selection: $appLanguage) {
-                        Text(NSLocalizedString("settings.language.system", comment: "")).tag("system")
-                        Text(NSLocalizedString("settings.language.tr",     comment: "")).tag("tr")
-                        Text(NSLocalizedString("settings.language.en",     comment: "")).tag("en")
+                    Picker("settings.language", selection: $appLanguage) {
+                        Text("settings.language.system").tag("system")
+                        Text("settings.language.tr").tag("tr")
+                        Text("settings.language.en").tag("en")
                     }
                     .pickerStyle(.menu)
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
                 // ── EMÜLASYON & SES ───────────────────────────────────────────
-                Section(header: Label(NSLocalizedString("settings.emulation", comment: ""), systemImage: "cpu.fill")) {
-                    NavigationLink(NSLocalizedString("settings.bios_files", comment: "")) {
+                Section(header: Label("settings.emulation", systemImage: "cpu.fill")) {
+                    NavigationLink("settings.bios_files") {
                         BiosManagerView()
                     }
 
-                    Picker(NSLocalizedString("settings.video_filter", comment: ""), selection: $videoFilter) {
+                    Picker("settings.video_filter", selection: $videoFilter) {
                         Text("Off").tag("Off")
                         Text("CRT").tag("CRT")
                         Text("Simple CRT").tag("Simple CRT")
                     }
                     .pickerStyle(.menu)
 
-                    Toggle(NSLocalizedString("settings.audio", comment: ""), isOn: $audioEnabled)
+                    Toggle("settings.audio", isOn: $audioEnabled)
                         .tint(.blue)
 
-                    Toggle(NSLocalizedString("settings.show_fps", comment: ""), isOn: $showFPS)
+                    Toggle("settings.show_fps", isOn: $showFPS)
                         .tint(.blue)
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
                 // ── KONTROLcÜ ────────────────────────────────────────────────
-                Section(header: Label(NSLocalizedString("settings.controller", comment: ""), systemImage: "gamecontroller.fill")) {
+                Section(header: Label("settings.controller", systemImage: "gamecontroller.fill")) {
                     // Opacity slider
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(String(format: NSLocalizedString("settings.opacity", comment: ""), Int(controllerOpacity * 100)))
+                        Text("Opaklık: \(Int(controllerOpacity * 100))%")
                             .font(.subheadline)
                         Slider(value: $controllerOpacity, in: 0.1...1.0, step: 0.05)
                             .tint(.blue)
                     }
 
                     // Button size
-                    Picker(NSLocalizedString("settings.button_size", comment: ""), selection: $buttonSize) {
-                        Text(NSLocalizedString("settings.button_size.small",  comment: "")).tag("Small")
-                        Text(NSLocalizedString("settings.button_size.normal", comment: "")).tag("Normal")
-                        Text(NSLocalizedString("settings.button_size.large",  comment: "")).tag("Large")
+                    Picker("settings.button_size", selection: $buttonSize) {
+                        Text("settings.button_size.small").tag("Small")
+                        Text("settings.button_size.normal").tag("Normal")
+                        Text("settings.button_size.large").tag("Large")
                     }
                     .pickerStyle(.segmented)
 
                     // Layout
-                    Picker(NSLocalizedString("settings.layout", comment: ""), selection: $controllerLayout) {
-                        Text(NSLocalizedString("settings.layout.3btn", comment: "")).tag("3-Button")
-                        Text(NSLocalizedString("settings.layout.6btn", comment: "")).tag("6-Button")
+                    Picker("settings.layout", selection: $controllerLayout) {
+                        Text("settings.layout.3btn").tag("3-Button")
+                        Text("settings.layout.6btn").tag("6-Button")
                     }
                     .pickerStyle(.segmented)
 
-                    Toggle(NSLocalizedString("settings.colored_buttons", comment: ""), isOn: $buttonColorsEnabled)
+                    Toggle("settings.colored_buttons", isOn: $buttonColorsEnabled)
                         .tint(.blue)
 
-                    Toggle(NSLocalizedString("settings.haptic", comment: ""), isOn: $hapticFeedback)
+                    Toggle("settings.haptic", isOn: $hapticFeedback)
                         .tint(.blue)
 
-                    Toggle(NSLocalizedString("settings.m30", comment: ""), isOn: $m30MappingEnabled)
+                    Toggle("settings.m30", isOn: $m30MappingEnabled)
                         .tint(.blue)
 
-                    Toggle(NSLocalizedString("settings.shoulders", comment: ""), isOn: $allRightShoulders)
+                    Toggle("settings.shoulders", isOn: $allRightShoulders)
                         .tint(.blue)
 
                     HStack {
-                        Text(NSLocalizedString("settings.mfi", comment: ""))
+                        Text("settings.mfi")
                         Spacer()
-                        Text(NSLocalizedString("settings.mfi.auto", comment: ""))
+                        Text("settings.mfi.auto")
                             .foregroundStyle(.secondary)
                     }
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
                 // ── HAKKINDA ─────────────────────────────────────────────────
-                Section(header: Label(NSLocalizedString("settings.about", comment: ""), systemImage: "info.circle.fill")) {
+                Section(header: Label("settings.about", systemImage: "info.circle.fill")) {
                     // Logo + version badge
                     HStack(spacing: 14) {
                         ZStack {
@@ -138,35 +138,35 @@ struct SettingsView: View {
                     .padding(.vertical, 6)
 
                     HStack {
-                        Text(NSLocalizedString("settings.platform", comment: ""))
+                        Text("settings.platform")
                         Spacer()
                         Text("iOS 26+, SwiftUI")
                             .foregroundStyle(.secondary)
                     }
 
                     HStack {
-                        Text(NSLocalizedString("settings.core", comment: ""))
+                        Text("settings.core")
                         Spacer()
-                        Text(NSLocalizedString("settings.core.value", comment: ""))
+                        Text("PicoDrive / Genesis Plus GX")
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.trailing)
                     }
 
                     // GitHub link
-                    Link(destination: URL(string: NSLocalizedString("settings.github.url", comment: ""))!) {
+                    Link(destination: URL(string: "https://github.com/yigit4451/YDrive-Emulator")!) {
                         HStack {
                             Image(systemName: "link")
                                 .foregroundStyle(.blue)
-                            Text(NSLocalizedString("settings.github", comment: ""))
+                            Text("GitHub")
                                 .foregroundStyle(.blue)
                         }
                     }
 
                     // Thanks / Licenses
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(NSLocalizedString("settings.thanks", comment: ""))
+                        Text("settings.thanks")
                             .font(.subheadline.bold())
-                        Text(NSLocalizedString("settings.thanks.text", comment: ""))
+                        Text("settings.thanks.text")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -176,7 +176,7 @@ struct SettingsView: View {
             }
             .scrollContentBackground(.hidden)
         }
-        .navigationTitle(NSLocalizedString("settings", comment: ""))
+        .navigationTitle("settings")
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
     }
 }

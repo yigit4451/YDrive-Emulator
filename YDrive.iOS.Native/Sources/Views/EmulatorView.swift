@@ -20,6 +20,7 @@ struct EmulatorView: View {
     @AppStorage("showFPS")       private var showFPS       = false
     @AppStorage("audioEnabled")  private var audioEnabled  = true
     @AppStorage("videoFilter")   private var videoFilter   = "Off"
+    @AppStorage("hapticFeedback") private var hapticFeedback = true
 
     var body: some View {
         NavigationStack {
@@ -177,19 +178,12 @@ struct EmulatorView: View {
 
     // ── Screenshot ────────────────────────────────────────────────────────────
     private func takeScreenshot() {
-        guard let windowScene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive }),
-              let window = windowScene.windows.first(where: { $0.isKeyWindow })
-        else { return }
-
-        let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
-        let image = renderer.image { ctx in
-            window.layer.render(in: ctx.cgContext)
-        }
+        guard let image = engine.generateScreenshotImage() else { return }
 
         // Haptic feedback
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        if hapticFeedback {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
 
         // Flash overlay
         withAnimation(.easeOut(duration: 0.15)) { showFlash = true }
@@ -197,10 +191,19 @@ struct EmulatorView: View {
             withAnimation(.easeIn(duration: 0.2)) { showFlash = false }
         }
 
-        // Save to Photos
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+        // Save to Photos in background to avoid blocking main thread / engine
+        Task.detached {
+            let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else { return }
-            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+            
+            do {
+                try await PHPhotoLibrary.shared().performChanges {
+                    PHAssetChangeRequest.creationRequestForAsset(from: image)
+                }
+                emulatorLog.info("[SCREENSHOT] Saved game frame successfully")
+            } catch {
+                emulatorLog.error("[SCREENSHOT] Save error: \(error.localizedDescription, privacy: .public)")
+            }
         }
     }
 

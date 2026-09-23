@@ -23,9 +23,9 @@ targets:
     deploymentTarget: "26.0"
     sources:
       - Sources
-      - Resources/Assets.xcassets
-      - Resources/en.lproj
-      - Resources/tr.lproj
+      - path: Resources
+        excludes:
+          - Info.plist
     settings:
       base:
         INFOPLIST_FILE: Resources/Info.plist
