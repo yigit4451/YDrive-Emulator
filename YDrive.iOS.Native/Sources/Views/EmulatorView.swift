@@ -8,6 +8,8 @@ private let emulatorLog = Logger(subsystem: "com.yigit.ydrive", category: "Emula
 struct EmulatorView: View {
     let game: GameItem
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @State private var showingGameDetail = false
     @State private var isControllerConnected = false
     @StateObject private var engine = LibretroEmulatorEngine()
     @State private var isTopBarVisible = false
@@ -105,81 +107,54 @@ struct EmulatorView: View {
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    (Text(Image(systemName: "gamecontroller.fill"))
-                        .foregroundColor(.blue)
-                     + Text("  ")
-                     + Text(game.title)
-                        .foregroundColor(.primary))
+                    Button {
+                        showingGameDetail = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "gamecontroller.fill")
+                                .foregroundColor(.blue)
+                            Text(game.title)
+                                .foregroundColor(.primary)
+                        }
                         .font(.subheadline.bold())
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
+                    }
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    // Pause / Play
-                    Button {
-                        engine.setPaused(!engine.isPaused)
-                    } label: {
-                        Label(
-                            engine.isPaused
-                                ? NSLocalizedString("emulator.play", comment: "")
-                                : NSLocalizedString("emulator.pause", comment: ""),
-                            systemImage: engine.isPaused ? "play.fill" : "pause.fill"
-                        )
-                    }
-
-                    // Save State
-                    Button {
-                        withAnimation {
-                            engine.setPaused(true)
-                            isSaveManagerPresented = true
-                            isTopBarVisible = false
+                    if verticalSizeClass == .regular {
+                        // Portrait: Minimal icons
+                        Button { engine.setPaused(!engine.isPaused) } label: { Label(engine.isPaused ? NSLocalizedString("emulator.play", comment: "") : NSLocalizedString("emulator.pause", comment: ""), systemImage: engine.isPaused ? "play.fill" : "pause.fill") }
+                        Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Label(NSLocalizedString("emulator.reset", comment: ""), systemImage: "arrow.counterclockwise") }
+                        Button(role: .destructive) { engine.stop(); dismiss() } label: { Label(NSLocalizedString("emulator.exit", comment: ""), systemImage: "xmark") }
+                        
+                        Menu {
+                            Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down") }
+                            Button { quickLoad() } label: { Label(NSLocalizedString("saves.quick_load", comment: ""), systemImage: "tray.and.arrow.up") }
+                            Button { takeScreenshot() } label: { Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill") }
+                            Button { withAnimation { isTopBarVisible = false } } label: { Label("Collapse", systemImage: "chevron.up") }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
                         }
-                    } label: {
-                        Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down")
-                    }
-
-                    // Quick Load
-                    Button {
-                        quickLoad()
-                    } label: {
-                        Label(NSLocalizedString("saves.quick_load", comment: ""), systemImage: "tray.and.arrow.up")
-                    }
-
-                    // Screenshot
-                    Button {
-                        takeScreenshot()
-                    } label: {
-                        Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill")
-                    }
-
-                    // Reset
-                    Button {
-                        engine.reset()
-                        if engine.isPaused { engine.setPaused(false) }
-                    } label: {
-                        Label(NSLocalizedString("emulator.reset", comment: ""), systemImage: "arrow.counterclockwise")
-                    }
-
-                    // Exit
-                    Button(role: .destructive) {
-                        engine.stop()
-                        dismiss()
-                    } label: {
-                        Label(NSLocalizedString("emulator.exit", comment: ""), systemImage: "xmark")
-                    }
-
-                    // Collapse
-                    Button {
-                        withAnimation { isTopBarVisible = false }
-                    } label: {
-                        Label("Collapse", systemImage: "chevron.up")
+                    } else {
+                        // Landscape: All icons
+                        Button { engine.setPaused(!engine.isPaused) } label: { Label(engine.isPaused ? NSLocalizedString("emulator.play", comment: "") : NSLocalizedString("emulator.pause", comment: ""), systemImage: engine.isPaused ? "play.fill" : "pause.fill") }
+                        Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down") }
+                        Button { quickLoad() } label: { Label(NSLocalizedString("saves.quick_load", comment: ""), systemImage: "tray.and.arrow.up") }
+                        Button { takeScreenshot() } label: { Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill") }
+                        Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Label(NSLocalizedString("emulator.reset", comment: ""), systemImage: "arrow.counterclockwise") }
+                        Button(role: .destructive) { engine.stop(); dismiss() } label: { Label(NSLocalizedString("emulator.exit", comment: ""), systemImage: "xmark") }
+                        Button { withAnimation { isTopBarVisible = false } } label: { Label("Collapse", systemImage: "chevron.up") }
                     }
                 }
             }
         }
         .sheet(isPresented: $isSaveManagerPresented) {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+        }
+        .sheet(isPresented: $showingGameDetail) {
+            GameDetailView(game: game, viewModel: nil)
         }
         .alert(NSLocalizedString("emulator.bios_required", comment: ""), isPresented: $showingBiosAlert) {
             Button(NSLocalizedString("emulator.ok", comment: ""), role: .cancel) { dismiss() }

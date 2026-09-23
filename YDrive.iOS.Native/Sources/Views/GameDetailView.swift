@@ -2,7 +2,7 @@ import SwiftUI
 
 struct GameDetailView: View {
     let game: GameItem
-    @ObservedObject var viewModel: GameLibraryViewModel
+    var viewModel: GameLibraryViewModel? = nil
     @Environment(\.dismiss) private var dismiss
     @State private var showingGame = false
 
