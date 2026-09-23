@@ -123,11 +123,11 @@ struct GameLibraryView: View {
                         } label: {
                             Image(systemName: "magnifyingglass")
                                 .font(.title2.weight(.bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                                 .padding()
-                                .background(Color.accentColor)
-                                .clipShape(Circle())
-                                .shadow(radius: 4, y: 2)
+                                .applyLiquidGlassCircle()
+                                .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                                .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                         }
                         .padding(.leading, 24)
                         .padding(.bottom, 24)
@@ -165,9 +165,9 @@ struct GameLibraryView: View {
                         .foregroundStyle(Color.accentColor)
                     }
                     .padding(12)
-                    .background(Color(UIColor.secondarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(radius: 10, y: 5)
+                    .applyLiquidGlass(cornerRadius: 16)
+                    .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2), lineWidth: 1))
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -237,6 +237,12 @@ struct GameLibraryView: View {
                         showingDetailsForGame = game
                     } label: {
                         Label("Oyun Bilgileri", systemImage: "info.circle")
+                    }
+                    
+                    Button {
+                        // Kapağı değiştir eylemi (ileride bağlanacak)
+                    } label: {
+                        Label("Kapağı Değiştir", systemImage: "photo.on.rectangle")
                     }
                     
                     Button {

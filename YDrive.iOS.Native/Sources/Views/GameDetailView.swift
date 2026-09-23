@@ -106,8 +106,9 @@ struct GameDetailView: View {
                         .font(.body.weight(.bold))
                         .foregroundStyle(.primary)
                         .padding(12)
-                        .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
-                        .clipShape(Circle())
+                        .applyLiquidGlassCircle()
+                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                        .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                 }
                 Spacer()
             }

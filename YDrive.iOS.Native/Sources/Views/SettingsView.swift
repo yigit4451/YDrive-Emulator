@@ -115,37 +115,6 @@ struct SettingsView: View {
 
                 // ── HAKKINDA ─────────────────────────────────────────────────
                 Section(header: Label("settings.about", systemImage: "info.circle.fill")) {
-                    // Logo + version badge
-                    HStack(spacing: 14) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(LinearGradient(
-                                    colors: [Color(red: 0.04, green: 0.34, blue: 0.85),
-                                             Color(red: 0.53, green: 0.06, blue: 0.93)],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 54, height: 54)
-                            Image(systemName: "gamecontroller.fill")
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundStyle(.white)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("YDrive")
-                                .font(.headline.bold())
-                            Text("v2.0.0 Native Liquid Glass")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                    }
-                    .padding(.vertical, 6)
-
-                    HStack {
-                        Text("settings.platform")
-                        Spacer()
-                        Text("iOS 26+, SwiftUI")
-                            .foregroundStyle(.secondary)
-                    }
-
                     HStack {
                         Text("settings.core")
                         Spacer()
