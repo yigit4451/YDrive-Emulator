@@ -45,6 +45,10 @@ final class LibretroEmulatorEngine: ObservableObject {
     private var frameCount = 0
     private var lastFPSTime = Date()
     
+    // Lock-protected snapshot for screenshots (Thread-Safe / Emulation-Owned)
+    private let screenshotLock = NSLock()
+    private var latestCompletedFrame: EmulatorFrame?
+    
     var isAudioEnabled = true {
         didSet {
             if isAudioEnabled {
@@ -103,6 +107,13 @@ final class LibretroEmulatorEngine: ObservableObject {
                 pitch:       Int(frame.pitch),
                 pixelFormat: frame.pixelFormat
             )
+
+            // Thread-safe snapshot for screenshots
+            if let _ = copied {
+                self?.screenshotLock.lock()
+                self?.latestCompletedFrame = ef
+                self?.screenshotLock.unlock()
+            }
 
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
@@ -309,7 +320,11 @@ final class LibretroEmulatorEngine: ObservableObject {
     // ─────────────────────────────────────────────────────────────────────────
     
     nonisolated func generateScreenshotImage() -> UIImage? {
-        guard let frame = currentFrame, let data = frame.data else { return nil }
+        screenshotLock.lock()
+        let frameSnapshot = latestCompletedFrame
+        screenshotLock.unlock()
+        
+        guard let frame = frameSnapshot, let data = frame.data else { return nil }
         
         let w = frame.width
         let h = frame.height
