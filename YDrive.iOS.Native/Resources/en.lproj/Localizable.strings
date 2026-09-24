@@ -94,3 +94,9 @@
 "bios.footer" = "A correct regional BIOS (.bin) must be installed to run SEGA CD games.";
 "bios.import" = "Import BIOS...";
 "bios.delete_confirm" = "Are you sure you want to delete this BIOS?";
+
+// Search
+"search" = "Search...";
+"close" = "Close";
+"no_results" = "No results found";
+"no_results_for" = "No games found matching \"%@\"";

@@ -22,6 +22,7 @@ struct GameLibraryView: View {
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
     @State private var isSearchActive = false
+    @FocusState private var isSearchFocused: Bool
     
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
@@ -123,13 +124,13 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
-                .searchable(text: $viewModel.searchText, isPresented: $isSearchActive, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Ara...")
                 .toolbar {
                     if !isSearchActive {
                         ToolbarItemGroup(placement: .bottomBar) {
                             Button {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                withAnimation {
                                     isSearchActive = true
+                                    isSearchFocused = true
                                 }
                             } label: {
                                 Image(systemName: "magnifyingglass")
@@ -137,6 +138,37 @@ struct GameLibraryView: View {
                                     .font(.title3.weight(.medium))
                             }
                             Spacer()
+                        }
+                    } else {
+                        ToolbarItemGroup(placement: .bottomBar) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.secondary)
+                                
+                                TextField(NSLocalizedString("search", comment: ""), text: $viewModel.searchText)
+                                    .focused($isSearchFocused)
+                                    .textFieldStyle(.roundedBorder)
+                                    .submitLabel(.search)
+                                
+                                if !viewModel.searchText.isEmpty {
+                                    Button {
+                                        viewModel.searchText = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                            
+                            Button(NSLocalizedString("close", comment: "")) {
+                                withAnimation {
+                                    isSearchActive = false
+                                    isSearchFocused = false
+                                }
+                            }
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.blue)
                         }
                     }
                 }
@@ -148,6 +180,8 @@ struct GameLibraryView: View {
         Group {
             if viewModel.games.isEmpty {
                 emptyState
+            } else if !viewModel.searchText.isEmpty && viewModel.filteredGames.isEmpty {
+                noResultsState
             } else {
                 ScrollView {
                     gameGrid
@@ -184,6 +218,25 @@ struct GameLibraryView: View {
             .controlSize(.large)
             .tint(Color.accentColor)
             .padding(.top, 12)
+        }
+        .padding(32)
+        .containerRelativeFrame(.vertical, alignment: .center)
+    }
+
+    // MARK: – No Results State
+    private var noResultsState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 64))
+                .foregroundStyle(.tertiary)
+            
+            Text(NSLocalizedString("no_results", comment: ""))
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.primary)
+            
+            Text(String(format: NSLocalizedString("no_results_for", comment: ""), viewModel.searchText))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
         .padding(32)
         .containerRelativeFrame(.vertical, alignment: .center)

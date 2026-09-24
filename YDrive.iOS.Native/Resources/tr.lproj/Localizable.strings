@@ -94,3 +94,9 @@
 "bios.footer" = "SEGA CD oyunlarının çalışması için doğru bölgeye ait BIOS dosyasının (.bin) yüklü olması gerekir.";
 "bios.import" = "BIOS İçe Aktar...";
 "bios.delete_confirm" = "Bu BIOS dosyasını silmek istediğinize emin misiniz?";
+
+// Search
+"search" = "Ara...";
+"close" = "Kapat";
+"no_results" = "Sonuç bulunamadı";
+"no_results_for" = "\"%@\" için hiçbir oyun bulunamadı";
