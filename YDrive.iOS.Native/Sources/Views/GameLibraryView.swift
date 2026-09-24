@@ -21,8 +21,6 @@ struct GameLibraryView: View {
     @State private var playingGame: GameItem?
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
-    @State private var isSearchActive = false
-    @FocusState private var isSearchFocused: Bool
     
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
@@ -33,8 +31,7 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                mainContent
+            mainContent
                 .navigationTitle("YDrive")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -125,66 +122,7 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
-                
-                // Floating search button at bottom-left
-                if !isSearchActive {
-                    HStack {
-                        Button {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                isSearchActive = true
-                                isSearchFocused = true
-                            }
-                        } label: {
-                            Image(systemName: "magnifyingglass")
-                                .font(.title2.weight(.bold))
-                                .foregroundStyle(.primary)
-                                .padding()
-                                .background(Material.ultraThin, in: Circle())
-                                .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                        }
-                        .padding(.leading, 24)
-                        .padding(.bottom, 24)
-                        
-                        Spacer()
-                    }
-                }
-                
-                // Custom Search Bar at the bottom
-                if isSearchActive {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.secondary)
-                        
-                        TextField("Ara...", text: $viewModel.searchText)
-                            .focused($isSearchFocused)
-                            .submitLabel(.search)
-                        
-                        if !viewModel.searchText.isEmpty {
-                            Button {
-                                viewModel.searchText = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        Button("Kapat") {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                isSearchActive = false
-                                isSearchFocused = false
-                            }
-                        }
-                        .padding(.leading, 8)
-                        .foregroundStyle(Color.accentColor)
-                    }
-                    .padding(12)
-                    .background(Material.ultraThin, in: RoundedRectangle(cornerRadius: 18))
-                    .shadow(color: .black.opacity(0.15), radius: 15, y: 8)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
+                .searchable(text: $viewModel.searchText, prompt: "Ara...")
         }
     }
     
