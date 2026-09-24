@@ -145,7 +145,7 @@ struct GameLibraryView: View {
                                     .matchedGeometryEffect(id: "searchIcon", in: searchAnimation)
                             }
                             .background(
-                                Material.ultraThin,
+                                Material.bar,
                                 in: Circle()
                             )
                             .matchedGeometryEffect(id: "searchBackground", in: searchAnimation)
@@ -187,7 +187,7 @@ struct GameLibraryView: View {
                             .padding(.trailing, 12)
                         }
                         .background(
-                            Material.ultraThin,
+                            Material.bar,
                             in: Capsule()
                         )
                         .matchedGeometryEffect(id: "searchBackground", in: searchAnimation)
