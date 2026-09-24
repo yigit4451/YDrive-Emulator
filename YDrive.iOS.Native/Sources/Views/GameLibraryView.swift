@@ -123,19 +123,21 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
-                .searchable(text: $viewModel.searchText, isPresented: $isSearchActive, prompt: "Ara...")
+                .searchable(text: $viewModel.searchText, isPresented: $isSearchActive, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Ara...")
                 .toolbar {
                     if !isSearchActive {
-                        ToolbarItem(placement: .bottomBar) {
-                            HStack {
-                                Button {
+                        ToolbarItemGroup(placement: .bottomBar) {
+                            Button {
+                                // Hafif bir gecikme native SearchController'ın klavyeyi daha stabil açmasını sağlar
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                                     isSearchActive = true
-                                } label: {
-                                    Image(systemName: "magnifyingglass")
-                                        .font(.body.weight(.semibold))
                                 }
-                                Spacer()
+                            } label: {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.blue)
+                                    .font(.title3.weight(.medium))
                             }
+                            Spacer()
                         }
                     }
                 }
