@@ -135,7 +135,8 @@ struct GameLibraryView: View {
                             } label: {
                                 Image(systemName: "magnifyingglass")
                                     .foregroundStyle(.blue)
-                                    .font(.title3.weight(.medium))
+                                    .font(.title2.weight(.bold))
+                                    .padding(4)
                             }
                             Spacer()
                         }
@@ -147,7 +148,8 @@ struct GameLibraryView: View {
                                 
                                 TextField(NSLocalizedString("search", comment: ""), text: $viewModel.searchText)
                                     .focused($isSearchFocused)
-                                    .textFieldStyle(.roundedBorder)
+                                    .textFieldStyle(.plain)
+                                    .font(.body.weight(.medium))
                                     .submitLabel(.search)
                                 
                                 if !viewModel.searchText.isEmpty {
