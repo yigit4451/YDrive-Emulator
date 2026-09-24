@@ -22,6 +22,8 @@ struct GameLibraryView: View {
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
     @State private var isSearchActive = false
+    @FocusState private var isSearchFocused: Bool
+    @Namespace private var searchAnimation
     
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
@@ -32,7 +34,8 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            mainContent
+            ZStack(alignment: .bottom) {
+                mainContent
                 .navigationTitle("YDrive")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -123,24 +126,77 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
-                .searchable(text: $viewModel.searchText, isPresented: $isSearchActive, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Ara...")
-                .toolbar {
+                
+                // Animated Custom Bottom Search
+                VStack {
+                    Spacer()
                     if !isSearchActive {
-                        ToolbarItemGroup(placement: .bottomBar) {
+                        HStack {
                             Button {
-                                // Hafif bir gecikme native SearchController'ın klavyeyi daha stabil açmasını sağlar
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                     isSearchActive = true
+                                    isSearchFocused = true
                                 }
                             } label: {
                                 Image(systemName: "magnifyingglass")
+                                    .font(.title2.weight(.medium))
                                     .foregroundStyle(.blue)
-                                    .font(.title3.weight(.medium))
+                                    .padding(14)
+                                    .matchedGeometryEffect(id: "searchIcon", in: searchAnimation)
                             }
+                            .background(
+                                Material.ultraThin,
+                                in: Circle()
+                            )
+                            .matchedGeometryEffect(id: "searchBackground", in: searchAnimation)
+                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                            .padding(.leading, 16)
+                            .padding(.bottom, 16)
+                            
                             Spacer()
                         }
+                    } else {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.blue)
+                                .padding(.leading, 12)
+                                .matchedGeometryEffect(id: "searchIcon", in: searchAnimation)
+                            
+                            TextField("Ara...", text: $viewModel.searchText)
+                                .focused($isSearchFocused)
+                                .submitLabel(.search)
+                                .padding(.vertical, 12)
+                            
+                            if !viewModel.searchText.isEmpty {
+                                Button {
+                                    viewModel.searchText = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            
+                            Button("Kapat") {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    isSearchActive = false
+                                    isSearchFocused = false
+                                }
+                            }
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.blue)
+                            .padding(.trailing, 12)
+                        }
+                        .background(
+                            Material.ultraThin,
+                            in: Capsule()
+                        )
+                        .matchedGeometryEffect(id: "searchBackground", in: searchAnimation)
+                        .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
                     }
                 }
+            }
         }
     }
     
