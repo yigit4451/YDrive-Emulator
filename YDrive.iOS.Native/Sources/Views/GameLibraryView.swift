@@ -135,8 +135,7 @@ struct GameLibraryView: View {
                             } label: {
                                 Image(systemName: "magnifyingglass")
                                     .foregroundStyle(.blue)
-                                    .font(.title2.weight(.bold))
-                                    .padding(4)
+                                    .font(.title3.weight(.bold))
                             }
                             Spacer()
                         }
@@ -149,7 +148,7 @@ struct GameLibraryView: View {
                                 TextField(NSLocalizedString("search", comment: ""), text: $viewModel.searchText)
                                     .focused($isSearchFocused)
                                     .textFieldStyle(.plain)
-                                    .font(.body.weight(.medium))
+                                    .font(.title3.weight(.medium))
                                     .submitLabel(.search)
                                 
                                 if !viewModel.searchText.isEmpty {
@@ -158,10 +157,12 @@ struct GameLibraryView: View {
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
                                             .foregroundStyle(.secondary)
+                                            .font(.title3)
                                     }
                                 }
                             }
-                            .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                             
                             Button(NSLocalizedString("close", comment: "")) {
                                 withAnimation {
