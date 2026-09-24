@@ -22,7 +22,6 @@ struct GameLibraryView: View {
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
     @State private var isSearchActive = false
-    @FocusState private var isSearchFocused: Bool
     
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
@@ -33,8 +32,7 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                mainContent
+            mainContent
                 .navigationTitle("YDrive")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -125,68 +123,22 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
-                
-                // Floating search button at bottom-left
-                if !isSearchActive {
-                    HStack {
-                        Button {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                isSearchActive = true
-                                isSearchFocused = true
+                .searchable(text: $viewModel.searchText, isPresented: $isSearchActive, prompt: "Ara...")
+                .toolbar {
+                    if !isSearchActive {
+                        ToolbarItem(placement: .bottomBar) {
+                            HStack {
+                                Button {
+                                    isSearchActive = true
+                                } label: {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.body.weight(.semibold))
+                                }
+                                Spacer()
                             }
-                        } label: {
-                            Image(systemName: "magnifyingglass")
-                                .font(.title3.weight(.semibold))
-                                .foregroundStyle(.primary)
-                                .padding(14)
-                                .background(Material.ultraThin, in: Circle())
-                                .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                         }
-                        .padding(.leading, 24)
-                        .padding(.bottom, 24)
-                        Spacer()
                     }
                 }
-                
-                // Compact Search Bar at the bottom
-                if isSearchActive {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 8)
-                        
-                        TextField("Ara...", text: $viewModel.searchText)
-                            .focused($isSearchFocused)
-                            .submitLabel(.search)
-                            .padding(.vertical, 8)
-                        
-                        if !viewModel.searchText.isEmpty {
-                            Button {
-                                viewModel.searchText = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        Button("Kapat") {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                isSearchActive = false
-                                isSearchFocused = false
-                            }
-                        }
-                        .font(.subheadline.bold())
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 8)
-                    }
-                    .padding(6)
-                    .background(Material.ultraThin, in: Capsule())
-                    .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
         }
     }
     
