@@ -163,7 +163,7 @@ struct GameDetailView: View {
                     } label: {
                         Image(systemName: "play.fill")
                             .font(.body.weight(.bold))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(.blue)
                             .padding(12)
                             .background(.ultraThinMaterial, in: Circle())
                             .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
