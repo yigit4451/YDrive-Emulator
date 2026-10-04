@@ -31,22 +31,7 @@ struct EmulatorView: View {
                 if engine.coreAvailable {
                     MetalEmulatorView(engine: engine, videoFilter: videoFilter)
                         .ignoresSafeArea()
-                        .overlay(
-                            Group {
-                                if showFPS {
-                                    Text("FPS: \(engine.currentFPS, specifier: "%.1f")")
-                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                        .foregroundColor(.green)
-                                        .padding(6)
-                                        .background(Color.black.opacity(0.6))
-                                        .cornerRadius(4)
-                                        .padding(.top, isTopBarVisible ? 60 : 10)
-                                        .padding(.leading, 10)
-                                        .allowsHitTesting(false)
-                                }
-                            }
-                            , alignment: .topLeading
-                        )
+                        .overlay(fpsOverlay, alignment: .topLeading)
                 } else if let errorMsg = engine.errorMessage {
                     VStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -552,8 +537,28 @@ struct OnScreenControlsView: View {
                 }
             )
     }
+    }
+    
+    // ── FPS Overlay Helper ───────────────────────────────────────────────────
+    private var formattedFPS: String {
+        String(format: "FPS: %.1f", engine.currentFPS)
+    }
+    
+    @ViewBuilder
+    private var fpsOverlay: some View {
+        if showFPS {
+            Text(formattedFPS)
+                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                .foregroundColor(.green)
+                .padding(6)
+                .background(Color.black.opacity(0.6))
+                .cornerRadius(4)
+                .padding(.top, isTopBarVisible ? 60 : 10)
+                .padding(.leading, 10)
+                .allowsHitTesting(false)
+        }
+    }
 }
-
 #Preview {
     EmulatorView(game: GameItem(
         title: "Sonic the Hedgehog",
