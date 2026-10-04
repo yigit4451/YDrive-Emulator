@@ -106,7 +106,7 @@ struct GameLibraryView: View {
                     }
                     .presentationDetents([.large])
                 }
-                .onChange(of: selectedCoverItem) { newItem in
+                .onChange(of: selectedCoverItem) { _, newItem in
                     Task {
                         if let data = try? await newItem?.loadTransferable(type: Data.self),
                            let game = coverTarget {

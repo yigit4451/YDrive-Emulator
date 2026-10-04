@@ -44,7 +44,7 @@ struct SaveManagerView: View {
                                             .font(.headline)
                                             .foregroundStyle(.primary)
                                         
-                                        (Text(date, style: .date) + Text(" ") + Text(date, style: .time))
+                                        Text(date, format: .dateTime)
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }

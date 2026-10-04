@@ -34,7 +34,7 @@ struct EmulatorView: View {
                         .overlay(
                             Group {
                                 if showFPS {
-                                    Text(String(format: "FPS: %.1f", engine.currentFPS))
+                                    Text("FPS: \(engine.currentFPS, specifier: "%.1f")")
                                         .font(.system(size: 14, weight: .bold, design: .monospaced))
                                         .foregroundColor(.green)
                                         .padding(6)
