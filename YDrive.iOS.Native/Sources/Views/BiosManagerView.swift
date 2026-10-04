@@ -22,10 +22,7 @@ struct BiosManagerView: View {
                     }
                 }
             }
-            .listRowBackground(Color.clear.background(.ultraThinMaterial))
         }
-        .scrollContentBackground(.hidden)
-        .background(Color(red: 0.04, green: 0.05, blue: 0.08).ignoresSafeArea())
         .navigationTitle("BIOS Files")
         .navigationBarTitleDisplayMode(.inline)
         .fileImporter(
