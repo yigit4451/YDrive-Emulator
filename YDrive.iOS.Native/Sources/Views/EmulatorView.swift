@@ -537,7 +537,6 @@ struct OnScreenControlsView: View {
                 }
             )
     }
-    }
     
     // ── FPS Overlay Helper ───────────────────────────────────────────────────
     private var formattedFPS: String {
