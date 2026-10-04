@@ -1,46 +1,45 @@
 # YDrive.iOS.Native
 
-Saf **Swift & SwiftUI** ile yazılmış, iOS 16+ hedefli yerel YDrive iOS uygulaması.
+GitHub için şöyle daha güncel bir İngilizce metin kullanırdım:
+A native YDrive app for iOS, built entirely with **Swift & SwiftUI** and targeting **iOS 26+**.
 
-## Proje Yapısı
+## Project Structure
 
-```
 YDrive.iOS.Native/
-├── project.yml                    ← XcodeGen tanım dosyası
+├── project.yml                    ← XcodeGen project definition
 ├── Sources/
 │   ├── App/
-│   │   └── YDriveApp.swift        ← @main giriş noktası
+│   │   └── YDriveApp.swift        ← @main app entry point
 │   ├── Models/
-│   │   └── GameItem.swift         ← ROM veri modeli
+│   │   └── GameItem.swift         ← ROM data model
 │   ├── ViewModels/
 │   │   └── GameLibraryViewModel.swift
 │   └── Views/
-│       ├── ContentView.swift       ← NavigationStack kökü
-│       ├── GameLibraryView.swift   ← Ana kütüphane ekranı (Grid + SearchBar)
-│       ├── GameCardView.swift      ← Tek ROM kartı bileşeni
-│       ├── GameDetailView.swift    ← Oyun detay ve başlatma ekranı
-│       ├── EmulatorView.swift      ← Emülatör yüzeyi + On-Screen Kontroller
-│       └── SettingsView.swift      ← Ayarlar
+│       ├── ContentView.swift       ← NavigationStack root
+│       ├── GameLibraryView.swift   ← Main game library
+│       ├── GameCardView.swift      ← Individual game card component
+│       ├── GameDetailView.swift    ← Game details and launch screen
+│       ├── EmulatorView.swift      ← Emulator surface + on-screen controls
+│       └── SettingsView.swift      ← Settings
 └── Resources/
     ├── Info.plist
     └── Assets.xcassets/
         └── AppIcon.appiconset/
-```
 
-## Xcode Projesi Oluşturma (Mac'te)
-
-```bash
+Generating the Xcode Project
+On macOS:
 cd YDrive.iOS.Native
 brew install xcodegen
 xcodegen generate
 open YDrive.xcodeproj
-```
 
-## Tasarım Dili
-
-- `.background(.ultraThinMaterial)` — Apple buzlu cam (Frosted Glass)
-- `.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))` — Sürekli köşe yuvarlaması  
-- `.stroke(.white.opacity(0.13), lineWidth: 1)` — İnce cam kenarlık
-- `LinearGradient` koyu gece mavisi arka plan  
-- `GCController` framework ile MFi kontrolcü otomatik tespiti
-- Dokunmatik On-Screen D-Pad + A/B/C/Start butonları
+Design
+YDrive uses native SwiftUI components and the iOS 26 design system.
+- Native Liquid Glass UI provided by the system
+- SwiftUI NavigationStack, toolbars, forms, search, and other native controls
+- Adaptive Light, Dark, and System appearance
+- Native SwiftUI game library interface
+- Touch-based on-screen D-Pad and SEGA-style action buttons
+- Physical controller support using Apple's GCController framework
+- Layouts designed to adapt across supported iPhone and iPad configurations
+The interface intentionally relies on native system components instead of manually recreating Liquid Glass with custom blur or Material effects.
