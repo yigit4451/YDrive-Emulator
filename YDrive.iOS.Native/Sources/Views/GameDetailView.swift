@@ -173,7 +173,7 @@ struct GameDetailView: View {
             }
         }
         .fullScreenCover(item: $playingGame) { gameItem in
-            EmulatorView(game: gameItem)
+            EmulatorView(game: gameItem, viewModel: viewModel)
         }
     }
 

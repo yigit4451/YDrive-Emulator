@@ -83,7 +83,7 @@ struct GameLibraryView: View {
                     }
                 }
                 .fullScreenCover(item: $playingGame) { game in
-                    EmulatorView(game: game)
+                    EmulatorView(game: game, viewModel: viewModel)
                 }
                 .sheet(item: $showingDetailsForGame) { game in
                     GameDetailView(initialGame: game, viewModel: viewModel)

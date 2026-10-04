@@ -7,6 +7,7 @@ private let emulatorLog = Logger(subsystem: "com.yigit.ydrive", category: "Emula
 
 struct EmulatorView: View {
     let game: GameItem
+    @ObservedObject var viewModel: GameLibraryViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var showingGameDetail = false
@@ -149,7 +150,7 @@ struct EmulatorView: View {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
         }
         .sheet(isPresented: $showingGameDetail) {
-            GameDetailView(game: game, viewModel: nil)
+            GameDetailView(initialGame: game, viewModel: viewModel)
         }
         .alert(NSLocalizedString("emulator.bios_required", comment: ""), isPresented: $showingBiosAlert) {
             Button(NSLocalizedString("emulator.ok", comment: ""), role: .cancel) { dismiss() }
@@ -265,6 +266,26 @@ struct EmulatorView: View {
         check()
         NotificationCenter.default.addObserver(forName: .GCControllerDidConnect,    object: nil, queue: .main) { _ in check() }
         NotificationCenter.default.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in check() }
+    }
+    
+    // ── FPS Overlay Helper ───────────────────────────────────────────────────
+    private var formattedFPS: String {
+        String(format: "FPS: %.1f", engine.currentFPS)
+    }
+    
+    @ViewBuilder
+    private var fpsOverlay: some View {
+        if showFPS {
+            Text(formattedFPS)
+                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                .foregroundColor(.green)
+                .padding(6)
+                .background(Color.black.opacity(0.6))
+                .cornerRadius(4)
+                .padding(.top, isTopBarVisible ? 60 : 10)
+                .padding(.leading, 10)
+                .allowsHitTesting(false)
+        }
     }
 }
 
@@ -538,30 +559,12 @@ struct OnScreenControlsView: View {
             )
     }
     
-    // ── FPS Overlay Helper ───────────────────────────────────────────────────
-    private var formattedFPS: String {
-        String(format: "FPS: %.1f", engine.currentFPS)
-    }
-    
-    @ViewBuilder
-    private var fpsOverlay: some View {
-        if showFPS {
-            Text(formattedFPS)
-                .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(.green)
-                .padding(6)
-                .background(Color.black.opacity(0.6))
-                .cornerRadius(4)
-                .padding(.top, isTopBarVisible ? 60 : 10)
-                .padding(.leading, 10)
-                .allowsHitTesting(false)
-        }
-    }
+
 }
 #Preview {
     EmulatorView(game: GameItem(
         title: "Sonic the Hedgehog",
         consoleName: "SEGA Genesis",
         fileName: "sonic.bin"
-    ))
+    ), viewModel: GameLibraryViewModel())
 }
