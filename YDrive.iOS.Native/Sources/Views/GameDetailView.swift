@@ -5,6 +5,10 @@ struct GameDetailView: View {
     var viewModel: GameLibraryViewModel? = nil
     @Environment(\.dismiss) private var dismiss
     @State private var showingGame = false
+    @State private var showingRenameAlert = false
+    @State private var renameText = ""
+    @State private var showingDeleteAlert = false
+    @State private var playingGame: GameItem?
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -106,14 +110,88 @@ struct GameDetailView: View {
                         .font(.body.weight(.bold))
                         .foregroundStyle(.primary)
                         .padding(12)
-                        .background(.regularMaterial, in: Circle())
-                        .shadow(color: .black.opacity(0.1), radius: 5, y: 2)
+                        .background(.ultraThinMaterial, in: Circle())
+                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                 }
+                
                 Spacer()
+                
+                HStack(spacing: 12) {
+                    Button {
+                        renameText = game.title
+                        showingRenameAlert = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.body.weight(.bold))
+                            .foregroundStyle(.primary)
+                            .padding(12)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    }
+                    
+                    Button {
+                        showingDeleteAlert = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.body.weight(.bold))
+                            .foregroundStyle(.red)
+                            .padding(12)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    }
+                    
+                    Button {
+                        Task {
+                            if let name = viewModel?.games.first(where: { $0.id == game.id })?.title {
+                                _ = await TheGamesDBClient.shared.fetchMetadata(for: name)
+                                viewModel?.refreshMetadata()
+                            } else {
+                                viewModel?.refreshMetadata()
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.body.weight(.bold))
+                            .foregroundStyle(.blue)
+                            .padding(12)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    }
+                    
+                    Button {
+                        playingGame = game
+                    } label: {
+                        Image(systemName: "play.fill")
+                            .font(.body.weight(.bold))
+                            .foregroundStyle(.green)
+                            .padding(12)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    }
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
-
+        }
+        .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
+            TextField("Yeni ad", text: $renameText)
+            Button("Kaydet") {
+                if !renameText.isEmpty {
+                    viewModel?.renameGame(game, to: renameText)
+                    dismiss()
+                }
+            }
+            Button("İptal", role: .cancel) {}
+        }
+        .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
+            Button("İptal", role: .cancel) { }
+            Button("Sil", role: .destructive) {
+                viewModel?.deleteGame(game)
+                dismiss()
+            }
+        }
+        .fullScreenCover(item: $playingGame) { gameItem in
+            EmulatorView(game: gameItem)
         }
     }
 
