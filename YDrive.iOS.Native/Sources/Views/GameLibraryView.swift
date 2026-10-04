@@ -86,7 +86,7 @@ struct GameLibraryView: View {
                     EmulatorView(game: game)
                 }
                 .sheet(item: $showingDetailsForGame) { game in
-                    GameDetailView(game: game, viewModel: viewModel)
+                    GameDetailView(initialGame: game, viewModel: viewModel)
                 }
                 .sheet(isPresented: $showingSettings) {
                     NavigationStack {

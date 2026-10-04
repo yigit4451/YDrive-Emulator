@@ -64,26 +64,7 @@ final class GameLibraryViewModel: ObservableObject {
         saveLibrary()
 
         Task {
-            if let result = await TheGamesDBClient.shared.fetchMetadata(for: name) {
-                if let index = self.games.firstIndex(where: { $0.id == id }) {
-                    if let dev = result.developer { self.games[index].developer = dev }
-                    if let year = result.releaseYear { self.games[index].releaseYear = year }
-                    if let sum = result.summary { self.games[index].summary = sum }
-                    self.saveLibrary()
-                }
-                
-                if let imgUrlString = result.coverImageUrl, let imgUrl = URL(string: imgUrlString) {
-                    if let (data, _) = try? await URLSession.shared.data(from: imgUrl) {
-                        let imgName = UUID().uuidString + ".jpg"
-                        let imgDest = docs.appendingPathComponent(imgName)
-                        try? data.write(to: imgDest)
-                        if let index = self.games.firstIndex(where: { $0.id == id }) {
-                            self.games[index].coverImagePath = imgDest.path
-                            self.saveLibrary()
-                        }
-                    }
-                }
-            }
+            await fetchMetadata(for: item.id)
         }
     }
 
@@ -116,31 +97,26 @@ final class GameLibraryViewModel: ObservableObject {
         }
     }
 
-    func refreshMetadata() {
-        for (i, game) in games.enumerated() {
-            let id = game.id
-            let name = game.title
+    func fetchMetadata(for gameId: UUID) async {
+        guard let name = games.first(where: { $0.id == gameId })?.title else { return }
+        
+        if let result = await TheGamesDBClient.shared.fetchMetadata(for: name) {
+            if let index = self.games.firstIndex(where: { $0.id == gameId }) {
+                if let dev = result.developer { self.games[index].developer = dev }
+                if let year = result.releaseYear { self.games[index].releaseYear = year }
+                if let sum = result.summary { self.games[index].summary = sum }
+                self.saveLibrary()
+            }
             
-            Task {
-                if let result = await TheGamesDBClient.shared.fetchMetadata(for: name) {
-                    if let index = self.games.firstIndex(where: { $0.id == id }) {
-                        if let dev = result.developer { self.games[index].developer = dev }
-                        if let year = result.releaseYear { self.games[index].releaseYear = year }
-                        if let sum = result.summary { self.games[index].summary = sum }
+            if let imgUrlString = result.coverImageUrl, let imgUrl = URL(string: imgUrlString) {
+                if let (data, _) = try? await URLSession.shared.data(from: imgUrl) {
+                    let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    let imgName = UUID().uuidString + ".jpg"
+                    let imgDest = docs.appendingPathComponent(imgName)
+                    try? data.write(to: imgDest)
+                    if let index = self.games.firstIndex(where: { $0.id == gameId }) {
+                        self.games[index].coverImagePath = imgDest.path
                         self.saveLibrary()
-                    }
-                    
-                    if let imgUrlString = result.coverImageUrl, let imgUrl = URL(string: imgUrlString) {
-                        if let (data, _) = try? await URLSession.shared.data(from: imgUrl) {
-                            let imgName = UUID().uuidString + ".jpg"
-                            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                            let imgDest = docs.appendingPathComponent(imgName)
-                            try? data.write(to: imgDest)
-                            if let index = self.games.firstIndex(where: { $0.id == id }) {
-                                self.games[index].coverImagePath = imgDest.path
-                                self.saveLibrary()
-                            }
-                        }
                     }
                 }
             }

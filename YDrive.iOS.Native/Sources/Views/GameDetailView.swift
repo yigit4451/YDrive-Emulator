@@ -1,14 +1,19 @@
 import SwiftUI
 
 struct GameDetailView: View {
-    let game: GameItem
-    var viewModel: GameLibraryViewModel? = nil
+    let initialGame: GameItem
+    @ObservedObject var viewModel: GameLibraryViewModel
     @Environment(\.dismiss) private var dismiss
+    
     @State private var showingGame = false
     @State private var showingRenameAlert = false
     @State private var renameText = ""
     @State private var showingDeleteAlert = false
     @State private var playingGame: GameItem?
+    
+    var game: GameItem {
+        viewModel.games.first(where: { $0.id == initialGame.id }) ?? initialGame
+    }
 
     var body: some View {
         NavigationStack {
@@ -21,13 +26,22 @@ struct GameDetailView: View {
                             .fill(Color(white: 0.15))
                             .frame(width: 220, height: 290)
 
-                        if let path = game.coverImagePath,
-                           let img = UIImage(contentsOfFile: path) {
-                            Image(uiImage: img)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 220, height: 290)
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        if let path = game.coverImagePath {
+                            let filename = URL(fileURLWithPath: path).lastPathComponent
+                            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                            let resolvedPath = docs.appendingPathComponent(filename).path
+                            
+                            if let img = UIImage(contentsOfFile: resolvedPath) {
+                                Image(uiImage: img)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 220, height: 290)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            } else {
+                                Image(systemName: "gamecontroller.fill")
+                                    .font(.system(size: 72))
+                                    .foregroundStyle(.tertiary)
+                            }
                         } else {
                             Image(systemName: "gamecontroller.fill")
                                 .font(.system(size: 72))
@@ -125,12 +139,7 @@ struct GameDetailView: View {
                     
                     Button {
                         Task {
-                            if let name = viewModel?.games.first(where: { $0.id == game.id })?.title {
-                                _ = await TheGamesDBClient.shared.fetchMetadata(for: name)
-                                viewModel?.refreshMetadata()
-                            } else {
-                                viewModel?.refreshMetadata()
-                            }
+                            await viewModel.fetchMetadata(for: game.id)
                         }
                     } label: {
                         Image(systemName: "arrow.clockwise")
@@ -150,7 +159,7 @@ struct GameDetailView: View {
             TextField("Yeni ad", text: $renameText)
             Button("Kaydet") {
                 if !renameText.isEmpty {
-                    viewModel?.renameGame(game, to: renameText)
+                    viewModel.renameGame(game, to: renameText)
                     dismiss()
                 }
             }
@@ -159,7 +168,7 @@ struct GameDetailView: View {
         .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
             Button("İptal", role: .cancel) { }
             Button("Sil", role: .destructive) {
-                viewModel?.deleteGame(game)
+                viewModel.deleteGame(game)
                 dismiss()
             }
         }
