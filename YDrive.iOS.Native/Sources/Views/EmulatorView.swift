@@ -128,19 +128,21 @@ struct EmulatorView: View {
                         // Portrait: Minimal icons
                         HStack(spacing: 16) {
                             Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
-                            Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
+                            Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
                             Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             
                             Menu {
+                                Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Label("Restart", systemImage: "arrow.counterclockwise") }
                                 Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down") }
                                 Button { quickLoad() } label: { Label(NSLocalizedString("saves.quick_load", comment: ""), systemImage: "tray.and.arrow.up") }
                                 Button { takeScreenshot() } label: { Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill") }
-                                Button { withAnimation { isTopBarVisible = false } } label: { Label("Collapse", systemImage: "chevron.up") }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
                             }
+                            .environment(\.colorScheme, .dark)
                         }
                         .font(.title3)
+                        .tint(.white)
                     } else {
                         // Landscape: All icons
                         HStack(spacing: 16) {
@@ -149,10 +151,11 @@ struct EmulatorView: View {
                             Button { quickLoad() } label: { Image(systemName: "tray.and.arrow.up") }
                             Button { takeScreenshot() } label: { Image(systemName: "camera.fill") }
                             Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
-                            Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
+                            Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                         }
                         .font(.title3)
+                        .tint(.white)
                     }
                 }
             }
