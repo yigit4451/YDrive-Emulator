@@ -11,15 +11,9 @@ struct GameDetailView: View {
     @State private var playingGame: GameItem?
 
     var body: some View {
-        ZStack(alignment: .top) {
-            // Background Content Area
-            Color(UIColor.systemGroupedBackground)
-                .ignoresSafeArea()
-
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 32) {
-                    
-                    Color.clear.frame(height: 60) // Safe area for floating top bar
                     
                     // ── Cover art ──
                     ZStack {
@@ -95,50 +89,39 @@ struct GameDetailView: View {
                     .background(Color(UIColor.secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .padding(.horizontal, 24)
-                    
-                    Color.clear.frame(height: 100) // Padding for floating play button
+                    Color.clear.frame(height: 40) // Padding for bottom
                 }
+                .padding(.top, 24)
             }
-            .ignoresSafeArea(edges: .bottom)
-
-            // ── Floating Top Bar ──
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.body.weight(.bold))
-                        .foregroundStyle(.primary)
-                        .padding(12)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+            .background(Color(UIColor.systemGroupedBackground))
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .fontWeight(.semibold)
+                    }
+                    .tint(.primary)
                 }
-                
-                Spacer()
-                
-                HStack(spacing: 12) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
                         renameText = game.title
                         showingRenameAlert = true
                     } label: {
                         Image(systemName: "pencil")
-                            .font(.body.weight(.bold))
-                            .foregroundStyle(.primary)
-                            .padding(12)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                     }
+                    .tint(.primary)
                     
                     Button {
                         showingDeleteAlert = true
                     } label: {
                         Image(systemName: "trash")
-                            .font(.body.weight(.bold))
-                            .foregroundStyle(.red)
-                            .padding(12)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                     }
+                    .tint(.red)
                     
                     Button {
                         Task {
@@ -151,27 +134,17 @@ struct GameDetailView: View {
                         }
                     } label: {
                         Image(systemName: "arrow.clockwise")
-                            .font(.body.weight(.bold))
-                            .foregroundStyle(.blue)
-                            .padding(12)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                     }
+                    .tint(.blue)
                     
                     Button {
                         playingGame = game
                     } label: {
                         Image(systemName: "play.fill")
-                            .font(.body.weight(.bold))
-                            .foregroundStyle(.blue)
-                            .padding(12)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                     }
+                    .tint(.blue)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
         }
         .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
             TextField("Yeni ad", text: $renameText)
