@@ -62,49 +62,46 @@ final class TheGamesDBClient {
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
-            guard let response = try? decoder.decode(GamesDBResponse.self, from: data),
-                  !response.data.games.isEmpty else { return nil }
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let dataDict = json["data"] as? [String: Any],
+                  let gamesArr = dataDict["games"] as? [[String: Any]],
+                  !gamesArr.isEmpty else { return nil }
 
-            // Best match by title scoring — penalise cross-platform mismatches
-            let bestGame = response.data.games.max { g1, g2 in
-                scoreMatch(title: g1.game_title, query: query) <
-                scoreMatch(title: g2.game_title, query: query)
+            let bestGame = gamesArr.max { g1, g2 in
+                let t1 = (g1["game_title"] as? String) ?? ""
+                let t2 = (g2["game_title"] as? String) ?? ""
+                return scoreMatch(title: t1, query: query) < scoreMatch(title: t2, query: query)
             }
-            guard let game = bestGame else { return nil }
+            guard let gameDict = bestGame, let gameId = gameDict["id"] as? Int else { return nil }
 
-            // Release year
+            let summary = gameDict["overview"] as? String
             var releaseYear: String? = nil
-            if let d = game.release_date, d.count >= 4 { releaseYear = String(d.prefix(4)) }
-
-            // Developer
-            var developerName: String? = nil
-            if let devId = game.developers?.first, let devs = response.include?.developer {
-                developerName = devs[String(devId)]?.name
+            if let dateStr = gameDict["release_date"] as? String, dateStr.count >= 4 {
+                releaseYear = String(dateStr.prefix(4))
             }
 
-            // Box art — front face only
+            // Box art
             var coverImageUrl: String? = nil
-            if let imagesUrl = URL(string:
-                "https://api.thegamesdb.net/v1/Games/Images"
-                + "?apikey=\(apiKey)"
-                + "&games_id=\(game.id)"
-                + "&filter%5Btype%5D=boxart"
-            ) {
+            if let imagesUrl = URL(string: "https://api.thegamesdb.net/v1/Games/Images?apikey=\(apiKey)&games_id=\(gameId)&filter%5Btype%5D=boxart") {
                 if let (imgData, _) = try? await URLSession.shared.data(from: imagesUrl),
-                   let imgResponse = try? decoder.decode(GamesDBImagesResponse.self, from: imgData) {
-                    let baseUrl = imgResponse.data.base_url.original
-                    // Prefer "front" side; fallback to first available
-                    if let boxart = imgResponse.data.images[String(game.id)]?.first(where: { $0.side == "front" })
-                        ?? imgResponse.data.images[String(game.id)]?.first {
-                        coverImageUrl = baseUrl + boxart.filename
+                   let imgJson = try? JSONSerialization.jsonObject(with: imgData) as? [String: Any],
+                   let imgDataDict = imgJson["data"] as? [String: Any],
+                   let baseUrlDict = imgDataDict["base_url"] as? [String: Any],
+                   let baseUrl = baseUrlDict["original"] as? String,
+                   let imagesDict = imgDataDict["images"] as? [String: Any],
+                   let gameImages = imagesDict[String(gameId)] as? [[String: Any]],
+                   !gameImages.isEmpty {
+                    
+                    let frontImage = gameImages.first(where: { ($0["side"] as? String) == "front" }) ?? gameImages[0]
+                    if let filename = frontImage["filename"] as? String {
+                        coverImageUrl = baseUrl + filename
                     }
                 }
             }
 
             return FetchResult(
-                summary: game.overview,
-                developer: developerName,
+                summary: summary,
+                developer: nil,
                 releaseYear: releaseYear,
                 coverImageUrl: coverImageUrl
             )
@@ -121,7 +118,6 @@ final class TheGamesDBClient {
 
         if t == q { return 100 }
 
-        // Penalise if critical identifiers mismatch (sequel numbers, platform hints)
         let identifiers = ["2", "3", "4", "5", "ii", "iii", "iv", "v",
                            "cd", "3d", "32x", "plus", "deluxe", "& knuckles"]
         for id in identifiers {
@@ -132,50 +128,5 @@ final class TheGamesDBClient {
 
         if t.contains(q) || q.contains(t) { return 50 }
         return 0
-    }
-}
-
-// MARK: - Models
-fileprivate struct GamesDBResponse: Decodable {
-    let data: GamesDBData
-    let include: GamesDBInclude?
-
-    struct GamesDBData: Decodable {
-        let games: [GamesDBGame]
-    }
-
-    struct GamesDBGame: Decodable {
-        let id: Int
-        let game_title: String
-        let release_date: String?
-        let overview: String?
-        let developers: [Int]?
-    }
-
-    struct GamesDBInclude: Decodable {
-        let developer: [String: GamesDBDeveloper]?
-    }
-
-    struct GamesDBDeveloper: Decodable {
-        let name: String
-    }
-}
-
-fileprivate struct GamesDBImagesResponse: Decodable {
-    let data: GamesDBImageData
-
-    struct GamesDBImageData: Decodable {
-        let base_url: BaseUrlInfo
-        let images: [String: [GameImage]]
-    }
-
-    struct BaseUrlInfo: Decodable {
-        let original: String
-    }
-
-    struct GameImage: Decodable {
-        let type: String
-        let side: String?
-        let filename: String
     }
 }
