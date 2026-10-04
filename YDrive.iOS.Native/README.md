@@ -1,6 +1,6 @@
 # YDrive.iOS.Native
 
-GitHub için şöyle daha güncel bir İngilizce metin kullanırdım:
+
 A native YDrive app for iOS, built entirely with **Swift & SwiftUI** and targeting **iOS 26+**.
 
 ## Project Structure
