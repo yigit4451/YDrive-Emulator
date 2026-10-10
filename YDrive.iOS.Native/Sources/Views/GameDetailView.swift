@@ -3,6 +3,8 @@ import SwiftUI
 struct GameDetailView: View {
     let initialGame: GameItem
     @ObservedObject var viewModel: GameLibraryViewModel
+    var isPresentedFromEmulator: Bool = false
+    
     @Environment(\.dismiss) private var dismiss
     
     @State private var showingGame = false
@@ -121,37 +123,39 @@ struct GameDetailView: View {
                     }
                     .tint(.primary)
                 }
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button {
-                        renameText = game.title
-                        showingRenameAlert = true
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .tint(.primary)
-                    
-                    Button {
-                        showingDeleteAlert = true
-                    } label: {
-                        Image(systemName: "trash")
-                    }
-                    .tint(.red)
-                    
-                    Button {
-                        Task {
-                            await viewModel.fetchMetadata(for: game.id)
+                if !isPresentedFromEmulator {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button {
+                            renameText = game.title
+                            showingRenameAlert = true
+                        } label: {
+                            Image(systemName: "pencil")
                         }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
+                        .tint(.primary)
+                        
+                        Button {
+                            showingDeleteAlert = true
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .tint(.red)
+                        
+                        Button {
+                            Task {
+                                await viewModel.fetchMetadata(for: game.id)
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .tint(.blue)
+                        
+                        Button {
+                            playingGame = game
+                        } label: {
+                            Image(systemName: "play.fill")
+                        }
+                        .tint(.blue)
                     }
-                    .tint(.blue)
-                    
-                    Button {
-                        playingGame = game
-                    } label: {
-                        Image(systemName: "play.fill")
-                    }
-                    .tint(.blue)
                 }
             }
         }

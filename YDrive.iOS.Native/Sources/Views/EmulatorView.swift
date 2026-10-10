@@ -150,7 +150,7 @@ struct EmulatorView: View {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
         }
         .sheet(isPresented: $showingGameDetail) {
-            GameDetailView(initialGame: game, viewModel: viewModel)
+            GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)
         }
         .alert(NSLocalizedString("emulator.bios_required", comment: ""), isPresented: $showingBiosAlert) {
             Button(NSLocalizedString("emulator.ok", comment: ""), role: .cancel) { dismiss() }
