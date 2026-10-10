@@ -155,8 +155,19 @@ final class TheGamesDBClient {
             print("[TheGamesDB] Unexpected response for '\(query)'")
             return []
         }
-        return games
+        // Only keep original-era releases (Genesis/Sega CD era). Later re-releases
+        // (2011, 2019, 2020 collections, Virtual Console, Mini consoles…) are dropped.
+        // Entries without a release date are kept.
+        return games.filter { game in
+            guard let dateStr = game["release_date"] as? String,
+                  dateStr.count >= 4,
+                  let year = Int(dateStr.prefix(4)) else { return true }
+            return (Self.minYear...Self.maxYear).contains(year)
+        }
     }
+
+    private static let minYear = 1988
+    private static let maxYear = 1999
 
     // ── Scoring ───────────────────────────────────────────────────────────────
     private func scoreMatch(title: String, query: String) -> Int {
