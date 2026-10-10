@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -200,6 +200,18 @@ public class GameMetadataService
                             }
                         }
 
+                        // Sadece orijinal dönem (1983-1999) çıkışlarını kabul et; sonraki yeniden sürümleri (2011, 2019, 2020 vb.) ele.
+                        // Çıkış tarihi olmayan kayıtlar korunur.
+                        nodes.RemoveAll(n =>
+                        {
+                            if (n.TryGetProperty("release_date", out var rdProp) && rdProp.ValueKind == JsonValueKind.String)
+                            {
+                                var rdStr = rdProp.GetString();
+                                if (!string.IsNullOrEmpty(rdStr) && rdStr.Length >= 4 && int.TryParse(rdStr.AsSpan(0, 4), out int y))
+                                    return y < 1983 || y > 1999;
+                            }
+                            return false;
+                        });
                         if (nodes.Count == 0) continue;
 
                         JsonElement gameNode = nodes[0];
