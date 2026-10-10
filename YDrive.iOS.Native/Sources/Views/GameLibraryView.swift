@@ -65,18 +65,18 @@ struct GameLibraryView: View {
                         urls.forEach { viewModel.addRom(url: $0) }
                     }
                 }
-                .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
-                    TextField("Yeni ad", text: $renameText)
-                    Button("Kaydet") {
+                .alert("Rename", isPresented: $showingRenameAlert) {
+                    TextField("New name", text: $renameText)
+                    Button("Save") {
                         if let game = renameTarget, !renameText.isEmpty {
                             viewModel.renameGame(game, to: renameText)
                         }
                     }
-                    Button("İptal", role: .cancel) {}
+                    Button("Cancel", role: .cancel) {}
                 }
-                .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
-                    Button("İptal", role: .cancel) { }
-                    Button("Sil", role: .destructive) {
+                .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete", role: .destructive) {
                         if let game = gameToDelete {
                             viewModel.deleteGame(game)
                         }
@@ -198,7 +198,7 @@ struct GameLibraryView: View {
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
-            Text("Genesis veya SEGA CD ROM dosyası\n(.md .bin .gen .zip .chd) ekleyin")
+            Text("Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -206,7 +206,7 @@ struct GameLibraryView: View {
             Button {
                 viewModel.isFilePickerPresented = true
             } label: {
-                Label("ROM Ekle", systemImage: "plus.circle.fill")
+                Label("Add ROM", systemImage: "plus.circle.fill")
                     .font(.headline)
             }
             .buttonStyle(.borderedProminent)
@@ -266,14 +266,14 @@ struct GameLibraryView: View {
                         renameText = game.title
                         showingRenameAlert = true
                     } label: {
-                        Label("Yeniden Adlandır", systemImage: "pencil")
+                        Label("Rename", systemImage: "pencil")
                     }
 
                     Button(role: .destructive) {
                         gameToDelete = game
                         showingDeleteAlert = true
                     } label: {
-                        Label("Sil", systemImage: "trash")
+                        Label("Delete", systemImage: "trash")
                     }
                 }
             }

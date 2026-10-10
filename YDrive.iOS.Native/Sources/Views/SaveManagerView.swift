@@ -40,7 +40,7 @@ struct SaveManagerView: View {
                                         .foregroundColor(.blue)
                                     
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Kayıt \(slot + 1)")
+                                        Text("Slot \(slot + 1)")
                                             .font(.headline)
                                             .foregroundStyle(.primary)
                                         
@@ -92,9 +92,9 @@ struct SaveManagerView: View {
                 engine.setPaused(false)
             }
         }
-        .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
-            Button("İptal", role: .cancel) { }
-            Button("Sil", role: .destructive) {
+        .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
                 if let slot = slotToDelete {
                     deleteSave(slot: slot)
                 }

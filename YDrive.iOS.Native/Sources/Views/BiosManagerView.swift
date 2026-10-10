@@ -38,9 +38,9 @@ struct BiosManagerView: View {
                 print("Import failed: \(error.localizedDescription)")
             }
         }
-        .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
-            Button("İptal", role: .cancel) { }
-            Button("Sil", role: .destructive) {
+        .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
                 if let region = regionToDelete {
                     manager.deleteBios(region: region)
                 }

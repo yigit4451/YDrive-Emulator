@@ -73,26 +73,26 @@ struct GameDetailView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         if let developer = game.developer {
                             infoRow(icon: "person.fill",
-                                    label: "Yapımcı",
+                                    label: "Developer",
                                     value: developer)
                             Divider()
                         }
 
                         if let releaseYear = game.releaseYear {
                             infoRow(icon: "calendar",
-                                    label: "Çıkış Yılı",
+                                    label: "Release Year",
                                     value: releaseYear)
                             Divider()
                         }
 
                         infoRow(icon: "doc.fill",
-                                label: "Dosya",
+                                label: "File",
                                 value: URL(fileURLWithPath: game.fileName).lastPathComponent)
 
                         if let summary = game.summary {
                             Divider()
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Özet")
+                                Text("Summary")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(summary)
@@ -159,19 +159,19 @@ struct GameDetailView: View {
                 }
             }
         }
-        .alert("Yeniden Adlandır", isPresented: $showingRenameAlert) {
-            TextField("Yeni ad", text: $renameText)
-            Button("Kaydet") {
+        .alert("Rename", isPresented: $showingRenameAlert) {
+            TextField("New name", text: $renameText)
+            Button("Save") {
                 if !renameText.isEmpty {
                     viewModel.renameGame(game, to: renameText)
                     dismiss()
                 }
             }
-            Button("İptal", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         }
-        .alert("Silmek istediğinize emin misiniz?", isPresented: $showingDeleteAlert) {
-            Button("İptal", role: .cancel) { }
-            Button("Sil", role: .destructive) {
+        .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
                 viewModel.deleteGame(game)
                 dismiss()
             }
