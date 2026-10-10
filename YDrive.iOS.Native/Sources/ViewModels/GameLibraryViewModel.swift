@@ -79,6 +79,17 @@ final class GameLibraryViewModel: ObservableObject {
         }
     }
 
+    func removeCoverImage(for game: GameItem) {
+        guard let index = games.firstIndex(of: game) else { return }
+        if let path = games[index].coverImagePath {
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let file = docs.appendingPathComponent(URL(fileURLWithPath: path).lastPathComponent)
+            try? FileManager.default.removeItem(at: file)
+        }
+        games[index].coverImagePath = nil
+        saveLibrary()
+    }
+
     func updateCoverImageData(for game: GameItem, imageData: Data) {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let imgName = UUID().uuidString + ".jpg"

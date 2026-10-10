@@ -263,6 +263,14 @@ struct GameLibraryView: View {
                     } label: {
                         Label("Change Cover", systemImage: "photo.on.rectangle")
                     }
+
+                    if game.coverImagePath != nil {
+                        Button(role: .destructive) {
+                            viewModel.removeCoverImage(for: game)
+                        } label: {
+                            Label("Remove Artwork", systemImage: "photo.badge.minus")
+                        }
+                    }
                     
                     Button {
                         renameTarget = game

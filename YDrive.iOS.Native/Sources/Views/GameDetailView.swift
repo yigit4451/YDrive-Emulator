@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct GameDetailView: View {
     let initialGame: GameItem
@@ -12,6 +13,8 @@ struct GameDetailView: View {
     @State private var renameText = ""
     @State private var showingDeleteAlert = false
     @State private var playingGame: GameItem?
+    @State private var showingCoverPicker = false
+    @State private var selectedCoverItem: PhotosPickerItem?
     
     var game: GameItem {
         viewModel.games.first(where: { $0.id == initialGame.id }) ?? initialGame
@@ -134,6 +137,14 @@ struct GameDetailView: View {
                         .tint(.primary)
                         
                         Button {
+                            showingCoverPicker = true
+                        } label: {
+                            Image(systemName: "photo.on.rectangle")
+                        }
+                        .accessibilityLabel("Change Cover")
+                        .tint(.primary)
+                        
+                        Button {
                             showingDeleteAlert = true
                         } label: {
                             Image(systemName: "trash")
@@ -157,6 +168,16 @@ struct GameDetailView: View {
                         .tint(.blue)
                     }
                 }
+            }
+        }
+        .photosPicker(isPresented: $showingCoverPicker, selection: $selectedCoverItem, matching: .images, photoLibrary: .shared())
+        .onChange(of: selectedCoverItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                if let data = try? await newItem.loadTransferable(type: Data.self) {
+                    viewModel.updateCoverImageData(for: game, imageData: data)
+                }
+                selectedCoverItem = nil
             }
         }
         .alert("Rename", isPresented: $showingRenameAlert) {
