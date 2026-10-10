@@ -17,7 +17,7 @@ struct SaveManagerView: View {
                         Image(systemName: "externaldrive.fill")
                             .font(.system(size: 40))
                             .foregroundStyle(.blue)
-                        Text("Henüz save kaydedilmedi")
+                        Text("No saves yet")
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -71,7 +71,7 @@ struct SaveManagerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Kapat") {
+                    Button("Close") {
                         isPresented = false
                     }
                 }

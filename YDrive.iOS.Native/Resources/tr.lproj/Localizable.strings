@@ -24,7 +24,7 @@
 
 // Save Manager
 "saves.title" = "Kayıtlar";
-"saves.empty" = "Henüz save kaydedilmedi";
+"saves.empty" = "Henüz kayıt yok";
 "saves.slot" = "Kayıt %lld";
 "saves.quick_load" = "Hızlı Yükle";
 
@@ -36,7 +36,7 @@
 "emulator.reset" = "Yeniden Başlat";
 "emulator.pause" = "Duraklat";
 "emulator.play" = "Oynat";
-"emulator.save_state" = "Kayıt Al";
+"emulator.save_state" = "Durumu Kaydet";
 "emulator.screenshot" = "Ekran Görüntüsü";
 "emulator.screenshot_saved" = "Ekran görüntüsü Fotoğraflar'a kaydedildi";
 "emulator.core_unavailable" = "Emülatör Çekirdeği Kullanılamıyor";
@@ -75,7 +75,7 @@
 "settings.layout.3btn" = "3-Tuş";
 "settings.layout.6btn" = "6-Tuş";
 "settings.m30" = "8BitDo M30 Düzeni";
-"settings.shoulders" = "All-Right Omuz Tuşları";
+"settings.shoulders" = "Tüm Omuz Tuşları Sağda";
 "settings.mfi" = "MFi / GCController";
 "settings.mfi.auto" = "Otomatik";
 
@@ -100,3 +100,32 @@
 "close" = "Kapat";
 "no_results" = "Sonuç bulunamadı";
 "no_results_for" = "\"%@\" için hiçbir oyun bulunamadı";
+
+// Literal-key strings used directly by SwiftUI views
+"Cancel" = "İptal";
+"Delete" = "Sil";
+"Save" = "Kaydet";
+"Close" = "Kapat";
+"Rename" = "Yeniden Adlandır";
+"New name" = "Yeni ad";
+"Are you sure you want to delete?" = "Silmek istediğinize emin misiniz?";
+"Restart" = "Yeniden Başlat";
+"Summary" = "Özet";
+"Change Cover" = "Kapağı Değiştir";
+"Remove Artwork" = "Kapağı Kaldır";
+"Game Info" = "Oyun Bilgileri";
+"Add ROM" = "ROM Ekle";
+"No Games in Library" = "Kütüphanede Oyun Yok";
+"Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)" = "Genesis veya SEGA CD ROM dosyası\n(.md .bin .gen .zip .chd) ekleyin";
+"Saves" = "Kayıtlar";
+"No saves yet" = "Henüz kayıt yok";
+"Slot %lld" = "Slot %lld";
+"Import BIOS..." = "BIOS İçe Aktar...";
+"BIOS Files" = "BIOS Dosyaları";
+"SEGA CD BIOS" = "SEGA CD BIOS";
+"A correct regional BIOS (.bin) file must be installed for games to run." = "Oyunların çalışması için doğru bölgeye ait BIOS dosyasının (.bin) yüklü olması gerekir.";
+"Off" = "Kapalı";
+"CRT" = "CRT";
+"Simple CRT" = "Basit CRT";
+"PicoDrive / Genesis Plus GX" = "PicoDrive / Genesis Plus GX";
+"GitHub" = "GitHub";

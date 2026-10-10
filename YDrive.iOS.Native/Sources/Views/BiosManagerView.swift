@@ -8,7 +8,7 @@ struct BiosManagerView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("SEGA CD BIOS"), footer: Text("Oyunların çalışması için doğru bölgeye ait BIOS dosyasının (.bin) yüklü olması gerekir.")) {
+            Section(header: Text("SEGA CD BIOS"), footer: Text("A correct regional BIOS (.bin) file must be installed for games to run.")) {
                 biosRow(region: "USA", isInstalled: manager.isUSABiosInstalled)
                 biosRow(region: "Europe", isInstalled: manager.isEuropeBiosInstalled)
                 biosRow(region: "Japan", isInstalled: manager.isJapanBiosInstalled)

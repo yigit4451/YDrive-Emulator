@@ -100,3 +100,32 @@
 "close" = "Close";
 "no_results" = "No results found";
 "no_results_for" = "No games found matching \"%@\"";
+
+// Literal-key strings used directly by SwiftUI views
+"Cancel" = "Cancel";
+"Delete" = "Delete";
+"Save" = "Save";
+"Close" = "Close";
+"Rename" = "Rename";
+"New name" = "New name";
+"Are you sure you want to delete?" = "Are you sure you want to delete?";
+"Restart" = "Restart";
+"Summary" = "Summary";
+"Change Cover" = "Change Cover";
+"Remove Artwork" = "Remove Artwork";
+"Game Info" = "Game Info";
+"Add ROM" = "Add ROM";
+"No Games in Library" = "No Games in Library";
+"Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)" = "Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)";
+"Saves" = "Saves";
+"No saves yet" = "No saves yet";
+"Slot %lld" = "Slot %lld";
+"Import BIOS..." = "Import BIOS...";
+"BIOS Files" = "BIOS Files";
+"SEGA CD BIOS" = "SEGA CD BIOS";
+"A correct regional BIOS (.bin) file must be installed for games to run." = "A correct regional BIOS (.bin) file must be installed for games to run.";
+"Off" = "Off";
+"CRT" = "CRT";
+"Simple CRT" = "Simple CRT";
+"PicoDrive / Genesis Plus GX" = "PicoDrive / Genesis Plus GX";
+"GitHub" = "GitHub";

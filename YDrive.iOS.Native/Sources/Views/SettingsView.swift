@@ -71,7 +71,7 @@ struct SettingsView: View {
                 Section(header: Label("settings.controller", systemImage: "gamecontroller.fill")) {
                     // Opacity slider
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Opaklık: \(Int(controllerOpacity * 100))%")
+                        Text(String(format: NSLocalizedString("settings.opacity", comment: ""), Int(controllerOpacity * 100)))
                             .font(.subheadline)
                         Slider(value: $controllerOpacity, in: 0.1...1.0, step: 0.05)
                             .tint(.blue)
