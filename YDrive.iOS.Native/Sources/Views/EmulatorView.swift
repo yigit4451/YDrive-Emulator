@@ -102,10 +102,11 @@ struct EmulatorView: View {
                                 .foregroundColor(.blue)
                             Text(game.title)
                                 .foregroundColor(.primary)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                         }
                         .font(.subheadline.bold())
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
+                        .frame(maxWidth: titleMaxWidth, alignment: .leading)
                     }
                 }
 
@@ -171,6 +172,13 @@ struct EmulatorView: View {
         }
         .defersSystemGestures(on: .bottom)
         .persistentSystemOverlays(.hidden)
+    }
+
+    // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
+    private var titleMaxWidth: CGFloat {
+        let width = UIScreen.main.bounds.width
+        let reserved: CGFloat = verticalSizeClass == .regular ? 230 : 360
+        return max(90, width - reserved)
     }
 
     // ── Screenshot ────────────────────────────────────────────────────────────
