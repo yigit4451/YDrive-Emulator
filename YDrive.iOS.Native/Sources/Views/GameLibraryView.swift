@@ -32,6 +32,24 @@ struct GameLibraryView: View {
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
     ]
 
+    /// Red gallery icon with an xmark below it, used for "Remove Artwork" in the card menu.
+    private static let removeArtworkIcon: UIImage = {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        let xCfg = UIImage.SymbolConfiguration(pointSize: 8, weight: .bold)
+        let photo = UIImage(systemName: "photo.on.rectangle", withConfiguration: cfg)?
+            .withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+        let xmark = UIImage(systemName: "xmark", withConfiguration: xCfg)?
+            .withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+        guard let photo, let xmark else { return UIImage() }
+        let size = CGSize(width: max(photo.size.width, xmark.size.width),
+                          height: photo.size.height + xmark.size.height + 1)
+        let img = UIGraphicsImageRenderer(size: size).image { _ in
+            photo.draw(at: CGPoint(x: (size.width - photo.size.width) / 2, y: 0))
+            xmark.draw(at: CGPoint(x: (size.width - xmark.size.width) / 2, y: photo.size.height + 1))
+        }
+        return img.withRenderingMode(.alwaysOriginal)
+    }()
+
     var body: some View {
         NavigationStack {
             mainContent
@@ -268,7 +286,11 @@ struct GameLibraryView: View {
                         Button(role: .destructive) {
                             viewModel.removeCoverImage(for: game)
                         } label: {
-                            Label("Remove Artwork", systemImage: "photo.badge.minus")
+                            Label {
+                                Text("Remove Artwork")
+                            } icon: {
+                                Image(uiImage: Self.removeArtworkIcon)
+                            }
                         }
                     }
                     
