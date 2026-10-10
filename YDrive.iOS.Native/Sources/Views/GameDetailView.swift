@@ -202,7 +202,7 @@ struct GameDetailView: View {
         }
     }
 
-    private func infoRow(icon: String, label: String, value: String) -> some View {
+    private func infoRow(icon: String, label: LocalizedStringKey, value: String) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.body)
