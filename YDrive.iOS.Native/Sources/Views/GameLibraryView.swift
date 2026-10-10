@@ -26,6 +26,7 @@ struct GameLibraryView: View {
     
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
+    @State private var showingCoverPicker = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
@@ -106,9 +107,11 @@ struct GameLibraryView: View {
                     }
                     .presentationDetents([.large])
                 }
+                .photosPicker(isPresented: $showingCoverPicker, selection: $selectedCoverItem, matching: .images, photoLibrary: .shared())
                 .onChange(of: selectedCoverItem) { _, newItem in
+                    guard let newItem else { return }
                     Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self),
+                        if let data = try? await newItem.loadTransferable(type: Data.self),
                            let game = coverTarget {
                             viewModel.updateCoverImageData(for: game, imageData: data)
                         }
@@ -194,7 +197,7 @@ struct GameLibraryView: View {
                 .foregroundStyle(.tertiary)
                 .padding(.bottom, 8)
 
-            Text("Kütüphanede Oyun Yok")
+            Text("No Games in Library")
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
@@ -251,15 +254,15 @@ struct GameLibraryView: View {
                     Button {
                         showingDetailsForGame = game
                     } label: {
-                        Label("Oyun Bilgileri", systemImage: "info.circle")
+                        Label("Game Info", systemImage: "info.circle")
                     }
                     
-                    PhotosPicker(selection: $selectedCoverItem, matching: .images, photoLibrary: .shared()) {
-                        Label("Kapağı Değiştir", systemImage: "photo.on.rectangle")
-                    }
-                    .simultaneousGesture(TapGesture().onEnded {
+                    Button {
                         coverTarget = game
-                    })
+                        showingCoverPicker = true
+                    } label: {
+                        Label("Change Cover", systemImage: "photo.on.rectangle")
+                    }
                     
                     Button {
                         renameTarget = game
