@@ -50,15 +50,16 @@ final class TheGamesDBClient {
         let platform = platformID(for: rawName)
         guard !query.isEmpty else { return nil }
 
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string:
-                "https://api.thegamesdb.net/v1/Games/ByGameName"
-                + "?apikey=\(apiKey)"
-                + "&name=\(encodedQuery)"
-                + "&filter%5Bplatform%5D=\(platform)"
-                + "&fields=overview,developers,publishers&lang=en"
-              )
-        else { return nil }
+        var components = URLComponents(string: "https://api.thegamesdb.net/v1/Games/ByGameName")!
+        components.queryItems = [
+            URLQueryItem(name: "apikey", value: apiKey),
+            URLQueryItem(name: "name", value: query),
+            URLQueryItem(name: "filter[platform]", value: String(platform)),
+            URLQueryItem(name: "fields", value: "overview,developers,publishers"),
+            URLQueryItem(name: "lang", value: "en")
+        ]
+        
+        guard let url = components.url else { return nil }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
@@ -82,7 +83,15 @@ final class TheGamesDBClient {
 
             // Box art
             var coverImageUrl: String? = nil
-            if let imagesUrl = URL(string: "https://api.thegamesdb.net/v1/Games/Images?apikey=\(apiKey)&games_id=\(gameId)&filter%5Btype%5D=boxart") {
+            
+            var imgComponents = URLComponents(string: "https://api.thegamesdb.net/v1/Games/Images")!
+            imgComponents.queryItems = [
+                URLQueryItem(name: "apikey", value: apiKey),
+                URLQueryItem(name: "games_id", value: String(gameId)),
+                URLQueryItem(name: "filter[type]", value: "boxart")
+            ]
+            
+            if let imagesUrl = imgComponents.url {
                 if let (imgData, _) = try? await URLSession.shared.data(from: imagesUrl),
                    let imgJson = try? JSONSerialization.jsonObject(with: imgData) as? [String: Any],
                    let imgDataDict = imgJson["data"] as? [String: Any],
