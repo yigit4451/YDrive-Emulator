@@ -144,6 +144,22 @@ struct GameDetailView: View {
                         .accessibilityLabel("Change Cover")
                         .tint(.primary)
                         
+                        if game.coverImagePath != nil {
+                            Button {
+                                viewModel.removeCoverImage(for: game)
+                            } label: {
+                                VStack(spacing: 0) {
+                                    Image(systemName: "photo.on.rectangle")
+                                        .font(.system(size: 15))
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 9, weight: .bold))
+                                }
+                                .foregroundStyle(.red)
+                            }
+                            .accessibilityLabel("Remove Artwork")
+                            .tint(.red)
+                        }
+                        
                         Button {
                             showingDeleteAlert = true
                         } label: {
