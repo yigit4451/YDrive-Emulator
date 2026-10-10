@@ -23,7 +23,7 @@ final class TheGamesDBClient {
     /// 35 = Sega Master System
     private let platformIDs: [String: Int] = [
         "md": 18, "gen": 18, "smd": 18, "bin": 18, "zip": 18,
-        "chd": 21
+        "chd": 21, "sms": 35
     ]
 
     private init() {}
@@ -166,7 +166,7 @@ final class TheGamesDBClient {
         }
     }
 
-    private static let minYear = 1988
+    private static let minYear = 1985
     private static let maxYear = 1999
 
     // ── Scoring ───────────────────────────────────────────────────────────────
