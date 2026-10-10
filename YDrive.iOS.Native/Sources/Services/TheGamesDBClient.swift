@@ -166,7 +166,7 @@ final class TheGamesDBClient {
         }
     }
 
-    private static let minYear = 1985
+    private static let minYear = 1983
     private static let maxYear = 1999
 
     // ── Scoring ───────────────────────────────────────────────────────────────
