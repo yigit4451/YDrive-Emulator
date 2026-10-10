@@ -26,7 +26,11 @@ final class TheGamesDBClient {
 
     // ── Name normalization ────────────────────────────────────────────────────
     func normalizeName(_ filename: String) -> String {
-        var name = (filename as NSString).deletingPathExtension
+        var name = filename
+        // Only strip real ROM extensions; titles like "Dr. Robotnik" must stay intact.
+        let romExts: Set<String> = ["md", "gen", "smd", "bin", "zip", "chd", "cue", "iso", "sms", "32x"]
+        let ext = (filename as NSString).pathExtension.lowercased()
+        if romExts.contains(ext) { name = (filename as NSString).deletingPathExtension }
 
         // Remove region/version tags like (World), (USA), [!], etc.
         name = name.replacingOccurrences(of: "\\s*\\(.*?\\)", with: "", options: .regularExpression)
@@ -50,23 +54,16 @@ final class TheGamesDBClient {
         let platform = platformID(for: rawName)
         guard !query.isEmpty else { return nil }
 
-        var components = URLComponents(string: "https://api.thegamesdb.net/v1/Games/ByGameName")!
-        components.queryItems = [
-            URLQueryItem(name: "apikey", value: apiKey),
-            URLQueryItem(name: "name", value: query),
-            URLQueryItem(name: "filter[platform]", value: String(platform)),
-            URLQueryItem(name: "fields", value: "overview,developers,publishers"),
-            URLQueryItem(name: "lang", value: "en")
-        ]
-        
-        guard let url = components.url else { return nil }
-
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let dataDict = json["data"] as? [String: Any],
-                  let gamesArr = dataDict["games"] as? [[String: Any]],
-                  !gamesArr.isEmpty else { return nil }
+            // 1) Try with the platform filter, 2) retry without it if nothing found.
+            var gamesArr = try await searchGames(query: query, platform: platform)
+            if gamesArr.isEmpty {
+                gamesArr = try await searchGames(query: query, platform: nil)
+            }
+            guard !gamesArr.isEmpty else {
+                print("[TheGamesDB] No results for '\(query)'")
+                return nil
+            }
 
             let bestGame = gamesArr.max { g1, g2 in
                 let t1 = (g1["game_title"] as? String) ?? ""
@@ -118,6 +115,35 @@ final class TheGamesDBClient {
             print("[TheGamesDB] Fetch failed for \(query): \(error)")
             return nil
         }
+    }
+
+    // ── Networking ────────────────────────────────────────────────────────────
+    private func searchGames(query: String, platform: Int?) async throws -> [[String: Any]] {
+        var components = URLComponents(string: "https://api.thegamesdb.net/v1/Games/ByGameName")!
+        var items = [
+            URLQueryItem(name: "apikey", value: apiKey),
+            URLQueryItem(name: "name", value: query),
+            URLQueryItem(name: "fields", value: "overview")
+        ]
+        if let platform { items.append(URLQueryItem(name: "filter[platform]", value: String(platform))) }
+        components.queryItems = items
+        guard let url = components.url else { return [] }
+
+        var request = URLRequest(url: url, timeoutInterval: 20)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            let body = String(data: data, encoding: .utf8)?.prefix(200) ?? ""
+            print("[TheGamesDB] HTTP \(http.statusCode): \(body)")
+            return []
+        }
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let dataDict = json["data"] as? [String: Any],
+              let games = dataDict["games"] as? [[String: Any]] else {
+            print("[TheGamesDB] Unexpected response for '\(query)'")
+            return []
+        }
+        return games
     }
 
     // ── Scoring ───────────────────────────────────────────────────────────────
