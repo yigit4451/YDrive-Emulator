@@ -126,6 +126,7 @@ struct EmulatorView: View {
                                 } label: {
                                     Label {
                                         Text(NSLocalizedString("emulator.reset", comment: ""))
+                                            .font(.body.weight(.bold))
                                             .foregroundStyle(.white)
                                     } icon: {
                                         Image(uiImage: whiteMenuIcon("arrow.counterclockwise"))
@@ -140,9 +141,10 @@ struct EmulatorView: View {
                                 } label: {
                                     Label {
                                         Text(NSLocalizedString("emulator.save_state", comment: ""))
+                                            .font(.body.weight(.bold))
                                             .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: whiteMenuIcon("tray.and.arrow.down"))
+                                        Image(uiImage: whiteMenuIcon("tray.and.arrow.down.fill"))
                                     }
                                 }
                                 Button {
@@ -150,6 +152,7 @@ struct EmulatorView: View {
                                 } label: {
                                     Label {
                                         Text(NSLocalizedString("emulator.screenshot", comment: ""))
+                                            .font(.body.weight(.bold))
                                             .foregroundStyle(.white)
                                     } icon: {
                                         Image(uiImage: whiteMenuIcon("camera.fill"))
@@ -157,9 +160,11 @@ struct EmulatorView: View {
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
+                                    .foregroundStyle(.white)
                             }
                             .tint(.white)
                             .foregroundStyle(.white)
+                            .environment(\.colorScheme, .dark)
                         }
                         .font(.title3)
                         .tint(.white)
@@ -217,9 +222,9 @@ struct EmulatorView: View {
         return max(90, width - reserved)
     }
 
-    // Helper for crisp white icons in UIMenu
+    // Helper for crisp, bold, solid white icons in UIMenu
     private func whiteMenuIcon(_ name: String) -> UIImage {
-        let cfg = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        let cfg = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)
         return UIImage(systemName: name, withConfiguration: cfg)?
             .withTintColor(.white, renderingMode: .alwaysOriginal) ?? UIImage()
     }
