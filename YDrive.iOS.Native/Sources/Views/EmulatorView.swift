@@ -130,6 +130,7 @@ struct EmulatorView: View {
                         }
                         .font(.title3)
                         .tint(.white)
+                        .fixedSize()
                     } else {
                         // Landscape: All icons
                         HStack(spacing: 16) {
@@ -143,6 +144,7 @@ struct EmulatorView: View {
                         }
                         .font(.title3)
                         .tint(.white)
+                        .fixedSize()
                     }
                 }
             }
@@ -177,7 +179,7 @@ struct EmulatorView: View {
     // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
     private var titleMaxWidth: CGFloat {
         let width = UIScreen.main.bounds.width
-        let reserved: CGFloat = verticalSizeClass == .regular ? 230 : 360
+        let reserved: CGFloat = verticalSizeClass == .regular ? 310 : 430
         return max(90, width - reserved)
     }
 
@@ -259,8 +261,15 @@ struct EmulatorView: View {
     }
 
     private func resolveRomPath(for fileName: String) -> String {
-        if fileName.hasPrefix("/") { return fileName }
+        // The container path changes after a reinstall / re-sign, so a stored absolute path
+        // can go stale. Always prefer the same file name inside the *current* Documents folder.
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let name = (fileName as NSString).lastPathComponent
+        if let candidate = docs?.appendingPathComponent(name).path,
+           FileManager.default.fileExists(atPath: candidate) {
+            return candidate
+        }
+        if fileName.hasPrefix("/") { return fileName }
         return docs?.appendingPathComponent(fileName).path ?? fileName
     }
 
