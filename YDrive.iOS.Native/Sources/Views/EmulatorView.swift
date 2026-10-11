@@ -121,7 +121,6 @@ struct EmulatorView: View {
                             Menu {
                                 Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Label("Restart", systemImage: "arrow.counterclockwise") }
                                 Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down") }
-                                Button { quickLoad() } label: { Label(NSLocalizedString("saves.quick_load", comment: ""), systemImage: "tray.and.arrow.up") }
                                 Button { takeScreenshot() } label: { Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill") }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
@@ -136,7 +135,6 @@ struct EmulatorView: View {
                         HStack(spacing: 16) {
                             Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
                             Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Image(systemName: "tray.and.arrow.down") }
-                            Button { quickLoad() } label: { Image(systemName: "tray.and.arrow.up") }
                             Button { takeScreenshot() } label: { Image(systemName: "camera.fill") }
                             Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
                             Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
