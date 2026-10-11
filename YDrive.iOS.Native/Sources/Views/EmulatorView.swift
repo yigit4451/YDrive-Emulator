@@ -91,6 +91,7 @@ struct EmulatorView: View {
             .statusBarHidden(true)
             .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -119,16 +120,50 @@ struct EmulatorView: View {
                             Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             
                             Menu {
-                                Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Label("Restart", systemImage: "arrow.counterclockwise") }
-                                Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down") }
-                                Button { takeScreenshot() } label: { Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill") }
+                                Button {
+                                    engine.reset()
+                                    if engine.isPaused { engine.setPaused(false) }
+                                } label: {
+                                    Label {
+                                        Text(NSLocalizedString("emulator.reset", comment: ""))
+                                            .foregroundStyle(.white)
+                                    } icon: {
+                                        Image(uiImage: whiteMenuIcon("arrow.counterclockwise"))
+                                    }
+                                }
+                                Button {
+                                    withAnimation {
+                                        engine.setPaused(true)
+                                        isSaveManagerPresented = true
+                                        isTopBarVisible = false
+                                    }
+                                } label: {
+                                    Label {
+                                        Text(NSLocalizedString("emulator.save_state", comment: ""))
+                                            .foregroundStyle(.white)
+                                    } icon: {
+                                        Image(uiImage: whiteMenuIcon("tray.and.arrow.down"))
+                                    }
+                                }
+                                Button {
+                                    takeScreenshot()
+                                } label: {
+                                    Label {
+                                        Text(NSLocalizedString("emulator.screenshot", comment: ""))
+                                            .foregroundStyle(.white)
+                                    } icon: {
+                                        Image(uiImage: whiteMenuIcon("camera.fill"))
+                                    }
+                                }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
                             }
-                            .environment(\.colorScheme, .dark)
+                            .tint(.white)
+                            .foregroundStyle(.white)
                         }
                         .font(.title3)
                         .tint(.white)
+                        .foregroundStyle(.white)
                         .fixedSize()
                     } else {
                         // Landscape: All icons
@@ -172,6 +207,7 @@ struct EmulatorView: View {
         }
         .defersSystemGestures(on: .bottom)
         .persistentSystemOverlays(.hidden)
+        .preferredColorScheme(.dark)
     }
 
     // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
@@ -179,6 +215,13 @@ struct EmulatorView: View {
         let width = UIScreen.main.bounds.width
         let reserved: CGFloat = verticalSizeClass == .regular ? 310 : 430
         return max(90, width - reserved)
+    }
+
+    // Helper for crisp white icons in UIMenu
+    private func whiteMenuIcon(_ name: String) -> UIImage {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        return UIImage(systemName: name, withConfiguration: cfg)?
+            .withTintColor(.white, renderingMode: .alwaysOriginal) ?? UIImage()
     }
 
     // ── Screenshot ────────────────────────────────────────────────────────────
