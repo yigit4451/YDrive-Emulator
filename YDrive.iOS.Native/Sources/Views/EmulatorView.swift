@@ -99,8 +99,7 @@ struct EmulatorView: View {
             }
             .statusBarHidden(true)
             .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
