@@ -9,6 +9,11 @@ let romUTTypes: [UTType] = [
     UTType(filenameExtension: "smd"),
     UTType(filenameExtension: "zip"),
     UTType(filenameExtension: "chd"),
+    UTType(filenameExtension: "32x"),
+    UTType(filenameExtension: "sms"),
+    UTType(filenameExtension: "gg"),
+    UTType(filenameExtension: "iso"),
+    UTType(filenameExtension: "cue"),
 ].compactMap { $0 }
 
 struct GameLibraryView: View {

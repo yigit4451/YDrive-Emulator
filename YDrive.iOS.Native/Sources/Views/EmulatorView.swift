@@ -53,7 +53,7 @@ struct EmulatorView: View {
 
                 // ── On-screen controls ───────────────────────────────────────
                 if !isControllerConnected {
-                    OnScreenControlsView(engine: engine)
+                    OnScreenControlsView(engine: engine, consoleName: game.consoleName)
                         .ignoresSafeArea()
                 }
 
@@ -356,11 +356,12 @@ struct EmulatorView: View {
 
 struct OnScreenControlsView: View {
     @ObservedObject var engine: LibretroEmulatorEngine
+    var consoleName: String = "SEGA Genesis"
 
     @AppStorage("controllerOpacity")   private var controllerOpacity   = 0.4
     @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
     @AppStorage("hapticFeedback")      private var hapticFeedback      = true
-    @AppStorage("controllerLayout")    private var controllerLayout    = "3-Button"
+    @AppStorage("controllerLayout")    private var controllerLayout    = "Auto"
     @AppStorage("buttonSize")          private var buttonSize          = "Normal"
 
     // RetroPad IDs
@@ -385,7 +386,17 @@ struct OnScreenControlsView: View {
         }
     }
 
-    private var is6Button: Bool { controllerLayout == "6-Button" }
+    private var isMasterSystemLayout: Bool {
+        if controllerLayout == "Master System" { return true }
+        if controllerLayout == "Auto" || controllerLayout == "3-Button" {
+            return consoleName == "SEGA Master System"
+        }
+        return false
+    }
+
+    private var is6Button: Bool {
+        !isMasterSystemLayout && controllerLayout == "6-Button"
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -490,32 +501,63 @@ struct OnScreenControlsView: View {
                 dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
                     .position(centers.dpad)
 
-                // A B C
-                actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_Y) }
-                    .position(centers.a)
-                actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_B) }
-                    .position(centers.b)
-                actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_A) }
-                    .position(centers.c)
+                if isMasterSystemLayout {
+                    // Master System: Button 1 & 2
+                    actionButton(
+                        "1",
+                        color: buttonColorsEnabled ? Color(red: 225/255, green: 45/255, blue: 57/255) : defaultBg,
+                        borderColor: buttonColorsEnabled ? Color(red: 255/255, green: 130/255, blue: 140/255) : defaultBorder,
+                        visualSize: btnVisual * 1.08,
+                        hitSize: btnHit + 12
+                    ) { press($0, id: ID_B) }
+                    .position(CGPoint(x: centers.b.x, y: centers.a.y))
 
-                // X Y Z (6-button only)
-                if is6Button {
-                    actionButton("X", color: colorX, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_X) }
-                        .position(xCenter)
-                    actionButton("Y", color: colorY, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_L) }
-                        .position(yCenter)
-                    actionButton("Z", color: colorZ, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_R) }
-                        .position(zCenter)
-                }
+                    actionButton(
+                        "2",
+                        color: buttonColorsEnabled ? Color(red: 0/255, green: 115/255, blue: 230/255) : defaultBg,
+                        borderColor: buttonColorsEnabled ? Color(red: 100/255, green: 181/255, blue: 246/255) : defaultBorder,
+                        visualSize: btnVisual * 1.08,
+                        hitSize: btnHit + 12
+                    ) { press($0, id: ID_A) }
+                    .position(CGPoint(x: centers.c.x, y: centers.b.y))
 
-                // START + MODE
-                startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
-                            hitWidth: startVisualW + 40, hitHeight: startVisualH + 40) { press($0, id: ID_START) }
+                    // PAUSE
+                    startButton(
+                        label: "PAUSE",
+                        visualWidth: startVisualW * 1.15,
+                        visualHeight: startVisualH,
+                        hitWidth: startVisualW * 1.15 + 40,
+                        hitHeight: startVisualH + 40
+                    ) { press($0, id: ID_START) }
                     .position(centers.start)
+                } else {
+                    // A B C
+                    actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_Y) }
+                        .position(centers.a)
+                    actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_B) }
+                        .position(centers.b)
+                    actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_A) }
+                        .position(centers.c)
 
-                smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
-                            hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32) { press($0, id: ID_SELECT) }
-                    .position(centers.mode)
+                    // X Y Z (6-button only)
+                    if is6Button {
+                        actionButton("X", color: colorX, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_X) }
+                            .position(xCenter)
+                        actionButton("Y", color: colorY, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_L) }
+                            .position(yCenter)
+                        actionButton("Z", color: colorZ, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_R) }
+                            .position(zCenter)
+                    }
+
+                    // START + MODE
+                    startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
+                                hitWidth: startVisualW + 40, hitHeight: startVisualH + 40) { press($0, id: ID_START) }
+                        .position(centers.start)
+
+                    smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
+                                hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32) { press($0, id: ID_SELECT) }
+                        .position(centers.mode)
+                }
             }
         }
         .opacity(controllerOpacity)

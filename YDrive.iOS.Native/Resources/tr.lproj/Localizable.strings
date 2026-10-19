@@ -12,7 +12,7 @@
 
 // Library
 "library.empty.title" = "Kütüphanede Oyun Yok";
-"library.empty.subtitle" = "Genesis veya SEGA CD ROM dosyası\n(.md .bin .gen .zip .chd) ekleyin";
+"library.empty.subtitle" = "Genesis, 32X, Master System veya SEGA CD ROM'u\n(.md .bin .gen .32x .sms .zip .chd) ekleyin";
 "library.add_rom" = "ROM Ekle";
 "library.search" = "Ara...";
 "library.refresh" = "Meta Veriyi Yenile";
@@ -72,8 +72,10 @@
 "settings.colored_buttons" = "Renkli Butonlar";
 "settings.haptic" = "Dokunsal Geri Bildirim";
 "settings.layout" = "Düzen";
-"settings.layout.3btn" = "3-Tuş";
-"settings.layout.6btn" = "6-Tuş";
+"settings.layout.auto" = "Otomatik (Konsola Göre)";
+"settings.layout.3btn" = "3-Tuş (Genesis)";
+"settings.layout.6btn" = "6-Tuş (Genesis)";
+"settings.layout.sms" = "Master System (2-Tuş)";
 "settings.m30" = "8BitDo M30 Düzeni";
 "settings.shoulders" = "Tüm Omuz Tuşları Sağda";
 "settings.mfi" = "MFi / GCController";

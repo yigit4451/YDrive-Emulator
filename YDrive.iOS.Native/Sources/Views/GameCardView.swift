@@ -49,10 +49,10 @@ struct GameCardView: View {
             // ── Console badge ──
             Text(game.consoleName)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(.blue)
+                .foregroundStyle(consoleColor)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(.blue.opacity(0.15))
+                .background(consoleColor.opacity(0.15))
                 .clipShape(Capsule())
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
@@ -63,6 +63,21 @@ struct GameCardView: View {
         // iOS native material
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+    }
+
+    private var consoleColor: Color {
+        switch game.consoleName {
+        case "SEGA 32X":
+            return Color(red: 255/255, green: 80/255, blue: 50/255)
+        case "SEGA Master System":
+            return Color(red: 170/255, green: 70/255, blue: 230/255)
+        case "SEGA CD":
+            return Color(red: 0/255, green: 200/255, blue: 215/255)
+        case "SEGA Game Gear":
+            return Color(red: 60/255, green: 200/255, blue: 120/255)
+        default:
+            return Color.blue
+        }
     }
 }
 

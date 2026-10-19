@@ -23,7 +23,23 @@ final class GameLibraryViewModel: ObservableObject {
     private func loadLibrary() {
         if let data = UserDefaults.standard.data(forKey: saveKey),
            let decoded = try? JSONDecoder().decode([GameItem].self, from: data) {
-            self.games = decoded
+            var updated = false
+            self.games = decoded.map { game in
+                var g = game
+                // If console was previously defaulted to SEGA Genesis, re-evaluate if it's actually 32X, Master System, etc.
+                if g.consoleName == "SEGA Genesis" {
+                    let fileURL = URL(fileURLWithPath: g.fileName)
+                    let detected = Self.detectConsole(url: fileURL, title: g.title)
+                    if detected != g.consoleName {
+                        g.consoleName = detected
+                        updated = true
+                    }
+                }
+                return g
+            }
+            if updated {
+                saveLibrary()
+            }
         }
     }
 
@@ -52,11 +68,11 @@ final class GameLibraryViewModel: ObservableObject {
         }
 
         let name = url.deletingPathExtension().lastPathComponent
-        let ext = url.pathExtension.lowercased()
+        let console = Self.detectConsole(url: dest, title: name)
         
         let item = GameItem(
             title: name,
-            consoleName: ext == "chd" ? "SEGA CD" : "SEGA Genesis",
+            consoleName: console,
             fileName: dest.path   // store the full absolute path
         )
         games.append(item)
@@ -108,9 +124,9 @@ final class GameLibraryViewModel: ObservableObject {
     }
 
     func fetchMetadata(for gameId: UUID) async {
-        guard let name = games.first(where: { $0.id == gameId })?.title else { return }
+        guard let game = games.first(where: { $0.id == gameId }) else { return }
         
-        if let result = await TheGamesDBClient.shared.fetchMetadata(for: name) {
+        if let result = await TheGamesDBClient.shared.fetchMetadata(for: game.title, consoleName: game.consoleName, fileName: game.fileName) {
             if let index = self.games.firstIndex(where: { $0.id == gameId }) {
                 if let dev = result.developer { self.games[index].developer = dev }
                 if let year = result.releaseYear { self.games[index].releaseYear = year }
@@ -131,5 +147,128 @@ final class GameLibraryViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    // ── Console Detection ─────────────────────────────────────────────────────
+    static func detectConsole(url: URL, title: String? = nil) -> String {
+        let ext = url.pathExtension.lowercased()
+        let filename = url.lastPathComponent.lowercased()
+        let gameTitle = (title ?? url.deletingPathExtension().lastPathComponent).lowercased()
+
+        // 1. Direct extension match
+        switch ext {
+        case "32x":
+            return "SEGA 32X"
+        case "sms":
+            return "SEGA Master System"
+        case "gg":
+            return "SEGA Game Gear"
+        case "chd", "iso", "cue":
+            return "SEGA CD"
+        case "md", "gen", "smd":
+            if check32XHeader(at: url) {
+                return "SEGA 32X"
+            }
+            return "SEGA Genesis"
+        default:
+            break
+        }
+
+        // 2. Binary header inspection (for .bin, .rom, or unknown extensions)
+        if FileManager.default.fileExists(atPath: url.path) {
+            if check32XHeader(at: url) {
+                return "SEGA 32X"
+            }
+            if checkMasterSystemHeader(at: url) {
+                return "SEGA Master System"
+            }
+            if checkGenesisHeader(at: url) {
+                return "SEGA Genesis"
+            }
+        }
+
+        // 3. Filename / Title pattern heuristics
+        let searchString = "\(filename) \(gameTitle)"
+        
+        // 32X hints
+        if searchString.contains("(32x)") || searchString.contains("[32x]") || searchString.contains(" 32x") || searchString.contains("-32x") {
+            return "SEGA 32X"
+        }
+        
+        // Master System hints
+        if searchString.contains("(sms)") || searchString.contains("[sms]") || searchString.contains("master system") || searchString.contains("(ms)") {
+            return "SEGA Master System"
+        }
+        
+        // Game Gear hints
+        if searchString.contains("(gg)") || searchString.contains("[gg]") || searchString.contains("game gear") {
+            return "SEGA Game Gear"
+        }
+        
+        // Sega CD hints
+        if searchString.contains("(sega cd)") || searchString.contains("[sega cd]") || searchString.contains("mega-cd") || searchString.contains("sega cd") || searchString.contains("(scd)") {
+            return "SEGA CD"
+        }
+
+        // Default
+        return "SEGA Genesis"
+    }
+
+    private static func check32XHeader(at url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        
+        guard let data = try? handle.read(upToCount: 512), data.count >= 0x120 else { return false }
+        let slice = data[0x100..<0x120]
+        if let str = String(data: slice, encoding: .ascii) {
+            if str.contains("32X") {
+                return true
+            }
+        }
+        return false
+    }
+
+    private static func checkMasterSystemHeader(at url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        
+        guard let data = try? handle.read(upToCount: 0xC000), data.count >= 0x2000 else { return false }
+        guard let tmrSega = "TMR SEGA".data(using: .ascii) else { return false }
+        
+        let standardOffsets = [0x7FF0, 0x3FF0, 0x1FF0, 0xBFF0]
+        for offset in standardOffsets {
+            if data.count >= offset + 8 {
+                let slice = data[offset..<(offset + 8)]
+                if slice == tmrSega {
+                    return true
+                }
+            }
+        }
+        
+        let shiftedOffsets = [0x81F0, 0x41F0, 0x21F0]
+        for offset in shiftedOffsets {
+            if data.count >= offset + 8 {
+                let slice = data[offset..<(offset + 8)]
+                if slice == tmrSega {
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+
+    private static func checkGenesisHeader(at url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        
+        guard let data = try? handle.read(upToCount: 512), data.count >= 0x110 else { return false }
+        let slice = data[0x100..<0x110]
+        if let str = String(data: slice, encoding: .ascii) {
+            if str.hasPrefix("SEGA") {
+                return true
+            }
+        }
+        return false
     }
 }

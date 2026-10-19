@@ -64,10 +64,10 @@ struct GameDetailView: View {
 
                         Text(game.consoleName)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(consoleColor)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
-                            .background(Color.accentColor.opacity(0.15))
+                            .background(consoleColor.opacity(0.15))
                             .clipShape(Capsule())
                     }
                     .padding(.horizontal)
@@ -218,6 +218,21 @@ struct GameDetailView: View {
                     .lineLimit(1)
             }
             Spacer()
+        }
+    }
+
+    private var consoleColor: Color {
+        switch game.consoleName {
+        case "SEGA 32X":
+            return Color(red: 255/255, green: 80/255, blue: 50/255)
+        case "SEGA Master System":
+            return Color(red: 170/255, green: 70/255, blue: 230/255)
+        case "SEGA CD":
+            return Color(red: 0/255, green: 200/255, blue: 215/255)
+        case "SEGA Game Gear":
+            return Color(red: 60/255, green: 200/255, blue: 120/255)
+        default:
+            return Color.accentColor
         }
     }
 }

@@ -14,7 +14,7 @@ struct SettingsView: View {
     @AppStorage("hapticFeedback")      private var hapticFeedback      = true
     @AppStorage("controllerOpacity")   private var controllerOpacity   = 0.4
     @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
-    @AppStorage("controllerLayout")    private var controllerLayout    = "3-Button"
+    @AppStorage("controllerLayout")    private var controllerLayout    = "Auto"
     @AppStorage("buttonSize")          private var buttonSize          = "Normal"
     @AppStorage("m30MappingEnabled")   private var m30MappingEnabled   = false
     @AppStorage("allRightShoulders")   private var allRightShoulders   = false
@@ -87,10 +87,12 @@ struct SettingsView: View {
 
                     // Layout
                     Picker("settings.layout", selection: $controllerLayout) {
+                        Text("settings.layout.auto").tag("Auto")
                         Text("settings.layout.3btn").tag("3-Button")
                         Text("settings.layout.6btn").tag("6-Button")
+                        Text("settings.layout.sms").tag("Master System")
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
 
                     Toggle("settings.colored_buttons", isOn: $buttonColorsEnabled)
                         .tint(.blue)

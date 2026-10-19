@@ -20,27 +20,43 @@ final class TheGamesDBClient {
     /// TheGamesDB platform IDs
     /// 18 = Sega Genesis/Mega Drive
     /// 21 = Sega CD / Mega-CD
+    /// 33 = Sega 32X
     /// 35 = Sega Master System
+    /// 20 = Sega Game Gear
     private let platformIDs: [String: Int] = [
         "md": 18, "gen": 18, "smd": 18, "bin": 18, "zip": 18,
-        "chd": 21, "sms": 35
+        "chd": 21, "iso": 21, "cue": 21,
+        "32x": 33, "sms": 35, "gg": 20
     ]
 
     private init() {}
 
     // ── Platform ID resolution ────────────────────────────────────────────────
-    /// Determines the platform ID from the file extension.
+    /// Determines the platform ID from console name or file extension.
     /// Defaults to Genesis (18) if unknown.
-    func platformID(for filename: String) -> Int {
-        let ext = (filename as NSString).pathExtension.lowercased()
-        return platformIDs[ext] ?? 18
+    func platformID(for consoleName: String? = nil, filename: String? = nil) -> Int {
+        if let consoleName = consoleName {
+            switch consoleName {
+            case "SEGA 32X": return 33
+            case "SEGA Master System": return 35
+            case "SEGA Game Gear": return 20
+            case "SEGA CD": return 21
+            case "SEGA Genesis": return 18
+            default: break
+            }
+        }
+        if let filename = filename {
+            let ext = (filename as NSString).pathExtension.lowercased()
+            if let id = platformIDs[ext] { return id }
+        }
+        return 18
     }
 
     // ── Name normalization ────────────────────────────────────────────────────
     func normalizeName(_ filename: String) -> String {
         var name = filename
         // Only strip real ROM extensions; titles like "Dr. Robotnik" must stay intact.
-        let romExts: Set<String> = ["md", "gen", "smd", "bin", "zip", "chd", "cue", "iso", "sms", "32x"]
+        let romExts: Set<String> = ["md", "gen", "smd", "bin", "zip", "chd", "cue", "iso", "sms", "32x", "gg"]
         let ext = (filename as NSString).pathExtension.lowercased()
         if romExts.contains(ext) { name = (filename as NSString).deletingPathExtension }
 
@@ -61,9 +77,9 @@ final class TheGamesDBClient {
         let coverImageUrl: String?
     }
 
-    func fetchMetadata(for rawName: String) async -> FetchResult? {
+    func fetchMetadata(for rawName: String, consoleName: String? = nil, fileName: String? = nil) async -> FetchResult? {
         let query    = normalizeName(rawName)
-        let platform = platformID(for: rawName)
+        let platform = platformID(for: consoleName, filename: fileName ?? rawName)
         guard !query.isEmpty else { return nil }
 
         do {
