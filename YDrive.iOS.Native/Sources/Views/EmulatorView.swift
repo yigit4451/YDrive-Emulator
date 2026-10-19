@@ -35,7 +35,7 @@ struct EmulatorView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(UIColor.systemBackground).ignoresSafeArea()
+                Color.black.ignoresSafeArea()
 
                 // ── Game render surface ──────────────────────────────────────
                 if engine.coreAvailable {
@@ -84,11 +84,11 @@ struct EmulatorView: View {
                             } label: {
                                 Image(systemName: "chevron.down")
                                     .font(.title3.bold())
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(.white)
                                     .padding(12)
                                     .background(.ultraThinMaterial)
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.primary.opacity(0.15), lineWidth: 1))
+                                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                             }
                             .padding(16)
                             .padding(.top, 24)
@@ -99,9 +99,9 @@ struct EmulatorView: View {
             }
             .statusBarHidden(true)
             .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarBackground(Color(UIColor.systemBackground), for: .navigationBar)
-            .toolbarColorScheme(colorScheme == .light ? .light : .dark, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -112,7 +112,7 @@ struct EmulatorView: View {
                             Image(systemName: "gamecontroller.fill")
                                 .foregroundColor(.blue)
                             Text(game.title)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.white)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }
@@ -137,8 +137,9 @@ struct EmulatorView: View {
                                     Label {
                                         Text(NSLocalizedString("emulator.reset", comment: ""))
                                             .font(.body.weight(.bold))
+                                            .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: adaptiveMenuIcon("arrow.counterclockwise"))
+                                        Image(uiImage: whiteMenuIcon("arrow.counterclockwise"))
                                     }
                                 }
                                 Button {
@@ -151,8 +152,9 @@ struct EmulatorView: View {
                                     Label {
                                         Text(NSLocalizedString("emulator.save_state", comment: ""))
                                             .font(.body.weight(.bold))
+                                            .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: adaptiveMenuIcon("tray.and.arrow.down.fill"))
+                                        Image(uiImage: whiteMenuIcon("tray.and.arrow.down.fill"))
                                     }
                                 }
                                 Button {
@@ -161,18 +163,22 @@ struct EmulatorView: View {
                                     Label {
                                         Text(NSLocalizedString("emulator.screenshot", comment: ""))
                                             .font(.body.weight(.bold))
+                                            .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: adaptiveMenuIcon("camera.fill"))
+                                        Image(uiImage: whiteMenuIcon("camera.fill"))
                                     }
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(.white)
                             }
+                            .tint(.white)
+                            .foregroundStyle(.white)
+                            .environment(\.colorScheme, .dark)
                         }
                         .font(.title3)
-                        .tint(.primary)
-                        .foregroundStyle(.primary)
+                        .tint(.white)
+                        .foregroundStyle(.white)
                         .fixedSize()
                     } else {
                         // Landscape: All icons
@@ -185,8 +191,8 @@ struct EmulatorView: View {
                             Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                         }
                         .font(.title3)
-                        .tint(.primary)
-                        .foregroundStyle(.primary)
+                        .tint(.white)
+                        .foregroundStyle(.white)
                         .fixedSize()
                     }
                 }
@@ -219,7 +225,7 @@ struct EmulatorView: View {
         }
         .defersSystemGestures(on: .bottom)
         .persistentSystemOverlays(.hidden)
-        .preferredColorScheme(colorScheme)
+        .preferredColorScheme(.dark)
     }
 
     // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
@@ -229,12 +235,11 @@ struct EmulatorView: View {
         return max(90, width - reserved)
     }
 
-    // Helper for crisp, bold icons in UIMenu matching current theme
-    private func adaptiveMenuIcon(_ name: String) -> UIImage {
+    // Helper for crisp, bold, solid white icons in UIMenu
+    private func whiteMenuIcon(_ name: String) -> UIImage {
         let cfg = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)
-        let iconColor: UIColor = (colorScheme == .light) ? .label : .white
         return UIImage(systemName: name, withConfiguration: cfg)?
-            .withTintColor(iconColor, renderingMode: .alwaysOriginal) ?? UIImage()
+            .withTintColor(.white, renderingMode: .alwaysOriginal) ?? UIImage()
     }
 
     // ── Screenshot ────────────────────────────────────────────────────────────
