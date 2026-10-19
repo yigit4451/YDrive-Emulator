@@ -9,7 +9,7 @@ struct GameCardView: View {
             // ── Cover art ──
             ZStack {
                 Rectangle()
-                    .fill(Color(white: 0.15))
+                    .fill(Color(UIColor.secondarySystemFill))
                     .frame(height: 140)
 
                 if let coverPath = game.coverImagePath {

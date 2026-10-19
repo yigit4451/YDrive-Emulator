@@ -4,10 +4,19 @@ struct SaveManagerView: View {
     @ObservedObject var engine: LibretroEmulatorEngine
     let gameFileName: String
     @Binding var isPresented: Bool
+    @AppStorage("appTheme") private var appTheme = "system"
     
     @State private var existingSaves: [Int: Date] = [:]
     @State private var slotToDelete: Int?
     @State private var showingDeleteAlert = false
+
+    private var colorScheme: ColorScheme? {
+        switch appTheme {
+        case "dark": return .dark
+        case "light": return .light
+        default: return nil
+        }
+    }
     
     var body: some View {
         NavigationStack {
@@ -100,6 +109,7 @@ struct SaveManagerView: View {
                 }
             }
         }
+        .preferredColorScheme(colorScheme)
     }
     
     private func fetchAllSaves() {

@@ -18,6 +18,7 @@ let romUTTypes: [UTType] = [
 
 struct GameLibraryView: View {
     @StateObject private var viewModel = GameLibraryViewModel()
+    @AppStorage("appTheme") private var appTheme = "system"
     @State private var showingRenameAlert = false
     @State private var renameTarget: GameItem?
     @State private var renameText = ""
@@ -26,12 +27,18 @@ struct GameLibraryView: View {
     @State private var playingGame: GameItem?
     @State private var showingDetailsForGame: GameItem?
     @State private var showingSettings = false
-    @State private var isSearchActive = false
-    @FocusState private var isSearchFocused: Bool
     
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
     @State private var showingCoverPicker = false
+
+    private var colorScheme: ColorScheme? {
+        switch appTheme {
+        case "dark": return .dark
+        case "light": return .light
+        default: return nil
+        }
+    }
 
     private let columns = [
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
@@ -59,6 +66,11 @@ struct GameLibraryView: View {
         NavigationStack {
             mainContent
                 .navigationTitle("YDrive")
+                .searchable(
+                    text: $viewModel.searchText,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: Text(NSLocalizedString("search", comment: ""))
+                )
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -108,9 +120,11 @@ struct GameLibraryView: View {
                 }
                 .fullScreenCover(item: $playingGame) { game in
                     EmulatorView(game: game, viewModel: viewModel)
+                        .preferredColorScheme(colorScheme)
                 }
                 .sheet(item: $showingDetailsForGame) { game in
                     GameDetailView(initialGame: game, viewModel: viewModel)
+                        .preferredColorScheme(colorScheme)
                 }
                 .sheet(isPresented: $showingSettings) {
                     NavigationStack {
@@ -129,6 +143,7 @@ struct GameLibraryView: View {
                             }
                     }
                     .presentationDetents([.large])
+                    .preferredColorScheme(colorScheme)
                 }
                 .photosPicker(isPresented: $showingCoverPicker, selection: $selectedCoverItem, matching: .images, photoLibrary: .shared())
                 .onChange(of: selectedCoverItem) { _, newItem in
@@ -142,58 +157,8 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
-                .toolbar {
-                    if !isSearchActive {
-                        ToolbarItemGroup(placement: .bottomBar) {
-                            Button {
-                                withAnimation {
-                                    isSearchActive = true
-                                    isSearchFocused = true
-                                }
-                            } label: {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundStyle(.blue)
-                                    .font(.title3.weight(.bold))
-                            }
-                            Spacer()
-                        }
-                    } else {
-                        ToolbarItemGroup(placement: .bottomBar) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundStyle(.secondary)
-                                
-                                TextField(NSLocalizedString("search", comment: ""), text: $viewModel.searchText)
-                                    .focused($isSearchFocused)
-                                    .textFieldStyle(.plain)
-                                    .font(.title3.weight(.medium))
-                                    .submitLabel(.search)
-                                
-                                if !viewModel.searchText.isEmpty {
-                                    Button {
-                                        viewModel.searchText = ""
-                                    } label: {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .foregroundStyle(.secondary)
-                                            .font(.title3)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            
-                            Button(NSLocalizedString("close", comment: "")) {
-                                withAnimation {
-                                    isSearchActive = false
-                                    isSearchFocused = false
-                                }
-                            }
-                            .font(.body.weight(.medium))
-                            .foregroundStyle(.blue)
-                        }
-                    }
-                }
         }
+        .preferredColorScheme(colorScheme)
     }
     
     @ViewBuilder

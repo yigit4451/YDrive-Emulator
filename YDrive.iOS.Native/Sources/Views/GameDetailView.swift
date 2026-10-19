@@ -7,6 +7,7 @@ struct GameDetailView: View {
     var isPresentedFromEmulator: Bool = false
     
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("appTheme") private var appTheme = "system"
     
     @State private var showingGame = false
     @State private var showingRenameAlert = false
@@ -15,6 +16,14 @@ struct GameDetailView: View {
     @State private var playingGame: GameItem?
     @State private var showingCoverPicker = false
     @State private var selectedCoverItem: PhotosPickerItem?
+
+    private var colorScheme: ColorScheme? {
+        switch appTheme {
+        case "dark": return .dark
+        case "light": return .light
+        default: return nil
+        }
+    }
     
     var game: GameItem {
         viewModel.games.first(where: { $0.id == initialGame.id }) ?? initialGame
@@ -28,7 +37,7 @@ struct GameDetailView: View {
                     // ── Cover art ──
                     ZStack {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(white: 0.15))
+                            .fill(Color(UIColor.secondarySystemFill))
                             .frame(width: 220, height: 290)
 
                         if let path = game.coverImagePath {
@@ -199,7 +208,9 @@ struct GameDetailView: View {
         }
         .fullScreenCover(item: $playingGame) { gameItem in
             EmulatorView(game: gameItem, viewModel: viewModel)
+                .preferredColorScheme(colorScheme)
         }
+        .preferredColorScheme(colorScheme)
     }
 
     private func infoRow(icon: String, label: LocalizedStringKey, value: String) -> some View {

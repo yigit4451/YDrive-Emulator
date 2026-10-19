@@ -18,15 +18,24 @@ struct EmulatorView: View {
     @State private var showingBiosAlert = false
     @State private var showFlash = false
 
-    @AppStorage("showFPS")       private var showFPS       = false
-    @AppStorage("audioEnabled")  private var audioEnabled  = true
-    @AppStorage("videoFilter")   private var videoFilter   = "Off"
+    @AppStorage("showFPS")        private var showFPS        = false
+    @AppStorage("audioEnabled")   private var audioEnabled   = true
+    @AppStorage("videoFilter")    private var videoFilter    = "Off"
     @AppStorage("hapticFeedback") private var hapticFeedback = true
+    @AppStorage("appTheme")       private var appTheme       = "system"
+
+    private var colorScheme: ColorScheme? {
+        switch appTheme {
+        case "dark":  return .dark
+        case "light": return .light
+        default:      return nil
+        }
+    }
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                Color(UIColor.systemBackground).ignoresSafeArea()
 
                 // ── Game render surface ──────────────────────────────────────
                 if engine.coreAvailable {
@@ -75,11 +84,11 @@ struct EmulatorView: View {
                             } label: {
                                 Image(systemName: "chevron.down")
                                     .font(.title3.bold())
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(.primary)
                                     .padding(12)
-                                    .background(Color.black.opacity(0.6))
+                                    .background(.ultraThinMaterial)
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                                    .overlay(Circle().stroke(Color.primary.opacity(0.15), lineWidth: 1))
                             }
                             .padding(16)
                             .padding(.top, 24)
@@ -91,7 +100,8 @@ struct EmulatorView: View {
             .statusBarHidden(true)
             .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(Color(UIColor.systemBackground), for: .navigationBar)
+            .toolbarColorScheme(colorScheme == .light ? .light : .dark, for: .navigationBar)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -127,9 +137,8 @@ struct EmulatorView: View {
                                     Label {
                                         Text(NSLocalizedString("emulator.reset", comment: ""))
                                             .font(.body.weight(.bold))
-                                            .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: whiteMenuIcon("arrow.counterclockwise"))
+                                        Image(uiImage: adaptiveMenuIcon("arrow.counterclockwise"))
                                     }
                                 }
                                 Button {
@@ -142,9 +151,8 @@ struct EmulatorView: View {
                                     Label {
                                         Text(NSLocalizedString("emulator.save_state", comment: ""))
                                             .font(.body.weight(.bold))
-                                            .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: whiteMenuIcon("tray.and.arrow.down.fill"))
+                                        Image(uiImage: adaptiveMenuIcon("tray.and.arrow.down.fill"))
                                     }
                                 }
                                 Button {
@@ -153,22 +161,18 @@ struct EmulatorView: View {
                                     Label {
                                         Text(NSLocalizedString("emulator.screenshot", comment: ""))
                                             .font(.body.weight(.bold))
-                                            .foregroundStyle(.white)
                                     } icon: {
-                                        Image(uiImage: whiteMenuIcon("camera.fill"))
+                                        Image(uiImage: adaptiveMenuIcon("camera.fill"))
                                     }
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(.primary)
                             }
-                            .tint(.white)
-                            .foregroundStyle(.white)
-                            .environment(\.colorScheme, .dark)
                         }
                         .font(.title3)
-                        .tint(.white)
-                        .foregroundStyle(.white)
+                        .tint(.primary)
+                        .foregroundStyle(.primary)
                         .fixedSize()
                     } else {
                         // Landscape: All icons
@@ -181,7 +185,8 @@ struct EmulatorView: View {
                             Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                         }
                         .font(.title3)
-                        .tint(.white)
+                        .tint(.primary)
+                        .foregroundStyle(.primary)
                         .fixedSize()
                     }
                 }
@@ -189,9 +194,11 @@ struct EmulatorView: View {
         }
         .sheet(isPresented: $isSaveManagerPresented) {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+                .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)
+                .preferredColorScheme(colorScheme)
         }
         .alert(NSLocalizedString("emulator.bios_required", comment: ""), isPresented: $showingBiosAlert) {
             Button(NSLocalizedString("emulator.ok", comment: ""), role: .cancel) { dismiss() }
@@ -212,7 +219,7 @@ struct EmulatorView: View {
         }
         .defersSystemGestures(on: .bottom)
         .persistentSystemOverlays(.hidden)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(colorScheme)
     }
 
     // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
@@ -222,11 +229,12 @@ struct EmulatorView: View {
         return max(90, width - reserved)
     }
 
-    // Helper for crisp, bold, solid white icons in UIMenu
-    private func whiteMenuIcon(_ name: String) -> UIImage {
+    // Helper for crisp, bold icons in UIMenu matching current theme
+    private func adaptiveMenuIcon(_ name: String) -> UIImage {
         let cfg = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)
+        let iconColor: UIColor = (colorScheme == .light) ? .label : .white
         return UIImage(systemName: name, withConfiguration: cfg)?
-            .withTintColor(.white, renderingMode: .alwaysOriginal) ?? UIImage()
+            .withTintColor(iconColor, renderingMode: .alwaysOriginal) ?? UIImage()
     }
 
     // ── Screenshot ────────────────────────────────────────────────────────────
