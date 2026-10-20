@@ -1,0 +1,42 @@
+name: AltStore Source Check
+
+# Lightweight check for the AltStore source tooling. Does not build the app
+# and never publishes anything.
+on:
+  push:
+    branches: [ "main", "master" ]
+    paths:
+      - "altstore/**"
+      - "scripts/altstore/**"
+      - ".github/workflows/ydrive-ios-release.yml"
+      - ".github/workflows/altstore-source-check.yml"
+  pull_request:
+    paths:
+      - "altstore/**"
+      - "scripts/altstore/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile scripts
+        run: python3 -m py_compile scripts/altstore/build_source.py scripts/altstore/inspect_ipa.py
+      - name: Validate metadata JSON
+        run: python3 -m json.tool altstore/source-metadata.json > /dev/null
+      - name: Generator self-test
+        run: python3 scripts/altstore/build_source.py self-test
+      - name: Dry run against real GitHub Releases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          OWNER="${GITHUB_REPOSITORY%%/*}"; NAME="${GITHUB_REPOSITORY#*/}"
+          python3 scripts/altstore/build_source.py build \
+            --repo "$GITHUB_REPOSITORY" \
+            --pages-url "https://${OWNER,,}.github.io/${NAME}" \
+            --output dry-run/altstore.json --verify-downloads --skip-if-empty
+          if [ -f dry-run/altstore.json ]; then cat dry-run/altstore.json; fi

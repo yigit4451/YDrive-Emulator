@@ -1,0 +1,224 @@
+name: YDrive iOS Release & AltStore Source
+
+# How to publish a new iOS version:
+#   1. Set MARKETING_VERSION (and bump CURRENT_PROJECT_VERSION) in
+#      YDrive.iOS.Native/project.yml and push to main.
+#   2. Push a tag:  git tag ios-v<MARKETING_VERSION> && git push origin ios-v<MARKETING_VERSION>
+#      (or create a GitHub Release with that new tag in the web UI).
+#
+# The workflow then builds the IPA with the existing, unchanged build workflow,
+# attaches it to the GitHub Release, regenerates altstore.json from ALL real iOS
+# releases and deploys it to GitHub Pages. If the build fails nothing is
+# published and the live source stays untouched.
+#
+# Editing or deleting an iOS release re-generates the source (no rebuild).
+
+on:
+  push:
+    tags: [ "ios-v*" ]
+  release:
+    types: [ published, edited, deleted ]
+  workflow_dispatch: # choose an ios-v* tag in "Use workflow from" to republish it
+
+permissions:
+  contents: read
+
+env:
+  TAG_PREFIX: ios-v
+  BUNDLE_ID: com.yigit.ydrive
+
+jobs:
+  preflight:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check tag matches project version
+        id: v
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != "$TAG_PREFIX"* ]]; then
+            echo "::error::Run this workflow on a tag named ${TAG_PREFIX}<version> (current ref: $GITHUB_REF)"
+            exit 1
+          fi
+          TAG="$GITHUB_REF_NAME"
+          VERSION="${TAG#"$TAG_PREFIX"}"
+          PROJECT_VERSION=$(sed -n 's/^[[:space:]]*MARKETING_VERSION:[[:space:]]*\([^[:space:]]*\).*/\1/p' YDrive.iOS.Native/project.yml | head -1 | tr -d '"')
+          echo "Tag version: $VERSION  |  project.yml MARKETING_VERSION: $PROJECT_VERSION"
+          if [[ "$VERSION" != "$PROJECT_VERSION" ]]; then
+            echo "::error::Tag $TAG does not match MARKETING_VERSION $PROJECT_VERSION in YDrive.iOS.Native/project.yml"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  # The existing iOS build workflow, reused as-is.
+  build:
+    needs: preflight
+    uses: ./.github/workflows/ydrive-ios-build.yml
+
+  release-assets:
+    needs: [ preflight, build ]
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.preflight.outputs.tag }}
+      VERSION: ${{ needs.preflight.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download IPA artifacts from the successful build
+        uses: actions/download-artifact@v4
+        with:
+          pattern: YDrive-*
+          path: dist
+          merge-multiple: true
+
+      - name: Prepare release files
+        run: |
+          set -euo pipefail
+          ls -l dist
+          test -s dist/YDrive-adhoc.ipa || { echo "::error::YDrive-adhoc.ipa missing from build"; exit 1; }
+          test -s dist/YDrive-unsigned.ipa || { echo "::error::YDrive-unsigned.ipa missing from build"; exit 1; }
+          mkdir -p release
+          # AltStore re-signs the IPA with the user's own Apple ID on install.
+          cp dist/YDrive-adhoc.ipa    "release/YDrive-${VERSION}.ipa"
+          cp dist/YDrive-unsigned.ipa "release/YDrive-${VERSION}-unsigned.ipa"
+
+      - name: Inspect IPA (version, bundle id, size, permissions)
+        run: |
+          python3 scripts/altstore/inspect_ipa.py \
+            --ipa "release/YDrive-${VERSION}.ipa" \
+            --expected-version "$VERSION" \
+            --expected-bundle-id "$BUNDLE_ID" \
+            --output release/altstore-version.json
+
+      - name: Create or update GitHub Release
+        run: |
+          set -euo pipefail
+          FILES=("release/YDrive-${VERSION}.ipa" "release/YDrive-${VERSION}-unsigned.ipa" "release/altstore-version.json")
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists - uploading assets"
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+          else
+            echo "Creating release $TAG"
+            gh release create "$TAG" "${FILES[@]}" \
+              --verify-tag --title "YDrive ${VERSION} (iOS)" --generate-notes
+          fi
+
+      - name: Verify uploaded IPA matches the built file
+        run: |
+          set -euo pipefail
+          LOCAL_SIZE=$(stat -f%z "release/YDrive-${VERSION}.ipa")
+          REMOTE_SIZE=$(gh release view "$TAG" --json assets \
+            --jq ".assets[] | select(.name == \"YDrive-${VERSION}.ipa\") | .size")
+          echo "local=$LOCAL_SIZE remote=$REMOTE_SIZE"
+          [[ "$LOCAL_SIZE" == "$REMOTE_SIZE" ]] || { echo "::error::Uploaded IPA size mismatch"; exit 1; }
+          IS_DRAFT=$(gh release view "$TAG" --json isDraft --jq .isDraft)
+          if [[ "$IS_DRAFT" == "true" ]]; then
+            echo "::warning::Release $TAG is a draft; it will appear in the AltStore source once published."
+          fi
+
+  site:
+    needs: [ release-assets ]
+    # Push/dispatch: only after a successful build + upload. Release events: regenerate only.
+    if: >-
+      always() &&
+      (needs.release-assets.result == 'success' ||
+       (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'ios-v')))
+    runs-on: ubuntu-latest
+    outputs:
+      has_source: ${{ steps.build.outputs.has_source }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Self-test source generator
+        run: python3 scripts/altstore/build_source.py self-test
+
+      - name: Build altstore.json from real GitHub Releases
+        id: build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          NAME="${GITHUB_REPOSITORY#*/}"
+          PAGES_URL="https://${OWNER,,}.github.io/${NAME}"
+          python3 scripts/altstore/build_source.py build \
+            --repo "$GITHUB_REPOSITORY" \
+            --pages-url "$PAGES_URL" \
+            --output site/altstore.json \
+            --verify-downloads --skip-if-empty
+          if [[ -f site/altstore.json ]]; then
+            echo "has_source=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_source=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate JSON
+        if: steps.build.outputs.has_source == 'true'
+        run: |
+          python3 -m json.tool site/altstore.json > /dev/null
+          python3 scripts/altstore/build_source.py validate site/altstore.json
+
+      - name: Assemble Pages site
+        if: steps.build.outputs.has_source == 'true'
+        run: |
+          set -euo pipefail
+          cp YDrive.iOS.Native/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png site/icon.png
+          cp altstore/index.html site/index.html
+          touch site/.nojekyll
+          ls -l site
+
+      - name: Upload Pages artifact
+        if: steps.build.outputs.has_source == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: site
+    if: always() && needs.site.result == 'success' && needs.site.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}altstore.json
+    concurrency:
+      group: altstore-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify the live source
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          URL="${PAGE_URL%/}/altstore.json"
+          for i in $(seq 1 12); do
+            if curl -fsSL "$URL" -o live.json && python3 scripts/altstore/build_source.py validate live.json; then
+              echo "Live AltStore source: $URL"
+              echo "### AltStore source is live: $URL" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "Not available yet (attempt $i), retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::$URL could not be fetched/validated after deployment"
+          exit 1

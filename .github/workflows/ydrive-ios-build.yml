@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
+  # Reused (unchanged) by ydrive-ios-release.yml to build release IPAs.
+  workflow_call:
 
 jobs:
   build:

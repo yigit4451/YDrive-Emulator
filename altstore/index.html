@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YDrive – AltStore Kaynağı</title>
+  <meta name="description" content="YDrive iOS SEGA emülatörünün resmî AltStore Classic kaynağı.">
+  <link rel="icon" href="icon.png">
+  <style>
+    :root { color-scheme: light dark; --tint: #005FD9; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at 30% 20%, #1d6fe6 0%, #003f94 45%, #0b1220 100%);
+      color: #fff; padding: 24px;
+    }
+    main {
+      width: min(520px, 100%); padding: 32px; border-radius: 28px; text-align: center;
+      background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    img { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    h1 { margin: 18px 0 6px; font-size: 2rem; }
+    p { margin: 8px 0; opacity: .85; line-height: 1.5; }
+    code {
+      display: block; margin: 18px 0; padding: 12px 14px; border-radius: 14px; word-break: break-all;
+      background: rgba(0,0,0,.30); font-size: .9rem; user-select: all;
+    }
+    a.btn {
+      display: inline-block; margin: 6px; padding: 12px 20px; border-radius: 999px; font-weight: 600;
+      text-decoration: none; color: #fff; background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3); transition: transform .15s ease, background .15s ease;
+    }
+    a.btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.28); }
+    small { display: block; margin-top: 18px; opacity: .6; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="icon.png" alt="YDrive uygulama ikonu">
+    <h1>YDrive</h1>
+    <p>Açık kaynaklı, iOS için geliştirilmiş SEGA konsol emülatörü.</p>
+    <p>AltStore Classic → Browse/Sources → <strong>+</strong> ile aşağıdaki adresi ekleyin:</p>
+    <code id="source-url">altstore.json</code>
+    <a class="btn" id="add-altstore" href="#">AltStore'a ekle</a>
+    <a class="btn" id="view-json" href="altstore.json">JSON'u görüntüle</a>
+    <a class="btn" id="github" href="https://github.com/yigit4451/YDrive-Emulator">GitHub</a>
+    <small>Uygulamalar AltStore tarafından kendi Apple ID'nizle imzalanır; Apple'ın ücretsiz hesap sınırları (7 gün, uygulama sayısı) geçerlidir.</small>
+  </main>
+  <script>
+    const url = new URL("altstore.json", location.href).href;
+    document.getElementById("source-url").textContent = url;
+    document.getElementById("add-altstore").href = "altstore://source?url=" + encodeURIComponent(url);
+  </script>
+</body>
+</html>
