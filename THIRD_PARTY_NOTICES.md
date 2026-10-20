@@ -44,15 +44,7 @@ YDrive incorporates open-source components, emulation cores, and libraries under
 
 ---
 
-## 5. Avalonia UI
-- **Description:** Cross-platform XAML framework used in the `YDrive.CrossPlatform` workspace.
-- **Authors:** Avalonia Community.
-- **Upstream:** [https://github.com/AvaloniaUI/Avalonia](https://github.com/AvaloniaUI/Avalonia)
-- **License:** MIT License.
-
----
-
-## 6. XcodeGen
+## 5. XcodeGen
 - **Description:** Command-line tool that generates Xcode projects from project specs.
 - **Authors:** Yonas Kolb and contributors.
 - **Upstream:** [https://github.com/yonaskolb/XcodeGen](https://github.com/yonaskolb/XcodeGen)

@@ -98,7 +98,6 @@ open YDrive.xcodeproj
 │   ├── Resources/              # Asset catalogs, Info.plist, Settings.bundle, l10n
 │   ├── Sources/                # Swift & Metal emulation engine, UI views, services
 │   └── project.yml             # XcodeGen project specification
-├── YDrive.CrossPlatform/       # Shared Avalonia workspace
 └── YDrive.sln                  # Root solution file for Windows development
 ```
 
