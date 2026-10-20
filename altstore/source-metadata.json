@@ -16,7 +16,13 @@
     "subtitle": "Open-source SEGA console emulator for iOS.",
     "localizedDescription": "Open-source SEGA console emulator developed for iOS.\n\nSupported Systems:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (requires BIOS files)\n• SEGA 32X\n• SEGA Master System\n\nFeatures:\n• PicoDrive (Libretro) emulation core\n• Metal-based rendering\n• Modern SwiftUI and Liquid Glass interface\n• On-screen touch controls and physical controller support\n• Save states and screenshots\n• Automatic cover art and game info via TheGamesDB\n\nYDrive does not contain any game ROMs or BIOS files; you must provide your own legally obtained copies.\n\nSource code: https://github.com/yigit4451/YDrive-Emulator",
     "category": "games",
-    "tintColor": "#005FD9"
+    "tintColor": "#005FD9",
+    "screenshots": [
+      "https://yigit4451.github.io/YDrive-Emulator/screenshots/1-library.png",
+      "https://yigit4451.github.io/YDrive-Emulator/screenshots/2-sonic1.png",
+      "https://yigit4451.github.io/YDrive-Emulator/screenshots/3-segacd.png",
+      "https://yigit4451.github.io/YDrive-Emulator/screenshots/4-settings.png"
+    ]
   },
   "release": {
     "tagPrefix": "ios-v",

@@ -185,6 +185,13 @@ def build_source(meta: dict, releases: list[dict], pages_url: str,
     perms = entries[0][2]
     icon_url = f"{pages_url}/icon.png"
 
+    resolved_screenshots = []
+    for shot in app_meta.get("screenshots", []):
+        url = shot if isinstance(shot, str) else (shot or {}).get("imageURL", "")
+        if url and not url.startswith("http://") and not url.startswith("https://"):
+            url = f"{pages_url}/{url.lstrip('/')}"
+        resolved_screenshots.append(url)
+
     app = {
         "name": app_meta["name"],
         "bundleIdentifier": bundle_id,
@@ -194,7 +201,7 @@ def build_source(meta: dict, releases: list[dict], pages_url: str,
         "iconURL": icon_url,
         "tintColor": app_meta["tintColor"],
         "category": app_meta["category"],
-        "screenshots": app_meta.get("screenshots", []),
+        "screenshots": resolved_screenshots,
         "versions": [e for _, e, _ in entries],
         "appPermissions": {
             "entitlements": list(perms.get("entitlements", [])),

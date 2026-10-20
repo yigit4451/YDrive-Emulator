@@ -185,8 +185,11 @@ jobs:
           set -euo pipefail
           cp YDrive.iOS.Native/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png site/icon.png
           cp altstore/index.html site/index.html
+          if [ -d altstore/screenshots ]; then
+            cp -r altstore/screenshots site/
+          fi
           touch site/.nojekyll
-          ls -l site
+          ls -la site
 
       - name: Upload Pages artifact
         if: steps.build.outputs.has_source == 'true'

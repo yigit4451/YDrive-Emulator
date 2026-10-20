@@ -20,6 +20,12 @@
       "tintColor": "#005FD9",
       "category": "games",
       "minOSVersion": "26.0",
+      "screenshots": [
+        "https://yigit4451.github.io/YDrive-Emulator/screenshots/1-library.png",
+        "https://yigit4451.github.io/YDrive-Emulator/screenshots/2-sonic1.png",
+        "https://yigit4451.github.io/YDrive-Emulator/screenshots/3-segacd.png",
+        "https://yigit4451.github.io/YDrive-Emulator/screenshots/4-settings.png"
+      ],
       "versions": [],
       "appPermissions": {
         "entitlements": [],

@@ -16,12 +16,12 @@
       color: #fff; padding: 24px;
     }
     main {
-      width: min(520px, 100%); padding: 32px; border-radius: 28px; text-align: center;
+      width: min(680px, 100%); padding: 32px 24px; border-radius: 28px; text-align: center;
       background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22);
       backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
     }
-    img { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .app-icon { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
     h1 { margin: 18px 0 6px; font-size: 2rem; }
     p { margin: 8px 0; opacity: .85; line-height: 1.5; }
     code {
@@ -34,12 +34,23 @@
       border: 1px solid rgba(255,255,255,.3); transition: transform .15s ease, background .15s ease;
     }
     a.btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.28); }
+    .gallery {
+      display: flex; gap: 14px; margin: 28px 0 10px; overflow-x: auto; padding: 6px 2px 16px;
+      scrollbar-width: thin; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .gallery img {
+      width: 150px; height: auto; border-radius: 18px; flex-shrink: 0;
+      scroll-snap-align: center; box-shadow: 0 10px 25px rgba(0,0,0,.45);
+      border: 1px solid rgba(255,255,255,.18); transition: transform .2s ease;
+    }
+    .gallery img:hover { transform: scale(1.03); }
     small { display: block; margin-top: 18px; opacity: .6; }
   </style>
 </head>
 <body>
   <main>
-    <img src="icon.png" alt="YDrive app icon">
+    <img class="app-icon" src="icon.png" alt="YDrive app icon">
     <h1>YDrive</h1>
     <p>Open-source SEGA console emulator developed for iOS.</p>
     <p>Add the following source in AltStore Classic → Browse/Sources → <strong>+</strong>:</p>
@@ -47,6 +58,14 @@
     <a class="btn" id="add-altstore" href="#">Add to AltStore</a>
     <a class="btn" id="view-json" href="altstore.json">View JSON</a>
     <a class="btn" id="github" href="https://github.com/yigit4451/YDrive-Emulator">GitHub</a>
+
+    <div class="gallery">
+      <img src="screenshots/1-library.png" alt="Library">
+      <img src="screenshots/2-sonic1.png" alt="Sonic The Hedgehog">
+      <img src="screenshots/3-segacd.png" alt="SEGA CD">
+      <img src="screenshots/4-settings.png" alt="Settings">
+    </div>
+
     <small>Apps are signed with your own Apple ID by AltStore; Apple's free developer account limitations (7-day expiration, active app limit) apply.</small>
   </main>
   <script>
