@@ -16,6 +16,11 @@ name: YDrive iOS Release & AltStore Source
 on:
   push:
     tags: [ "ios-v*" ]
+    branches: [ "main" ]
+    paths:
+      - "altstore/**"
+      - "scripts/altstore/**"
+      - ".github/workflows/ydrive-ios-release.yml"
   release:
     types: [ published, edited, deleted ]
   workflow_dispatch: # choose an ios-v* tag in "Use workflow from" to republish it
@@ -29,7 +34,7 @@ env:
 
 jobs:
   preflight:
-    if: github.event_name != 'release'
+    if: github.event_name != 'release' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/ios-v'))
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.v.outputs.tag }}
@@ -131,11 +136,12 @@ jobs:
 
   site:
     needs: [ release-assets ]
-    # Push/dispatch: only after a successful build + upload. Release events: regenerate only.
+    # Push/dispatch: after build + upload. Release events or metadata updates on main: regenerate only.
     if: >-
       always() &&
       (needs.release-assets.result == 'success' ||
-       (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'ios-v')))
+       (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'ios-v')) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     runs-on: ubuntu-latest
     outputs:
       has_source: ${{ steps.build.outputs.has_source }}

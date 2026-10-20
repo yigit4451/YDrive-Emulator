@@ -3,8 +3,8 @@
   "source": {
     "name": "YDrive",
     "identifier": "com.yigit.ydrive.source",
-    "subtitle": "YDrive'ın resmî AltStore kaynağı.",
-    "description": "YDrive için resmî AltStore Classic kaynağı. Uygulama sürümleri GitHub Releases üzerinden yayımlanır.",
+    "subtitle": "Official AltStore source for YDrive.",
+    "description": "Official AltStore Classic source for YDrive. Releases are distributed via GitHub Releases.",
     "website": "https://github.com/yigit4451/YDrive-Emulator",
     "tintColor": "#005FD9",
     "nsfw": false
@@ -12,9 +12,9 @@
   "app": {
     "name": "YDrive",
     "bundleIdentifier": "com.yigit.ydrive",
-    "developerName": "Yiğit",
-    "subtitle": "iOS için açık kaynaklı SEGA konsol emülatörü.",
-    "localizedDescription": "Açık kaynaklı, iOS için geliştirilmiş SEGA konsol emülatörü.\n\nDesteklenen sistemler:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (BIOS dosyası gerektirir)\n• SEGA 32X\n• SEGA Master System\n\nÖzellikler:\n• PicoDrive (Libretro) emülasyon çekirdeği\n• Metal tabanlı görüntüleme\n• SwiftUI ve iOS 26 Liquid Glass arayüzü\n• Dokunmatik kontroller ve fiziksel oyun kumandası desteği\n• Kayıt durumları (save state) ve ekran görüntüsü\n• TheGamesDB ile otomatik kapak ve oyun bilgisi\n\nYDrive oyun ROM'ları veya BIOS dosyaları içermez; bunları yasal olarak kendiniz edinmelisiniz.\n\nKaynak kod: https://github.com/yigit4451/YDrive-Emulator",
+    "developerName": "yigit4451",
+    "subtitle": "Open-source SEGA console emulator for iOS.",
+    "localizedDescription": "Open-source SEGA console emulator developed for iOS.\n\nSupported Systems:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (requires BIOS files)\n• SEGA 32X\n• SEGA Master System\n\nFeatures:\n• PicoDrive (Libretro) emulation core\n• Metal-based rendering\n• Modern SwiftUI and Liquid Glass interface\n• On-screen touch controls and physical controller support\n• Save states and screenshots\n• Automatic cover art and game info via TheGamesDB\n\nYDrive does not contain any game ROMs or BIOS files; you must provide your own legally obtained copies.\n\nSource code: https://github.com/yigit4451/YDrive-Emulator",
     "category": "games",
     "tintColor": "#005FD9"
   },

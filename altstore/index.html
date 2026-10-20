@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>YDrive – AltStore Kaynağı</title>
-  <meta name="description" content="YDrive iOS SEGA emülatörünün resmî AltStore Classic kaynağı.">
+  <title>YDrive – AltStore Source</title>
+  <meta name="description" content="Official AltStore Classic source for the YDrive iOS SEGA emulator.">
   <link rel="icon" href="icon.png">
   <style>
     :root { color-scheme: light dark; --tint: #005FD9; }
@@ -39,15 +39,15 @@
 </head>
 <body>
   <main>
-    <img src="icon.png" alt="YDrive uygulama ikonu">
+    <img src="icon.png" alt="YDrive app icon">
     <h1>YDrive</h1>
-    <p>Açık kaynaklı, iOS için geliştirilmiş SEGA konsol emülatörü.</p>
-    <p>AltStore Classic → Browse/Sources → <strong>+</strong> ile aşağıdaki adresi ekleyin:</p>
+    <p>Open-source SEGA console emulator developed for iOS.</p>
+    <p>Add the following source in AltStore Classic → Browse/Sources → <strong>+</strong>:</p>
     <code id="source-url">altstore.json</code>
-    <a class="btn" id="add-altstore" href="#">AltStore'a ekle</a>
-    <a class="btn" id="view-json" href="altstore.json">JSON'u görüntüle</a>
+    <a class="btn" id="add-altstore" href="#">Add to AltStore</a>
+    <a class="btn" id="view-json" href="altstore.json">View JSON</a>
     <a class="btn" id="github" href="https://github.com/yigit4451/YDrive-Emulator">GitHub</a>
-    <small>Uygulamalar AltStore tarafından kendi Apple ID'nizle imzalanır; Apple'ın ücretsiz hesap sınırları (7 gün, uygulama sayısı) geçerlidir.</small>
+    <small>Apps are signed with your own Apple ID by AltStore; Apple's free developer account limitations (7-day expiration, active app limit) apply.</small>
   </main>
   <script>
     const url = new URL("altstore.json", location.href).href;
