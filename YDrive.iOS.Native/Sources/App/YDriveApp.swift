@@ -5,6 +5,13 @@ struct YDriveApp: App {
     @AppStorage("appTheme") private var appTheme = "system"
     @AppStorage("appLanguage") private var appLanguage = "system"
 
+    init() {
+        UserDefaults.standard.register(defaults: [
+            "buttonColorsEnabled": false,
+            "hapticFeedback": true
+        ])
+    }
+
     private var colorScheme: ColorScheme? {
         switch appTheme {
         case "dark":  return .dark

@@ -14,6 +14,7 @@
 
 #import "LibretroBridge.h"
 #import <os/log.h>
+#import <stdatomic.h>
 
 static os_log_t gLog;
 
@@ -34,9 +35,12 @@ enum retro_pixel_format {
 };
 
 // Libretro key constants
-#define RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY 9
-#define RETRO_ENVIRONMENT_SET_PIXEL_FORMAT 10
-#define RETRO_DEVICE_JOYPAD                1
+#define RETRO_DEVICE_MASK                       0xff
+#define RETRO_DEVICE_JOYPAD                     1
+#define RETRO_DEVICE_ID_JOYPAD_MASK             256
+#define RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY  9
+#define RETRO_ENVIRONMENT_SET_PIXEL_FORMAT      10
+#define RETRO_ENVIRONMENT_GET_INPUT_BITMASK     48
 
 typedef struct {
     const char *path;
@@ -106,6 +110,8 @@ static bool env_callback(unsigned cmd, void *data) {
         *dir = systemDir;
         os_log(gLog, "[CORE] GET_SYSTEM_DIRECTORY: %{public}s", systemDir);
         return true;
+    } else if (cmd == RETRO_ENVIRONMENT_GET_INPUT_BITMASK) {
+        return true;
     }
     return false;
 }
@@ -141,7 +147,7 @@ static size_t audio_batch_callback(const int16_t *data, size_t frames) {
 }
 
 // ── Input State ───────────────────────────────────────────────────────────────
-static uint16_t gInputBitmask = 0;
+static atomic_uint_fast16_t gInputBitmask = 0;
 
 static void input_poll_callback(void) {
     // Input is pushed directly via setButton:pressed:
@@ -149,8 +155,15 @@ static void input_poll_callback(void) {
 
 static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id) {
     if (port != 0) return 0; // Only player 1 for now
-    if (device == RETRO_DEVICE_JOYPAD || device == 1) { // 1 is RETRO_DEVICE_JOYPAD
-        return (gInputBitmask & (1 << id)) ? 1 : 0;
+    unsigned baseDevice = device & RETRO_DEVICE_MASK;
+    if (baseDevice == RETRO_DEVICE_JOYPAD || baseDevice == 1) {
+        uint16_t mask = (uint16_t)atomic_load(&gInputBitmask);
+        if (id == RETRO_DEVICE_ID_JOYPAD_MASK) {
+            return (int16_t)mask;
+        }
+        if (id < 16) {
+            return (mask & (1 << id)) ? 1 : 0;
+        }
     }
     return 0;
 }
@@ -192,7 +205,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     // ── Register C callbacks ──────────────────────────────────────────────────
     gBridgeInstance = self;
-    gInputBitmask = 0; // Clear stuck inputs from previous runs
+    atomic_store(&gInputBitmask, 0); // Clear stuck inputs from previous runs
 
     // ── Init ─────────────────────────────────────────────────────────────────
     if (!gCoreGlobalInitialized) {
@@ -296,10 +309,11 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 
 - (void)setButton:(unsigned)buttonID pressed:(BOOL)pressed {
 #if YDRIVE_CORE_AVAILABLE
+    if (buttonID >= 16) return;
     if (pressed) {
-        gInputBitmask |= (1 << buttonID);
+        atomic_fetch_or(&gInputBitmask, (1 << buttonID));
     } else {
-        gInputBitmask &= ~(1 << buttonID);
+        atomic_fetch_and(&gInputBitmask, ~(1 << buttonID));
     }
 #endif
 }
@@ -307,6 +321,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (void)reset {
     os_log(gLog, "[CORE] reset called");
 #if YDRIVE_CORE_AVAILABLE
+    atomic_store(&gInputBitmask, 0);
     if (_isRunning) {
         retro_reset();
     }
@@ -371,6 +386,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     if (_coreInitialized) {
         _coreInitialized = NO;
     }
+    atomic_store(&gInputBitmask, 0);
     gBridgeInstance = nil;
 #endif
     _isRunning = NO;

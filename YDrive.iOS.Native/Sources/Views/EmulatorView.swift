@@ -335,12 +335,58 @@ struct EmulatorView: View {
     private func observeControllers() {
         let check: @Sendable () -> Void = {
             Task { @MainActor in
-                self.isControllerConnected = !GCController.controllers().isEmpty
+                let controllers = GCController.controllers()
+                let physical = controllers.filter { $0.extendedGamepad != nil }
+                self.isControllerConnected = !physical.isEmpty
+                if let controller = physical.first {
+                    self.setupGamepad(controller)
+                }
             }
         }
         check()
         NotificationCenter.default.addObserver(forName: .GCControllerDidConnect,    object: nil, queue: .main) { _ in check() }
         NotificationCenter.default.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in check() }
+    }
+
+    private func setupGamepad(_ controller: GCController) {
+        guard let gamepad = controller.extendedGamepad else { return }
+        
+        gamepad.buttonA.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(0, pressed: pressed) // Genesis B
+        }
+        gamepad.buttonX.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(1, pressed: pressed) // Genesis A
+        }
+        gamepad.buttonB.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(8, pressed: pressed) // Genesis C
+        }
+        gamepad.buttonY.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(9, pressed: pressed) // Genesis X
+        }
+        gamepad.leftShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(10, pressed: pressed) // Genesis Y
+        }
+        gamepad.rightShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(11, pressed: pressed) // Genesis Z
+        }
+        gamepad.buttonMenu.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(3, pressed: pressed) // Genesis START
+        }
+        gamepad.buttonOptions?.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(2, pressed: pressed) // Genesis MODE
+        }
+        gamepad.dpad.up.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(4, pressed: pressed)
+        }
+        gamepad.dpad.down.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(5, pressed: pressed)
+        }
+        gamepad.dpad.left.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(6, pressed: pressed)
+        }
+        gamepad.dpad.right.valueChangedHandler = { [weak engine] _, _, pressed in
+            engine?.setButton(7, pressed: pressed)
+        }
     }
     
     // ── FPS Overlay Helper ───────────────────────────────────────────────────
@@ -371,7 +417,7 @@ struct OnScreenControlsView: View {
     var consoleName: String = "SEGA Genesis"
 
     @AppStorage("controllerOpacity")   private var controllerOpacity   = 0.4
-    @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
+    @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = false
     @AppStorage("hapticFeedback")      private var hapticFeedback      = true
     @AppStorage("controllerLayout")    private var controllerLayout    = "Auto"
     @AppStorage("buttonSize")          private var buttonSize          = "Normal"

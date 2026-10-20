@@ -31,6 +31,11 @@ struct MultiTouchButton: UIViewRepresentable {
 
         required init?(coder: NSCoder) { fatalError() }
 
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            let hitRect = bounds.insetBy(dx: -20, dy: -20)
+            return hitRect.contains(point)
+        }
+
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             updateState(with: event)
         }
@@ -48,7 +53,13 @@ struct MultiTouchButton: UIViewRepresentable {
         }
 
         private func updateState(with event: UIEvent?) {
-            guard let touches = event?.touches(for: self) else { return }
+            guard let touches = event?.touches(for: self) else {
+                if isPressed {
+                    isPressed = false
+                    onStateChange?(false)
+                }
+                return
+            }
             
             // Check if any touch is currently inside the bounds
             let isInside = touches.contains { touch in
@@ -99,6 +110,11 @@ struct MultiTouchDPad: UIViewRepresentable {
 
         required init?(coder: NSCoder) { fatalError() }
 
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            let hitRect = bounds.insetBy(dx: -40, dy: -40)
+            return hitRect.contains(point)
+        }
+
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             updateState(with: event)
         }
@@ -116,7 +132,13 @@ struct MultiTouchDPad: UIViewRepresentable {
         }
 
         private func updateState(with event: UIEvent?) {
-            guard let touches = event?.touches(for: self) else { return }
+            guard let touches = event?.touches(for: self) else {
+                if state != (false, false, false, false) {
+                    state = (false, false, false, false)
+                    onStateChange?(false, false, false, false)
+                }
+                return
+            }
             
             var newState = (up: false, down: false, left: false, right: false)
             let center = CGPoint(x: bounds.midX, y: bounds.midY)

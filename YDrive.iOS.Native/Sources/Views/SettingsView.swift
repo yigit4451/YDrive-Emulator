@@ -13,7 +13,7 @@ struct SettingsView: View {
     // Controller
     @AppStorage("hapticFeedback")      private var hapticFeedback      = true
     @AppStorage("controllerOpacity")   private var controllerOpacity   = 0.4
-    @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = true
+    @AppStorage("buttonColorsEnabled") private var buttonColorsEnabled = false
     @AppStorage("controllerLayout")    private var controllerLayout    = "Auto"
     @AppStorage("buttonSize")          private var buttonSize          = "Normal"
     @AppStorage("m30MappingEnabled")   private var m30MappingEnabled   = false
