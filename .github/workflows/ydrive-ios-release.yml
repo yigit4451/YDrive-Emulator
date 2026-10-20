@@ -40,16 +40,21 @@ jobs:
         id: v
         run: |
           set -euo pipefail
-          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != "$TAG_PREFIX"* ]]; then
-            echo "::error::Run this workflow on a tag named ${TAG_PREFIX}<version> (current ref: $GITHUB_REF)"
-            exit 1
-          fi
-          TAG="$GITHUB_REF_NAME"
-          VERSION="${TAG#"$TAG_PREFIX"}"
           PROJECT_VERSION=$(sed -n 's/^[[:space:]]*MARKETING_VERSION:[[:space:]]*\([^[:space:]]*\).*/\1/p' YDrive.iOS.Native/project.yml | head -1 | tr -d '"')
-          echo "Tag version: $VERSION  |  project.yml MARKETING_VERSION: $PROJECT_VERSION"
-          if [[ "$VERSION" != "$PROJECT_VERSION" ]]; then
-            echo "::error::Tag $TAG does not match MARKETING_VERSION $PROJECT_VERSION in YDrive.iOS.Native/project.yml"
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == "$TAG_PREFIX"* ]]; then
+            TAG="$GITHUB_REF_NAME"
+            VERSION="${TAG#"$TAG_PREFIX"}"
+            echo "Tag version: $VERSION  |  project.yml MARKETING_VERSION: $PROJECT_VERSION"
+            if [[ "$VERSION" != "$PROJECT_VERSION" ]]; then
+              echo "::error::Tag $TAG does not match MARKETING_VERSION $PROJECT_VERSION in YDrive.iOS.Native/project.yml"
+              exit 1
+            fi
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            VERSION="$PROJECT_VERSION"
+            TAG="${TAG_PREFIX}${VERSION}"
+            echo "Manual workflow dispatch on ref $GITHUB_REF: using project version $VERSION (tag: $TAG)"
+          else
+            echo "::error::Run this workflow on a tag named ${TAG_PREFIX}<version> (current ref: $GITHUB_REF)"
             exit 1
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
@@ -108,7 +113,7 @@ jobs:
           else
             echo "Creating release $TAG"
             gh release create "$TAG" "${FILES[@]}" \
-              --verify-tag --title "YDrive ${VERSION} (iOS)" --generate-notes
+              --title "YDrive ${VERSION} (iOS)" --generate-notes
           fi
 
       - name: Verify uploaded IPA matches the built file
