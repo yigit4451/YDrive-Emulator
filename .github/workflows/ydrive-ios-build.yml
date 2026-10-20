@@ -147,8 +147,8 @@ jobs:
         codesign -d --entitlements :- "$APP_PATH" || true
 
     # ─── A: YDrive-unsigned.ipa ───────────────────────────────────────────────
-    # Xcode'un tam .app paketini kullan, _CodeSignature varsa kaldır.
-    # Executable, Assets.car, Info.plist veya diğer dosyalara dokunma.
+    # Use the complete Xcode .app bundle and strip _CodeSignature if present.
+    # Do not alter the executable, Assets.car, Info.plist, or other bundle contents.
     - name: Package A — YDrive-unsigned.ipa
       run: |
         APP_PATH="${{ steps.locate_app.outputs.app_path }}"
@@ -157,24 +157,24 @@ jobs:
         rm -rf Payload_unsigned
         mkdir -p Payload_unsigned
 
-        # Tam Xcode .app'i kopyala (symlinks korunur)
+        # Copy complete Xcode .app (preserving symlinks)
         cp -R "$APP_PATH" Payload_unsigned/
 
-        # Yalnızca imza metadata'sını kaldır; diğer dosyalara dokunma
+        # Only remove signature metadata; leave all other files untouched
         echo "Removing _CodeSignature from unsigned copy..."
         rm -rf "Payload_unsigned/$APP_NAME/_CodeSignature"
-        # Embedded provisioning profile yoksa bu zaten boş olacak
+        # If embedded provisioning profile is absent, this will be empty
         rm -f "Payload_unsigned/$APP_NAME/embedded.mobileprovision"
 
-        # İzinleri ayarla
+        # Set permissions
         chmod -R 755 Payload_unsigned/
 
         echo "=== Unsigned .app contents ==="
         ls -la "Payload_unsigned/$APP_NAME/"
 
-        # IPA oluştur (symlinks korunur)
+        # Create IPA (preserving symlinks)
         zip -r -y YDrive-unsigned.ipa Payload_unsigned --exclude "*.DS_Store"
-        # IPA yapısını Payload/ olarak düzelt
+        # Ensure proper Payload/ structure
         mv YDrive-unsigned.ipa YDrive-unsigned-raw.ipa
         rm -rf Payload_unsigned_final
         mkdir -p Payload_unsigned_final/Payload
@@ -187,8 +187,8 @@ jobs:
         ls -lh YDrive-unsigned.ipa
 
     # ─── B: YDrive-adhoc.ipa ─────────────────────────────────────────────────
-    # Aynı .app bundle'ı macOS codesign ile ad-hoc imzala.
-    # Önce nested binary/framework tespiti, sonra inside-out signing sırası.
+    # Ad-hoc sign the identical .app bundle using macOS codesign.
+    # Detect nested binaries/frameworks and apply inside-out signing order.
     - name: Package B — YDrive-adhoc.ipa
       run: |
         APP_PATH="${{ steps.locate_app.outputs.app_path }}"
@@ -197,20 +197,20 @@ jobs:
         rm -rf Payload_adhoc
         mkdir -p Payload_adhoc
 
-        # Tam Xcode .app'i kopyala
+        # Copy complete Xcode .app
         cp -R "$APP_PATH" Payload_adhoc/
 
         STAGED_APP="Payload_adhoc/$APP_NAME"
 
-        # Eski signature kalıntılarını temizle (çakışmayı önlemek için)
+        # Clean old signature remnants to prevent conflicts
         echo "Cleaning old signature metadata before re-signing..."
         rm -rf "$STAGED_APP/_CodeSignature"
         rm -f "$STAGED_APP/embedded.mobileprovision"
 
-        # İzinleri ayarla
+        # Set permissions
         chmod -R 755 Payload_adhoc/
 
-        # Nested binary/framework tespiti ve inside-out signing
+        # Detect nested binaries/frameworks and sign inside-out
         echo "=== Detecting nested binaries/frameworks ==="
         find "$STAGED_APP" -type d \( -name "*.framework" -o -name "*.appex" -o -name "*.dylib" \) | sort
         find "$STAGED_APP" -type f -name "*.dylib" | sort
@@ -235,12 +235,12 @@ jobs:
           codesign --force --sign - "$ext"
         done || true
 
-        # Ana .app bundle'ı imzala (en son)
+        # Sign main .app bundle (last)
         echo ""
         echo "=== Signing main app bundle ==="
         codesign --force --sign - "$STAGED_APP"
 
-        # Doğrulama ve tanısal çıktılar
+        # Verification and diagnostic output
         echo ""
         echo "=== POST-SIGN: codesign -dvvv ==="
         codesign -dvvv "$STAGED_APP"
@@ -261,7 +261,7 @@ jobs:
         echo "=== plutil Info.plist ==="
         plutil -p "$STAGED_APP/Info.plist"
 
-        # IPA oluştur (Payload/YDrive.app/... yapısı)
+        # Create IPA (Payload/YDrive.app/... structure)
         rm -rf Payload_adhoc_final
         mkdir -p Payload_adhoc_final/Payload
         cp -R "$STAGED_APP" Payload_adhoc_final/Payload/

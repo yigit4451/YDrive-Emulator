@@ -1,66 +1,123 @@
-
-# YDrive-Emulator
-YDrive is SEGA Consoles Emulator.
 # 🎮 YDrive Emulator
 
-**YDrive Emulator** is a modern, feature-rich **SEGA Console Emulator and game library manager (Launcher) built with C# and WPF architecture.
+**YDrive** is a modern, high-performance, open-source **SEGA Console Emulator** and game library manager developed for **Windows** and **iOS**.
 
-Featuring an automated API scraper, mapping, and an optimized Genesis Plus GX core integration, it offers a seamless and powerful retro gaming experience.
-
----
-
-## ✨ Key Features
-
-* **🎨 Modern Dark Theme UI:** Organize and browse your retro collection with a sleek, fast, and responsive user interface.
-* **🖼️ Automatic Cover Art Scraper (TheGamesDB API):** Automatically fetches original box art, metadata, and game information.
-* **⚙️ Advanced Core & Video Settings:** Customizable audio resolution, 6-Button Pad support, and Aspect Ratio choices powered by Genesis Plus GX.
-* **🌐 Multi-Language Support:** Automatically adjusts to the system language (**English** or **Turkish**).
+Designed with sleek aesthetics, automated metadata scraping, low-latency audio, and accurate Libretro emulation cores, YDrive brings retro SEGA classics to modern devices.
 
 ---
 
-## 🛠️ Built With
+## 🌟 Supported Systems
 
-* **Language / Framework:** C# (.NET 8) / WPF (Windows Presentation Foundation)
-* **Architecture:** MVVM (Model-View-ViewModel)
-* **Core:** Genesis Plus GX
-* **API Integration:** TheGamesDB API (Metadata & Cover Art Scraper)
+| System | Supported Core | Notes |
+|---|---|---|
+| **SEGA Genesis / Mega Drive** | PicoDrive / Genesis Plus GX | Full support, 3-button & 6-button controller mapping |
+| **SEGA CD / Mega-CD** | PicoDrive / Genesis Plus GX | ISO/BIN/CUE/CHD format, requires BIOS (`bios_CD_U.bin`, etc.) |
+| **SEGA 32X** | PicoDrive | Full support with 32X BIOS or High-Level Emulation |
+| **SEGA Master System** | PicoDrive / Genesis Plus GX | 2-button controller layout, cartridge & ROM support |
+
+---
+
+## 📱 Platform Editions
+
+### 🍏 iOS (Native Swift & SwiftUI)
+Built from the ground up for modern iOS (iOS 26+) using native Apple frameworks:
+- **Architecture:** Pure Swift 6 with SwiftUI and Liquid Glass UI components.
+- **Renderer:** Metal and MetalKit hardware acceleration for zero-tearing frame rendering.
+- **Audio Engine:** Low-latency real-time PCM audio streaming via `AVAudioEngine`.
+- **Controls:** Multi-touch virtual on-screen gamepad with haptic feedback, plus physical gamepad support via `GCController` (MFi, Xbox, PlayStation).
+- **Library & Scraper:** Integrated TheGamesDB artwork and metadata scraper, quick search, and visual game cards.
+- **Saves & BIOS:** Full save state management with visual slots and built-in BIOS verification manager.
+- **Distribution:** Distributed via GitHub Releases (`.ipa`) and official **AltStore Classic Source**.
+
+### 💻 Windows (.NET 8 & WPF)
+- **Architecture:** C# (.NET 8) with WPF (Windows Presentation Foundation) and MVVM pattern.
+- **Audio:** High-resolution audio output via `NAudio`.
+- **Renderer:** Direct WriteableBitmap frame rendering.
+- **Scraper:** Automatic box art and title metadata downloader using TheGamesDB API.
+- **Languages:** Full dynamic localization in **English** and **Turkish**.
 
 ---
 
-## 🚀 Installation & Getting Started
+## 🚀 Installation & Distribution
 
-### Prerequisites
-* Windows 10 / 11 (64-bit)
-* .NET 8.0 Runtime *(Not required for self-contained builds)*
+### iOS (via AltStore Classic)
+1. In AltStore Classic, open **Browse** → **Sources** and tap **+**.
+2. Add the official YDrive source URL:
+   ```text
+   https://yigit4451.github.io/YDrive-Emulator/altstore.json
+   ```
+3. Or tap **Add to AltStore** directly on the [YDrive AltStore Page](https://yigit4451.github.io/YDrive-Emulator/).
+4. Sideload and enjoy with automated 7-day refreshing.
 
-### How to Run
-1. Go to the [Releases](../../releases) section and download the latest `YDrive_Emulator_v1.0.0_win-x64.zip`.
-2. Extract the RAR file to any folder on your PC.
-3. Run `YDrive.exe` and enjoy your SEGA console games.
- 
-## 📌 Development Roadmap
+### iOS (Direct IPA Sideloading)
+Download the latest pre-built `.ipa` from the [GitHub Releases](https://github.com/yigit4451/YDrive-Emulator/releases) page:
+- `YDrive-1.0.0.ipa` (Ad-hoc signed for AltStore, Sideloadly, or TrollStore)
+- `YDrive-1.0.0-unsigned.ipa` (Unsigned for custom signing workflows)
 
-- [ ] In-game Save/Load State UI
-- [ ] Shader / CRT Scanline visual filters
-
-
----
-## 📸 Screenshots
-<img width="1086" height="713" alt="Capture" src="https://github.com/user-attachments/assets/7a756060-c817-46d9-8867-bb1f686a355a" />
-<img width="686" height="493" alt="Capture 2" src="https://github.com/user-attachments/assets/711c17dc-66db-4e9f-943f-b27128e3b215" />
-<img width="686" height="573" alt="Capture 5" src="https://github.com/user-attachments/assets/1352e757-254f-45f9-9c46-e1cbe3437b19" />
-<img width="686" height="573" alt="Capture 4" src="https://github.com/user-attachments/assets/c1bd0350-88ea-4470-89f2-d0282a403ff0" />
-<img width="686" height="573" alt="Capture 3" src="https://github.com/user-attachments/assets/78da7244-bf97-462e-937b-abe8bc6a26ea" />
-
-
-
-
-
-
- 
-## 👨‍💻 Developer
-
-Developed independently by Yigit4451
+### Windows
+1. Download the latest `YDrive_Emulator_v*.zip` from [GitHub Releases](https://github.com/yigit4451/YDrive-Emulator/releases).
+2. Extract the archive to any folder.
+3. Launch `YDrive.exe`.
 
 ---
-*SEGA Genesis, Mega Drive and related trademarks belong to SEGA Corporation. YDrive Emulator is a non-commercial fan-made project.*
+
+## 🛠️ Building from Source
+
+### Building the Windows Project
+Prerequisites: [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+```bash
+dotnet build YDrive.sln -c Release
+```
+The compiled application and cores will be output to `bin/Release/win-x64/`.
+
+### Building the Native iOS Project
+Prerequisites: macOS with Xcode 16+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+```bash
+cd YDrive.iOS.Native
+xcodegen generate --spec project.yml
+open YDrive.xcodeproj
+```
+
+---
+
+## 📂 Repository Structure
+
+```text
+├── .github/workflows/          # CI/CD: iOS build, AltStore validation, automated releases
+├── altstore/                   # AltStore Classic source generator & web landing page
+├── src/
+│   └── YDrive/                 # Windows WPF (.NET 8) application source code
+│       ├── Audio/              # NAudio playback implementation
+│       ├── Core/               # Libretro C# wrapper & callbacks
+│       ├── Models/             # App data models
+│       ├── Resources/          # Internationalization strings (en, tr)
+│       ├── Services/           # Game library and TheGamesDB scraper
+│       ├── ViewModels/         # MVVM view models
+│       └── Views/              # WPF XAML windows and dialogs
+├── YDrive.iOS.Native/          # Native iOS Swift/SwiftUI application source code
+│   ├── Resources/              # Asset catalogs, Info.plist, Settings.bundle, l10n
+│   ├── Sources/                # Swift & Metal emulation engine, UI views, services
+│   └── project.yml             # XcodeGen project specification
+├── YDrive.CrossPlatform/       # Shared Avalonia workspace
+└── YDrive.sln                  # Root solution file for Windows development
+```
+
+---
+
+## 🔒 Security & Privacy
+
+- YDrive does not collect or transmit personal telemetry or user data.
+- TheGamesDB requests only send game titles to query public artwork and descriptions.
+- Game ROMs and BIOS files are stored locally in the application's isolated document sandbox.
+
+---
+
+## 📜 Licenses & Attribution
+
+- YDrive is licensed under the [MIT License](LICENSE).
+- Emulation cores (PicoDrive, Genesis Plus GX) are open-source and subject to their respective non-commercial licenses.
+- See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for full license texts and upstream references.
+
+---
+
+*SEGA, Genesis, Mega Drive, SEGA CD, Mega-CD, 32X, and Master System are trademarks of SEGA Corporation. YDrive is an independent, non-commercial open-source project and is not affiliated with or endorsed by SEGA.*

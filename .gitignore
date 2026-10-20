@@ -427,3 +427,44 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# ─── YDrive Project Specific ─────────────────────────
+# Build outputs and intermediate files
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
+*_wpftmp.*
+*.wpftmp.*
+
+# Mobile packages & signing keystores
+*.apk
+*.ipa
+*.jks
+*.keystore
+*.mobileprovision
+*.p12
+
+# Xcode & Apple artifacts
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+*.xcuserstate
+
+# Local runtime directories & saves
+saves/
+system/
+
+# Scratch & test output files
+scratch/
+test_*.json
+test_*.swift
+thegamesdb_out.json
+tdb_test.json
+test.swift
+test.txt
+check.ps1
+scratch_extract.cs
+

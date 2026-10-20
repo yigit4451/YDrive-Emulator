@@ -1,7 +1,4 @@
-﻿<Solution>
-  <Project Path="YDrive.Android/YDrive.Android.csproj">
-    <Deploy />
-  </Project>
+<Solution>
   <Project Path="YDrive.Browser/YDrive.Browser.csproj" />
   <Project Path="YDrive.Desktop/YDrive.Desktop.csproj" />
   <Project Path="YDrive.iOS/YDrive.iOS.csproj">

@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/SegaEmulator/SegaEmulator.csproj",
+                "${workspaceFolder}/src/YDrive/SegaEmulator.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/src/SegaEmulator/SegaEmulator.csproj",
+                "${workspaceFolder}/src/YDrive/SegaEmulator.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/src/SegaEmulator/SegaEmulator.csproj"
+                "${workspaceFolder}/src/YDrive/SegaEmulator.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
