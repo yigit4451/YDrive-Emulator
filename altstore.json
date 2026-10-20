@@ -1,7 +1,7 @@
 {
   "name": "YDrive",
   "identifier": "com.yigit.ydrive.source",
-  "subtitle": "Official AltStore source for YDrive.",
+  "subtitle": "Open-Source SEGA console emulator for iOS.",
   "description": "Open-source SEGA console emulator for iOS.",
   "iconURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
   "website": "https://github.com/yigit4451/YDrive-Emulator",
