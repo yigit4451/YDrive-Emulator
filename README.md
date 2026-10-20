@@ -24,7 +24,7 @@ Built from the ground up for modern iOS (iOS 26+) using native Apple frameworks:
 - **Architecture:** Pure Swift 6 with SwiftUI and Liquid Glass UI components.
 - **Renderer:** Metal and MetalKit hardware acceleration for zero-tearing frame rendering.
 - **Audio Engine:** Low-latency real-time PCM audio streaming via `AVAudioEngine`.
-- **Controls:** Multi-touch virtual on-screen gamepad with haptic feedback, plus physical gamepad support via `GCController` (MFi, Xbox, PlayStation).
+- **Controls:** Multi-touch virtual on-screen gamepad with haptic feedback, plus physical gamepad support via `GCController` 
 - **Library & Scraper:** Integrated TheGamesDB artwork and metadata scraper, quick search, and visual game cards.
 - **Saves & BIOS:** Full save state management with visual slots and built-in BIOS verification manager.
 - **Distribution:** Distributed via GitHub Releases (`.ipa`) and official **AltStore Classic Source**.
