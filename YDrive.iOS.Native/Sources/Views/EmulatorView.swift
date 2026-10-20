@@ -413,7 +413,7 @@ struct EmulatorView: View {
 // MARK: – On-Screen Controls
 
 struct OnScreenControlsView: View {
-    @ObservedObject var engine: LibretroEmulatorEngine
+    let engine: LibretroEmulatorEngine
     var consoleName: String = "SEGA Genesis"
 
     @AppStorage("controllerOpacity")   private var controllerOpacity   = 0.4
@@ -543,6 +543,36 @@ struct OnScreenControlsView: View {
             let yCenter = CGPoint(x: centers.b.x, y: centers.b.y - spacing)
             let zCenter = CGPoint(x: centers.c.x, y: centers.c.y - spacing)
 
+            // Hit regions for the single UIKit touch surface. They use exactly the same
+            // geometry as the visuals below, but touch handling no longer depends on
+            // per-button SwiftUI hit-testing.
+            let regions: [TouchRegion] = {
+                var r: [TouchRegion] = []
+                func add(_ kind: TouchRegion.Kind, _ c: CGPoint, _ width: CGFloat, _ height: CGFloat) {
+                    r.append(TouchRegion(kind: kind,
+                                         rect: CGRect(x: c.x - width / 2, y: c.y - height / 2,
+                                                      width: width, height: height)))
+                }
+                add(.dpad, centers.dpad, dpadHit + 40, dpadHit + 40)
+                if self.isMasterSystemLayout {
+                    add(.button(self.ID_B),     CGPoint(x: centers.b.x, y: centers.a.y), btnHit + 12, btnHit + 12)
+                    add(.button(self.ID_A),     CGPoint(x: centers.c.x, y: centers.b.y), btnHit + 12, btnHit + 12)
+                    add(.button(self.ID_START), centers.start, startVisualW * 1.15 + 40, startVisualH + 40)
+                } else {
+                    add(.button(self.ID_Y), centers.a, btnHit + 12, btnHit + 12)
+                    add(.button(self.ID_B), centers.b, btnHit + 12, btnHit + 12)
+                    add(.button(self.ID_A), centers.c, btnHit + 12, btnHit + 12)
+                    if self.is6Button {
+                        add(.button(self.ID_X), xCenter, btnSmallHit + 12, btnSmallHit + 12)
+                        add(.button(self.ID_L), yCenter, btnSmallHit + 12, btnSmallHit + 12)
+                        add(.button(self.ID_R), zCenter, btnSmallHit + 12, btnSmallHit + 12)
+                    }
+                    add(.button(self.ID_START),  centers.start, startVisualW + 40, startVisualH + 40)
+                    add(.button(self.ID_SELECT), centers.mode, startVisualW * 0.7 + 32, startVisualH + 32)
+                }
+                return r
+            }()
+
             // Colors
             let defaultBg     = Color(red: 0, green: 71/255, blue: 171/255)
             let defaultBorder = Color(red: 100/255, green: 181/255, blue: 246/255)
@@ -555,70 +585,82 @@ struct OnScreenControlsView: View {
             let colorZ = buttonColorsEnabled ? Color.orange : defaultBg
 
             ZStack(alignment: .topLeading) {
-                // D-Pad
-                dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
-                    .position(centers.dpad)
+                // ── Visuals (never intercept touches) ─────────────────────────
+                ZStack(alignment: .topLeading) {
+                    // D-Pad
+                    dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
+                        .position(centers.dpad)
 
-                if isMasterSystemLayout {
-                    // Master System: Button 1 & 2
-                    actionButton(
-                        "1",
-                        color: buttonColorsEnabled ? Color(red: 225/255, green: 45/255, blue: 57/255) : defaultBg,
-                        borderColor: buttonColorsEnabled ? Color(red: 255/255, green: 130/255, blue: 140/255) : defaultBorder,
-                        visualSize: btnVisual * 1.08,
-                        hitSize: btnHit + 12
-                    ) { press($0, id: ID_B) }
-                    .position(CGPoint(x: centers.b.x, y: centers.a.y))
+                    if isMasterSystemLayout {
+                        // Master System: Button 1 & 2
+                        actionButton(
+                            "1",
+                            color: buttonColorsEnabled ? Color(red: 225/255, green: 45/255, blue: 57/255) : defaultBg,
+                            borderColor: buttonColorsEnabled ? Color(red: 255/255, green: 130/255, blue: 140/255) : defaultBorder,
+                            visualSize: btnVisual * 1.08,
+                            hitSize: btnHit + 12
+                        )
+                        .position(CGPoint(x: centers.b.x, y: centers.a.y))
 
-                    actionButton(
-                        "2",
-                        color: buttonColorsEnabled ? Color(red: 0/255, green: 115/255, blue: 230/255) : defaultBg,
-                        borderColor: buttonColorsEnabled ? Color(red: 100/255, green: 181/255, blue: 246/255) : defaultBorder,
-                        visualSize: btnVisual * 1.08,
-                        hitSize: btnHit + 12
-                    ) { press($0, id: ID_A) }
-                    .position(CGPoint(x: centers.c.x, y: centers.b.y))
+                        actionButton(
+                            "2",
+                            color: buttonColorsEnabled ? Color(red: 0/255, green: 115/255, blue: 230/255) : defaultBg,
+                            borderColor: buttonColorsEnabled ? Color(red: 100/255, green: 181/255, blue: 246/255) : defaultBorder,
+                            visualSize: btnVisual * 1.08,
+                            hitSize: btnHit + 12
+                        )
+                        .position(CGPoint(x: centers.c.x, y: centers.b.y))
 
-                    // PAUSE
-                    startButton(
-                        label: "PAUSE",
-                        visualWidth: startVisualW * 1.15,
-                        visualHeight: startVisualH,
-                        hitWidth: startVisualW * 1.15 + 40,
-                        hitHeight: startVisualH + 40
-                    ) { press($0, id: ID_START) }
-                    .position(centers.start)
-                } else {
-                    // A B C
-                    actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_Y) }
-                        .position(centers.a)
-                    actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_B) }
-                        .position(centers.b)
-                    actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit) { press($0, id: ID_A) }
-                        .position(centers.c)
-
-                    // X Y Z (6-button only)
-                    if is6Button {
-                        actionButton("X", color: colorX, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_X) }
-                            .position(xCenter)
-                        actionButton("Y", color: colorY, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_L) }
-                            .position(yCenter)
-                        actionButton("Z", color: colorZ, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit) { press($0, id: ID_R) }
-                            .position(zCenter)
-                    }
-
-                    // START + MODE
-                    startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
-                                hitWidth: startVisualW + 40, hitHeight: startVisualH + 40) { press($0, id: ID_START) }
+                        // PAUSE
+                        startButton(
+                            label: "PAUSE",
+                            visualWidth: startVisualW * 1.15,
+                            visualHeight: startVisualH,
+                            hitWidth: startVisualW * 1.15 + 40,
+                            hitHeight: startVisualH + 40
+                        )
                         .position(centers.start)
+                    } else {
+                        // A B C
+                        actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit)
+                            .position(centers.a)
+                        actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit)
+                            .position(centers.b)
+                        actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit)
+                            .position(centers.c)
 
-                    smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
-                                hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32) { press($0, id: ID_SELECT) }
-                        .position(centers.mode)
+                        // X Y Z (6-button only)
+                        if is6Button {
+                            actionButton("X", color: colorX, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit)
+                                .position(xCenter)
+                            actionButton("Y", color: colorY, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit)
+                                .position(yCenter)
+                            actionButton("Z", color: colorZ, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit)
+                                .position(zCenter)
+                        }
+
+                        // START + MODE
+                        startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
+                                    hitWidth: startVisualW + 40, hitHeight: startVisualH + 40)
+                            .position(centers.start)
+
+                        smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
+                                    hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32)
+                            .position(centers.mode)
+                    }
                 }
+                .frame(width: w, height: h, alignment: .topLeading)
+                .opacity(controllerOpacity)
+                .allowsHitTesting(false)
+
+                // ── Single multi-touch UIKit surface that drives the emulator input ──
+                TouchControlSurface(regions: regions) { id, pressed in
+                    press(pressed, id: id)
+                }
+                .frame(width: w, height: h)
             }
+            .frame(width: w, height: h, alignment: .topLeading)
         }
-        .opacity(controllerOpacity)
     }
 
     private func press(_ isPressed: Bool, id: UInt32) {
@@ -629,97 +671,74 @@ struct OnScreenControlsView: View {
     }
 
     private func dpadArea(visualSize: CGFloat, hitSize: CGFloat) -> some View {
-        MultiTouchDPad { up, down, left, right in
-            if (up || down || left || right) && hapticFeedback {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            }
-            engine.setButton(ID_UP,    pressed: up)
-            engine.setButton(ID_DOWN,  pressed: down)
-            engine.setButton(ID_LEFT,  pressed: left)
-            engine.setButton(ID_RIGHT, pressed: right)
+        ZStack {
+            Circle()
+                .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44))
+                .frame(width: visualSize, height: visualSize)
+                .overlay(Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2))
+            Circle()
+                .fill(Color.white.opacity(0.19))
+                .frame(width: visualSize * 0.31, height: visualSize * 0.31)
+
+            let offset    = visualSize * 0.32
+            let iconSize  = visualSize * 0.14
+            let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
+            Image(systemName: "arrowtriangle.up.fill")    .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y: -offset)
+            Image(systemName: "arrowtriangle.down.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y:  offset)
+            Image(systemName: "arrowtriangle.left.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x: -offset)
+            Image(systemName: "arrowtriangle.right.fill") .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x:  offset)
         }
         .frame(width: hitSize, height: hitSize)
-        .background(
-            ZStack {
-                Circle()
-                    .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44))
-                    .frame(width: visualSize, height: visualSize)
-                    .overlay(Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2))
-                Circle()
-                    .fill(Color.white.opacity(0.19))
-                    .frame(width: visualSize * 0.31, height: visualSize * 0.31)
-
-                let offset    = visualSize * 0.32
-                let iconSize  = visualSize * 0.14
-                let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
-                Image(systemName: "arrowtriangle.up.fill")    .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y: -offset)
-                Image(systemName: "arrowtriangle.down.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y:  offset)
-                Image(systemName: "arrowtriangle.left.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x: -offset)
-                Image(systemName: "arrowtriangle.right.fill") .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x:  offset)
-            }
-        )
     }
 
     private func actionButton(
         _ label: String, color: Color, borderColor: Color,
-        visualSize: CGFloat, hitSize: CGFloat,
-        onPress: @escaping (Bool) -> Void
+        visualSize: CGFloat, hitSize: CGFloat
     ) -> some View {
-        MultiTouchButton { isPressed in onPress(isPressed) }
-            .frame(width: hitSize, height: hitSize)
-            .background(
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.4))
-                        .frame(width: visualSize, height: visualSize)
-                        .overlay(Circle().stroke(borderColor.opacity(0.8), lineWidth: 2))
-                    Text(label)
-                        .font(.system(size: visualSize * 0.35, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-            )
+        ZStack {
+            Circle()
+                .fill(color.opacity(0.4))
+                .frame(width: visualSize, height: visualSize)
+                .overlay(Circle().stroke(borderColor.opacity(0.8), lineWidth: 2))
+            Text(label)
+                .font(.system(size: visualSize * 0.35, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+        }
+        .frame(width: hitSize, height: hitSize)
     }
 
     private func startButton(
         label: String,
         visualWidth: CGFloat, visualHeight: CGFloat,
-        hitWidth: CGFloat, hitHeight: CGFloat,
-        onPress: @escaping (Bool) -> Void
+        hitWidth: CGFloat, hitHeight: CGFloat
     ) -> some View {
-        MultiTouchButton { isPressed in onPress(isPressed) }
-            .frame(width: hitWidth, height: hitHeight)
-            .background(
-                ZStack {
-                    Capsule()
-                        .fill(Color(white: 0.13).opacity(0.4))
-                        .frame(width: visualWidth, height: visualHeight)
-                        .overlay(Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5))
-                    Text(label)
-                        .font(.system(size: visualHeight * 0.35, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(white: 0.93))
-                }
-            )
+        ZStack {
+            Capsule()
+                .fill(Color(white: 0.13).opacity(0.4))
+                .frame(width: visualWidth, height: visualHeight)
+                .overlay(Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5))
+            Text(label)
+                .font(.system(size: visualHeight * 0.35, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(white: 0.93))
+        }
+        .frame(width: hitWidth, height: hitHeight)
     }
 
     private func smallButton(
         label: String,
         visualWidth: CGFloat, visualHeight: CGFloat,
-        hitWidth: CGFloat, hitHeight: CGFloat,
-        onPress: @escaping (Bool) -> Void
+        hitWidth: CGFloat, hitHeight: CGFloat
     ) -> some View {
-        MultiTouchButton { isPressed in onPress(isPressed) }
-            .frame(width: hitWidth, height: hitHeight)
-            .background(
-                ZStack {
-                    Capsule()
-                        .fill(Color(white: 0.10).opacity(0.35))
-                        .frame(width: visualWidth, height: visualHeight)
-                        .overlay(Capsule().stroke(Color(white: 0.75).opacity(0.5), lineWidth: 1))
-                    Text(label)
-                        .font(.system(size: visualHeight * 0.30, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color(white: 0.80))
-                }
-            )
+        ZStack {
+            Capsule()
+                .fill(Color(white: 0.10).opacity(0.35))
+                .frame(width: visualWidth, height: visualHeight)
+                .overlay(Capsule().stroke(Color(white: 0.75).opacity(0.5), lineWidth: 1))
+            Text(label)
+                .font(.system(size: visualHeight * 0.30, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(white: 0.80))
+        }
+        .frame(width: hitWidth, height: hitHeight)
     }
     
 

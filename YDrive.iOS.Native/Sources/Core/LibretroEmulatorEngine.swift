@@ -68,6 +68,10 @@ final class LibretroEmulatorEngine: ObservableObject {
     private let audioEngine = YDriveAudioEngine()
     private var emulationQueue: DispatchQueue?
     private var frameTimer: DispatchSourceTimer?
+    /// True between start() and the moment the core finished loading (or failed).
+    private var isStarting = false
+    /// Incremented on every start()/stop() so late async completions can detect they are stale.
+    private var sessionID = 0
 
     // ─────────────────────────────────────────────────────────────────────────
     init() {
@@ -79,7 +83,10 @@ final class LibretroEmulatorEngine: ObservableObject {
     ///
     /// - Parameter romPath: Full filesystem path to the ROM file.
     func start(romPath: String) {
-        guard !isRunning else { return }
+        guard !isRunning, !isStarting else { return }
+        isStarting = true
+        sessionID += 1
+        let session = sessionID
         errorMessage = nil
 
         log.info("[ENGINE] start() — ROM: \(romPath, privacy: .public)")
@@ -155,6 +162,12 @@ final class LibretroEmulatorEngine: ObservableObject {
                 
                 Task { @MainActor [weak self] in
                     guard let self else { return }
+                    // stop() was called while the core was still loading: tear it down again.
+                    guard self.sessionID == session else {
+                        queue.async { @Sendable in bridgeRef.unload() }
+                        return
+                    }
+                    self.isStarting = false
                     self.videoWidth  = w
                     self.videoHeight = h
                     self.aspectRatio = ar
@@ -175,7 +188,8 @@ final class LibretroEmulatorEngine: ObservableObject {
                 log.error("[ENGINE] Failed to load game: \(finalError, privacy: .public)")
                 
                 Task { @MainActor [weak self, finalError] in
-                    guard let self else { return }
+                    guard let self, self.sessionID == session else { return }
+                    self.isStarting = false
                     self.errorMessage = finalError
                     self.coreAvailable = false
                 }
@@ -186,8 +200,12 @@ final class LibretroEmulatorEngine: ObservableObject {
     // ─────────────────────────────────────────────────────────────────────────
     /// Stop emulation and release core resources.
     func stop() {
-        guard isRunning else { return }
+        guard isRunning || isStarting else { return }
         log.info("[ENGINE] stop()")
+
+        // Invalidate any load that is still in flight.
+        sessionID += 1
+        isStarting = false
 
         frameTimer?.cancel()
         frameTimer = nil

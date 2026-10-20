@@ -40,7 +40,6 @@ enum retro_pixel_format {
 #define RETRO_DEVICE_ID_JOYPAD_MASK             256
 #define RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY  9
 #define RETRO_ENVIRONMENT_SET_PIXEL_FORMAT      10
-#define RETRO_ENVIRONMENT_GET_INPUT_BITMASK     48
 
 typedef struct {
     const char *path;
@@ -109,8 +108,6 @@ static bool env_callback(unsigned cmd, void *data) {
         }
         *dir = systemDir;
         os_log(gLog, "[CORE] GET_SYSTEM_DIRECTORY: %{public}s", systemDir);
-        return true;
-    } else if (cmd == RETRO_ENVIRONMENT_GET_INPUT_BITMASK) {
         return true;
     }
     return false;
@@ -386,8 +383,10 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     if (_coreInitialized) {
         _coreInitialized = NO;
     }
-    atomic_store(&gInputBitmask, 0);
-    gBridgeInstance = nil;
+    if (gBridgeInstance == self) {
+        atomic_store(&gInputBitmask, 0);
+        gBridgeInstance = nil;
+    }
 #endif
     _isRunning = NO;
 }
