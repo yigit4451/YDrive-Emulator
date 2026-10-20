@@ -51,8 +51,8 @@ Built from the ground up for modern iOS (iOS 26+) using native Apple frameworks:
 
 ### iOS (Direct IPA Sideloading)
 Download the latest pre-built `.ipa` from the [GitHub Releases](https://github.com/yigit4451/YDrive-Emulator/releases) page:
-- `YDrive-1.0.0.ipa` (Ad-hoc signed for AltStore, Sideloadly, or TrollStore)
-- `YDrive-1.0.0-unsigned.ipa` (Unsigned for custom signing workflows)
+- `YDrive.ipa` (Ad-hoc signed for AltStore, Sideloadly, or TrollStore)
+- `YDrive.unsigned.ipa` (Unsigned for custom signing workflows)
 
 ### Windows
 1. Download the latest `YDrive_Emulator_v*.zip` from [GitHub Releases](https://github.com/yigit4451/YDrive-Emulator/releases).
