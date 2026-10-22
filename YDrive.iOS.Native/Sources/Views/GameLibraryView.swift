@@ -18,7 +18,12 @@ let romUTTypes: [UTType] = [
 
 struct GameLibraryView: View {
     @StateObject private var viewModel = GameLibraryViewModel()
+    @ObservedObject private var quickActionManager = QuickActionManager.shared
+
     @AppStorage("appTheme") private var appTheme = "system"
+    @AppStorage("libraryViewMode") private var viewMode = "grid" // "grid" or "list"
+    @AppStorage("lastPlayedFileName") private var lastPlayedFileName = ""
+
     @State private var showingRenameAlert = false
     @State private var renameTarget: GameItem?
     @State private var renameText = ""
@@ -83,6 +88,18 @@ struct GameLibraryView: View {
                     }
                     
                     ToolbarItemGroup(placement: .topBarTrailing) {
+                        // Toggle between Grid and List view
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                viewMode = (viewMode == "grid") ? "list" : "grid"
+                            }
+                        } label: {
+                            Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
+                                .font(.title3.weight(.medium))
+                        }
+                        .tint(Color.accentColor)
+                        .accessibilityLabel(viewMode == "grid" ? "Switch to List View" : "Switch to Grid View")
+
                         Button {
                             viewModel.isFilePickerPresented = true
                         } label: {
@@ -99,6 +116,7 @@ struct GameLibraryView: View {
                 ) { result in
                     if case .success(let urls) = result {
                         urls.forEach { viewModel.addRom(url: $0) }
+                        quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
                     }
                 }
                 .alert("Rename", isPresented: $showingRenameAlert) {
@@ -106,6 +124,7 @@ struct GameLibraryView: View {
                     Button("Save") {
                         if let game = renameTarget, !renameText.isEmpty {
                             viewModel.renameGame(game, to: renameText)
+                            quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
                         }
                     }
                     Button("Cancel", role: .cancel) {}
@@ -115,6 +134,7 @@ struct GameLibraryView: View {
                     Button("Delete", role: .destructive) {
                         if let game = gameToDelete {
                             viewModel.deleteGame(game)
+                            quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
                         }
                     }
                 }
@@ -157,6 +177,39 @@ struct GameLibraryView: View {
                         coverTarget = nil
                     }
                 }
+                .onChange(of: quickActionManager.targetGameFileName) { _, fileName in
+                    guard let fileName, !fileName.isEmpty else { return }
+                    if let game = viewModel.games.first(where: { $0.fileName == fileName }) {
+                        playingGame = game
+                        lastPlayedFileName = game.fileName
+                    }
+                    quickActionManager.targetGameFileName = nil
+                }
+                .onChange(of: quickActionManager.shouldOpenAddRom) { _, shouldOpen in
+                    if shouldOpen {
+                        viewModel.isFilePickerPresented = true
+                        quickActionManager.shouldOpenAddRom = false
+                    }
+                }
+                .onChange(of: playingGame) { _, newGame in
+                    if let newGame {
+                        lastPlayedFileName = newGame.fileName
+                        quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: newGame.fileName)
+                    }
+                }
+                .onAppear {
+                    quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
+                    // Check if a shortcut was queued before view mounted
+                    if let target = quickActionManager.targetGameFileName,
+                       let game = viewModel.games.first(where: { $0.fileName == target }) {
+                        playingGame = game
+                        lastPlayedFileName = game.fileName
+                        quickActionManager.targetGameFileName = nil
+                    } else if quickActionManager.shouldOpenAddRom {
+                        viewModel.isFilePickerPresented = true
+                        quickActionManager.shouldOpenAddRom = false
+                    }
+                }
         }
         .preferredColorScheme(colorScheme)
     }
@@ -170,7 +223,11 @@ struct GameLibraryView: View {
                 noResultsState
             } else {
                 ScrollView {
-                    gameGrid
+                    if viewMode == "grid" {
+                        gameGrid
+                    } else {
+                        gameList
+                    }
                 }
             }
         }
@@ -189,7 +246,7 @@ struct GameLibraryView: View {
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
-            Text("Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)")
+            Text(NSLocalizedString("library.empty.subtitle", comment: ""))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -239,49 +296,152 @@ struct GameLibraryView: View {
                 }
                 .buttonStyle(.plain)
                 .contextMenu {
-                    Button {
-                        showingDetailsForGame = game
-                    } label: {
-                        Label("Game Info", systemImage: "info.circle")
-                    }
-                    
-                    Button {
-                        coverTarget = game
-                        showingCoverPicker = true
-                    } label: {
-                        Label("Change Cover", systemImage: "photo.on.rectangle")
-                    }
-
-                    if game.coverImagePath != nil {
-                        Button(role: .destructive) {
-                            viewModel.removeCoverImage(for: game)
-                        } label: {
-                            Label {
-                                Text("Remove Artwork")
-                            } icon: {
-                                Image(uiImage: Self.removeArtworkIcon)
-                            }
-                        }
-                    }
-                    
-                    Button {
-                        renameTarget = game
-                        renameText = game.title
-                        showingRenameAlert = true
-                    } label: {
-                        Label("Rename", systemImage: "pencil")
-                    }
-
-                    Button(role: .destructive) {
-                        gameToDelete = game
-                        showingDeleteAlert = true
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+                    contextMenuContent(for: game)
                 }
             }
         }
         .padding(16)
+    }
+
+    // MARK: – Game List
+    private var gameList: some View {
+        LazyVStack(spacing: 10) {
+            ForEach(viewModel.filteredGames) { game in
+                Button {
+                    playingGame = game
+                } label: {
+                    gameRow(for: game)
+                }
+                .buttonStyle(.plain)
+                .contextMenu {
+                    contextMenuContent(for: game)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    private func gameRow(for game: GameItem) -> some View {
+        HStack(spacing: 14) {
+            // Artwork / Cover thumbnail
+            ZStack {
+                if let coverPath = game.coverImagePath,
+                   let uiImage = UIImage(contentsOfFile: coverPath) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    LinearGradient(
+                        colors: [Color.accentColor.opacity(0.35), Color.accentColor.opacity(0.12)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    Image(systemName: "gamecontroller.fill")
+                        .font(.title3)
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .frame(width: 52, height: 52)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.white.opacity(0.14), lineWidth: 1)
+            )
+
+            // Info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(game.title)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    Text(game.consoleName)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(consoleColor(for: game.consoleName))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2.5)
+                        .background(consoleColor(for: game.consoleName).opacity(0.15))
+                        .clipShape(Capsule())
+
+                    if let year = game.releaseYear {
+                        Text(year)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "play.circle.fill")
+                .font(.title2)
+                .foregroundStyle(Color.accentColor)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 5, x: 0, y: 2)
+    }
+
+    private func consoleColor(for name: String) -> Color {
+        switch name {
+        case "SEGA 32X":
+            return Color(red: 255/255, green: 80/255, blue: 50/255)
+        case "SEGA Master System":
+            return Color(red: 170/255, green: 70/255, blue: 230/255)
+        case "SEGA CD":
+            return Color(red: 0/255, green: 200/255, blue: 215/255)
+        case "SEGA Game Gear":
+            return Color(red: 60/255, green: 200/255, blue: 120/255)
+        default:
+            return Color.blue
+        }
+    }
+
+    // MARK: – Context Menu Content
+    @ViewBuilder
+    private func contextMenuContent(for game: GameItem) -> some View {
+        Button {
+            showingDetailsForGame = game
+        } label: {
+            Label("Game Info", systemImage: "info.circle")
+        }
+        
+        Button {
+            coverTarget = game
+            showingCoverPicker = true
+        } label: {
+            Label("Change Cover", systemImage: "photo.on.rectangle")
+        }
+
+        if game.coverImagePath != nil {
+            Button(role: .destructive) {
+                viewModel.removeCoverImage(for: game)
+            } label: {
+                Label {
+                    Text("Remove Artwork")
+                } icon: {
+                    Image(uiImage: Self.removeArtworkIcon)
+                }
+            }
+        }
+        
+        Button {
+            renameTarget = game
+            renameText = game.title
+            showingRenameAlert = true
+        } label: {
+            Label("Rename", systemImage: "pencil")
+        }
+
+        Button(role: .destructive) {
+            gameToDelete = game
+            showingDeleteAlert = true
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
     }
 }
 

@@ -95,7 +95,7 @@ open YDrive.xcodeproj
 │       ├── ViewModels/         # MVVM view models
 │       └── Views/              # WPF XAML windows and dialogs
 ├── YDrive.iOS.Native/          # Native iOS Swift/SwiftUI application source code
-│   ├── Resources/              # Asset catalogs, Info.plist, Settings.bundle, l10n
+│   ├── Resources/              # Asset catalogs, Info.plist, l10n
 │   ├── Sources/                # Swift & Metal emulation engine, UI views, services
 │   └── project.yml             # XcodeGen project specification
 └── YDrive.sln                  # Root solution file for Windows development

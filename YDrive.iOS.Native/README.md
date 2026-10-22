@@ -4,7 +4,7 @@ A native SEGA console emulator for iOS, built with **Swift 6 & SwiftUI** and tar
 
 ## Features
 
-- **PicoDrive Libretro Core:** Accurate, optimized emulation for SEGA Genesis / Mega Drive, SEGA CD / Mega-CD, SEGA 32X, and SEGA Master System.
+- **PicoDrive Libretro Core:** Accurate, optimized emulation for SEGA Genesis / Mega Drive, SEGA CD / Mega-CD, SEGA 32X, SEGA Master System, and SEGA Game Gear.
 - **Metal Hardware Acceleration:** High-performance GPU rendering via Metal and MetalKit.
 - **Low-Latency Audio:** Real-time audio synthesis using Apple's `AVAudioEngine`.
 - **Modern UI:** Built using native SwiftUI controls, NavigationStack, and the iOS 26 Liquid Glass design language.
@@ -22,7 +22,6 @@ YDrive.iOS.Native/
 ├── Resources/
 │   ├── Assets.xcassets/            # Application icons and asset catalog
 │   ├── Info.plist                  # Bundle properties and permissions
-│   ├── Settings.bundle/            # iOS System Settings integration
 │   ├── en.lproj/Localizable.strings # English localization
 │   └── tr.lproj/Localizable.strings # Turkish localization
 └── Sources/

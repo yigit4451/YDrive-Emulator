@@ -12,7 +12,7 @@
 
 // Library
 "library.empty.title" = "No Games in Library";
-"library.empty.subtitle" = "Add a Genesis, 32X, Master System or SEGA CD ROM\n(.md .bin .gen .32x .sms .zip .chd)";
+"library.empty.subtitle" = "Add a Genesis, 32X, Master System, Game Gear or SEGA CD ROM\n(.md .bin .gen .32x .sms .gg .zip .chd)";
 "library.add_rom" = "Add ROM";
 "library.search" = "Search...";
 "library.refresh" = "Refresh Metadata";
@@ -21,6 +21,10 @@
 "library.delete" = "Delete";
 "library.rename_title" = "Rename";
 "library.new_name" = "New name";
+
+// Quick Actions
+"quick_action.add_rom" = "Add ROM";
+"quick_action.continue" = "Continue: %@";
 
 // Save Manager
 "saves.title" = "Saves";
@@ -75,7 +79,7 @@
 "settings.layout.auto" = "Auto (By Console)";
 "settings.layout.3btn" = "3-Button (Genesis)";
 "settings.layout.6btn" = "6-Button (Genesis)";
-"settings.layout.sms" = "Master System (2-Button)";
+"settings.layout.sms" = "Master System & Game Gear (2-Button)";
 "settings.m30" = "8BitDo M30 Layout";
 "settings.shoulders" = "All-Right Shoulders";
 "settings.mfi" = "MFi / GCController";

@@ -34,66 +34,71 @@ struct EmulatorView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.black.ignoresSafeArea()
+            GeometryReader { geo in
+                let w = geo.size.width
+                let h = geo.size.height
+                let isLandscape = w > h
+                let safeTop = geo.safeAreaInsets.top
 
-                // ── Game render surface ──────────────────────────────────────
-                if engine.coreAvailable {
-                    MetalEmulatorView(engine: engine, videoFilter: videoFilter)
-                        .ignoresSafeArea()
-                        .overlay(fpsOverlay, alignment: .topLeading)
-                } else if let errorMsg = engine.errorMessage {
-                    VStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.yellow)
-                        Text(NSLocalizedString("emulator.core_unavailable", comment: ""))
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                        Text(errorMsg)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.5))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                    }
-                } else {
-                    ProgressView().tint(.white)
-                }
+                ZStack {
+                    Color.black.ignoresSafeArea()
 
-                // ── On-screen controls ───────────────────────────────────────
-                if !isControllerConnected {
-                    OnScreenControlsView(engine: engine, consoleName: game.consoleName)
-                        .ignoresSafeArea()
-                }
-
-                // ── Screenshot flash overlay ─────────────────────────────────
-                if showFlash {
-                    Color.white
-                        .ignoresSafeArea()
-                        .allowsHitTesting(false)
-                        .transition(.opacity)
-                }
-
-                // ── Floating collapse button ─────────────────────────────────
-                if !isTopBarVisible {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Button {
-                                withAnimation { isTopBarVisible = true }
-                            } label: {
-                                Image(systemName: "chevron.down")
-                                    .font(.title3.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(12)
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
-                            }
-                            .padding(16)
-                            .padding(.top, 24)
+                    // ── Game render surface ──────────────────────────────────────
+                    if engine.coreAvailable {
+                        gameRenderSurface(width: w, height: h, isLandscape: isLandscape, safeTop: safeTop)
+                    } else if let errorMsg = engine.errorMessage {
+                        VStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 40))
+                                .foregroundStyle(.yellow)
+                            Text(NSLocalizedString("emulator.core_unavailable", comment: ""))
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                            Text(errorMsg)
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.5))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
                         }
-                        Spacer()
+                    } else {
+                        ProgressView().tint(.white)
+                    }
+
+                    // ── On-screen controls ───────────────────────────────────────
+                    if !isControllerConnected {
+                        OnScreenControlsView(engine: engine, consoleName: game.consoleName)
+                            .ignoresSafeArea()
+                    }
+
+                    // ── Screenshot flash overlay ─────────────────────────────────
+                    if showFlash {
+                        Color.white
+                            .ignoresSafeArea()
+                            .allowsHitTesting(false)
+                            .transition(.opacity)
+                    }
+
+                    // ── Floating collapse button ─────────────────────────────────
+                    if !isTopBarVisible {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button {
+                                    withAnimation { isTopBarVisible = true }
+                                } label: {
+                                    Image(systemName: "chevron.down")
+                                        .font(.title3.bold())
+                                        .foregroundStyle(.white)
+                                        .padding(12)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                                }
+                                .padding(16)
+                                .padding(.top, isLandscape ? 16 : max(safeTop, 16))
+                            }
+                            Spacer()
+                        }
                     }
                 }
             }
@@ -225,6 +230,26 @@ struct EmulatorView: View {
         .defersSystemGestures(on: .bottom)
         .persistentSystemOverlays(.hidden)
         .preferredColorScheme(.dark)
+    }
+
+    @ViewBuilder
+    private func gameRenderSurface(width: CGFloat, height: CGFloat, isLandscape: Bool, safeTop: CGFloat) -> some View {
+        if isLandscape {
+            MetalEmulatorView(engine: engine, videoFilter: videoFilter)
+                .ignoresSafeArea()
+                .overlay(fpsOverlay, alignment: .topLeading)
+        } else {
+            let aspect = CGFloat(engine.aspectRatio > 0.01 ? engine.aspectRatio : 4.0/3.0)
+            let maxGameH = (height - safeTop) * 0.48
+            let gameW = min(width, maxGameH * aspect)
+            let gameH = gameW / aspect
+            let gameY = safeTop + (gameH / 2) + 6
+
+            MetalEmulatorView(engine: engine, videoFilter: videoFilter)
+                .frame(width: gameW, height: gameH)
+                .overlay(fpsOverlay, alignment: .topLeading)
+                .position(x: width / 2, y: gameY)
+        }
     }
 
     // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
@@ -444,16 +469,20 @@ struct OnScreenControlsView: View {
         }
     }
 
-    private var isMasterSystemLayout: Bool {
-        if controllerLayout == "Master System" { return true }
+    private var is2ButtonLayout: Bool {
+        if controllerLayout == "Master System" || controllerLayout == "2-Button" { return true }
         if controllerLayout == "Auto" || controllerLayout == "3-Button" {
-            return consoleName == "SEGA Master System"
+            return consoleName == "SEGA Master System" || consoleName == "SEGA Game Gear"
         }
         return false
     }
 
+    private var isGameGear: Bool {
+        consoleName == "SEGA Game Gear"
+    }
+
     private var is6Button: Bool {
-        !isMasterSystemLayout && controllerLayout == "6-Button"
+        !is2ButtonLayout && controllerLayout == "6-Button"
     }
 
     var body: some View {
@@ -554,7 +583,7 @@ struct OnScreenControlsView: View {
                                                       width: width, height: height)))
                 }
                 add(.dpad, centers.dpad, dpadHit + 40, dpadHit + 40)
-                if self.isMasterSystemLayout {
+                if self.is2ButtonLayout {
                     add(.button(self.ID_B),     CGPoint(x: centers.b.x, y: centers.a.y), btnHit + 12, btnHit + 12)
                     add(.button(self.ID_A),     CGPoint(x: centers.c.x, y: centers.b.y), btnHit + 12, btnHit + 12)
                     add(.button(self.ID_START), centers.start, startVisualW * 1.15 + 40, startVisualH + 40)
@@ -591,8 +620,8 @@ struct OnScreenControlsView: View {
                     dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
                         .position(centers.dpad)
 
-                    if isMasterSystemLayout {
-                        // Master System: Button 1 & 2
+                    if is2ButtonLayout {
+                        // Master System & Game Gear: Button 1 & 2
                         actionButton(
                             "1",
                             color: buttonColorsEnabled ? Color(red: 225/255, green: 45/255, blue: 57/255) : defaultBg,
@@ -611,9 +640,9 @@ struct OnScreenControlsView: View {
                         )
                         .position(CGPoint(x: centers.c.x, y: centers.b.y))
 
-                        // PAUSE
+                        // START / PAUSE
                         startButton(
-                            label: "PAUSE",
+                            label: isGameGear ? "START" : "PAUSE",
                             visualWidth: startVisualW * 1.15,
                             visualHeight: startVisualH,
                             hitWidth: startVisualW * 1.15 + 40,
