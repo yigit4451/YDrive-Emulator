@@ -82,39 +82,19 @@ struct GameLibraryView: View {
                             showingSettings = true
                         } label: {
                             Image(systemName: "gearshape")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(Color.accentColor)
-                                .frame(width: 32, height: 32)
-                                .background(
-                                    Circle()
-                                        .fill(Color(UIColor.secondarySystemFill))
-                                )
+                                .font(.title3.weight(.medium))
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Settings")
+                        .tint(Color.accentColor)
                     }
                     
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 8) {
-                            // View Mode Capsule: displays both Grid & List options side-by-side
-                            ViewModeCapsule(viewMode: $viewMode)
-
-                            // Add ROM button in its own separate capsule/circle
-                            Button {
-                                viewModel.isFilePickerPresented = true
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(Color.accentColor)
-                                    .frame(width: 32, height: 32)
-                                    .background(
-                                        Circle()
-                                            .fill(Color(UIColor.secondarySystemFill))
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
+                        Button {
+                            viewModel.isFilePickerPresented = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title3.weight(.bold))
                         }
+                        .tint(Color.accentColor)
                     }
                 }
                 .fileImporter(
@@ -230,16 +210,83 @@ struct GameLibraryView: View {
             } else if !viewModel.searchText.isEmpty && viewModel.filteredGames.isEmpty {
                 noResultsState
             } else {
-                ScrollView {
-                    if viewMode == "grid" {
-                        gameGrid
-                    } else {
-                        gameList
+                VStack(spacing: 0) {
+                    topBarHeader
+
+                    ScrollView {
+                        if viewMode == "grid" {
+                            gameGrid
+                        } else {
+                            gameList
+                        }
                     }
                 }
             }
         }
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+    }
+
+    // MARK: – Top Bar Header
+    private var topBarHeader: some View {
+        HStack {
+            Spacer()
+            viewModeBox
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+        .padding(.bottom, 6)
+    }
+
+    private var viewModeBox: some View {
+        HStack(spacing: 8) {
+            Button {
+                guard viewMode != "grid" else { return }
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    viewMode = "grid"
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: viewMode == "grid" ? "square.grid.2x2.fill" : "square.grid.2x2")
+                    .font(.system(size: 14, weight: viewMode == "grid" ? .bold : .medium))
+                    .foregroundColor(viewMode == "grid" ? Color.accentColor : Color.secondary)
+                    .frame(width: 36, height: 30)
+                    .background(
+                        Capsule()
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(viewMode == "grid" ? Color.accentColor : Color(UIColor.separator).opacity(0.6), lineWidth: viewMode == "grid" ? 1.5 : 0.8)
+                    )
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString("library.grid_view", comment: "")))
+
+            Button {
+                guard viewMode != "list" else { return }
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    viewMode = "list"
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: "list.bullet")
+                    .font(.system(size: 14, weight: viewMode == "list" ? .bold : .medium))
+                    .foregroundColor(viewMode == "list" ? Color.accentColor : Color.secondary)
+                    .frame(width: 36, height: 30)
+                    .background(
+                        Capsule()
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(viewMode == "list" ? Color.accentColor : Color(UIColor.separator).opacity(0.6), lineWidth: viewMode == "list" ? 1.5 : 0.8)
+                    )
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString("library.list_view", comment: "")))
+        }
     }
 
     // MARK: – Empty State
@@ -450,67 +497,6 @@ struct GameLibraryView: View {
         } label: {
             Label("Delete", systemImage: "trash")
         }
-    }
-}
-
-// MARK: – View Mode Capsule
-struct ViewModeCapsule: View {
-    @Binding var viewMode: String
-    @Namespace private var animationNamespace
-
-    var body: some View {
-        HStack(spacing: 2) {
-            Button {
-                guard viewMode != "grid" else { return }
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
-                    viewMode = "grid"
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: viewMode == "grid" ? "square.grid.2x2.fill" : "square.grid.2x2")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(viewMode == "grid" ? .white : .secondary)
-                    .frame(width: 30, height: 26)
-                    .background {
-                        if viewMode == "grid" {
-                            Capsule()
-                                .fill(Color.accentColor)
-                                .matchedGeometryEffect(id: "viewModePill", in: animationNamespace)
-                        }
-                    }
-                    .contentShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("library.grid_view", comment: "")))
-
-            Button {
-                guard viewMode != "list" else { return }
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
-                    viewMode = "list"
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: "list.bullet")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(viewMode == "list" ? .white : .secondary)
-                    .frame(width: 30, height: 26)
-                    .background {
-                        if viewMode == "list" {
-                            Capsule()
-                                .fill(Color.accentColor)
-                                .matchedGeometryEffect(id: "viewModePill", in: animationNamespace)
-                        }
-                    }
-                    .contentShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("library.list_view", comment: "")))
-        }
-        .padding(3)
-        .background(
-            Capsule()
-                .fill(Color(UIColor.secondarySystemFill))
-        )
     }
 }
 
