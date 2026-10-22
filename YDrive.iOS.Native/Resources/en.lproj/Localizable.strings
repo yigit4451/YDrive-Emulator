@@ -23,6 +23,7 @@
 "library.new_name" = "New name";
 "library.grid_view" = "Grid View";
 "library.list_view" = "List View";
+"library.view_options" = "View Options";
 
 // Quick Actions
 "quick_action.add_rom" = "Add ROM";

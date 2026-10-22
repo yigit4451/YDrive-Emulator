@@ -23,6 +23,7 @@
 "library.new_name" = "Yeni ad";
 "library.grid_view" = "Kılavuz Görünümü";
 "library.list_view" = "Liste Görünümü";
+"library.view_options" = "Görünüm Seçenekleri";
 
 // Quick Actions
 "quick_action.add_rom" = "ROM Ekle";

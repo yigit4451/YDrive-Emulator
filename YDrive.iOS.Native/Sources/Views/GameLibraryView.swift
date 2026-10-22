@@ -83,45 +83,40 @@ struct GameLibraryView: View {
                             showingSettings = true
                         } label: {
                             Image(systemName: "gearshape")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(Color.accentColor)
-                                .frame(width: 34, height: 34)
-                                .background(
-                                    Circle()
-                                        .fill(Color(UIColor.secondarySystemGroupedBackground))
-                                )
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 0.8)
-                                )
+                                .font(.title3.weight(.medium))
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Settings")
+                        .tint(Color.accentColor)
+                        .accessibilityLabel(NSLocalizedString("settings", comment: ""))
                     }
                     
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 8) {
-                            viewModeCapsule
-
-                            Button {
-                                viewModel.isFilePickerPresented = true
+                        Menu {
+                            Picker(selection: $viewMode) {
+                                Label(NSLocalizedString("library.grid_view", comment: ""), systemImage: "square.grid.2x2")
+                                    .tag("grid")
+                                
+                                Label(NSLocalizedString("library.list_view", comment: ""), systemImage: "list.bullet")
+                                    .tag("list")
                             } label: {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 15, weight: .bold))
-                                    .foregroundColor(Color.accentColor)
-                                    .frame(width: 34, height: 34)
-                                    .background(
-                                        Circle()
-                                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                                    )
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 0.8)
-                                    )
+                                Text(NSLocalizedString("library.view_options", comment: "View Options"))
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
+                        } label: {
+                            Image(systemName: viewMode == "grid" ? "square.grid.2x2" : "list.bullet")
+                                .font(.title3.weight(.medium))
                         }
+                        .tint(Color.accentColor)
+                        .accessibilityLabel(NSLocalizedString("library.view_options", comment: "View Options"))
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.isFilePickerPresented = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title3.weight(.bold))
+                        }
+                        .tint(Color.accentColor)
+                        .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
                     }
                 }
                 .fileImporter(
@@ -256,55 +251,7 @@ struct GameLibraryView: View {
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
     }
 
-    // MARK: – View Mode Capsule
-    private var viewModeCapsule: some View {
-        HStack(spacing: 0) {
-            Button {
-                guard viewMode != "grid" else { return }
-                withAnimation(.easeInOut(duration: 0.18)) {
-                    viewMode = "grid"
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: viewMode == "grid" ? "square.grid.2x2.fill" : "square.grid.2x2")
-                    .font(.system(size: 14, weight: viewMode == "grid" ? .bold : .medium))
-                    .foregroundColor(viewMode == "grid" ? Color.accentColor : Color.secondary)
-                    .frame(width: 30, height: 34)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("library.grid_view", comment: "")))
 
-            Rectangle()
-                .fill(Color(UIColor.separator).opacity(0.4))
-                .frame(width: 0.8, height: 16)
-
-            Button {
-                guard viewMode != "list" else { return }
-                withAnimation(.easeInOut(duration: 0.18)) {
-                    viewMode = "list"
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: "list.bullet")
-                    .font(.system(size: 14, weight: viewMode == "list" ? .bold : .medium))
-                    .foregroundColor(viewMode == "list" ? Color.accentColor : Color.secondary)
-                    .frame(width: 30, height: 34)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("library.list_view", comment: "")))
-        }
-        .padding(.horizontal, 4)
-        .background(
-            Capsule()
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-        )
-        .overlay(
-            Capsule()
-                .stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 0.8)
-        )
-    }
 
     // MARK: – Empty State
     private var emptyState: some View {
