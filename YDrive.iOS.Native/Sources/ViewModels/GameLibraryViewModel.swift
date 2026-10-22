@@ -12,6 +12,7 @@ final class GameLibraryViewModel: ObservableObject {
     
     init() {
         loadLibrary()
+        syncWithDocumentsDirectory()
     }
     
     private func saveLibrary() {
@@ -85,7 +86,71 @@ final class GameLibraryViewModel: ObservableObject {
 
     func deleteGame(_ game: GameItem) {
         games.removeAll { $0.id == game.id }
+        if FileManager.default.fileExists(atPath: game.fileName) {
+            try? FileManager.default.removeItem(atPath: game.fileName)
+        }
         saveLibrary()
+    }
+
+    /// Scans the app's Documents directory (exposed in the Files app) for any ROM files added manually.
+    func syncWithDocumentsDirectory() {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        guard let enumerator = FileManager.default.enumerator(
+            at: docs,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+        ) else { return }
+
+        let supportedExtensions = Set(["md", "bin", "gen", "smd", "zip", "chd", "32x", "sms", "gg", "iso", "cue"])
+        let biosNames = Set(["bios_cd_u.bin", "bios_cd_j.bin", "bios_cd_e.bin"])
+
+        var updated = false
+
+        // 1. Remove games whose ROM files were removed from Documents
+        var currentGames = games.filter { game in
+            let exists = FileManager.default.fileExists(atPath: game.fileName)
+            if !exists {
+                updated = true
+                return false
+            }
+            return true
+        }
+
+        // 2. Discover new ROM files added manually via Files app
+        var existingPaths = Set(currentGames.map { $0.fileName })
+
+        for case let fileURL as URL in enumerator {
+            guard let resourceValues = try? fileURL.resourceValues(forKeys: [.isRegularFileKey]),
+                  resourceValues.isRegularFile == true else { continue }
+
+            let lowerName = fileURL.lastPathComponent.lowercased()
+            let ext = fileURL.pathExtension.lowercased()
+
+            guard supportedExtensions.contains(ext) else { continue }
+            guard !biosNames.contains(lowerName) else { continue }
+            guard !existingPaths.contains(fileURL.path) else { continue }
+
+            let name = fileURL.deletingPathExtension().lastPathComponent
+            let console = Self.detectConsole(url: fileURL, title: name)
+
+            let item = GameItem(
+                title: name,
+                consoleName: console,
+                fileName: fileURL.path
+            )
+            currentGames.append(item)
+            existingPaths.insert(fileURL.path)
+            updated = true
+
+            Task {
+                await fetchMetadata(for: item.id)
+            }
+        }
+
+        if updated {
+            self.games = currentGames
+            saveLibrary()
+        }
     }
 
     func renameGame(_ game: GameItem, to newName: String) {

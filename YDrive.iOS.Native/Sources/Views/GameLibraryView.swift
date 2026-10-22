@@ -17,6 +17,7 @@ let romUTTypes: [UTType] = [
 ].compactMap { $0 }
 
 struct GameLibraryView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var viewModel = GameLibraryViewModel()
     @ObservedObject private var quickActionManager = QuickActionManager.shared
 
@@ -189,7 +190,14 @@ struct GameLibraryView: View {
                         quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: newGame.fileName)
                     }
                 }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        viewModel.syncWithDocumentsDirectory()
+                        quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
+                    }
+                }
                 .onAppear {
+                    viewModel.syncWithDocumentsDirectory()
                     quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
                     // Check if a shortcut was queued before view mounted
                     if let target = quickActionManager.targetGameFileName,
