@@ -90,22 +90,17 @@ struct GameLibraryView: View {
                     }
                     
                     ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            Picker(selection: $viewMode) {
-                                Label(NSLocalizedString("library.grid_view", comment: ""), systemImage: "square.grid.2x2")
-                                    .tag("grid")
-                                
-                                Label(NSLocalizedString("library.list_view", comment: ""), systemImage: "list.bullet")
-                                    .tag("list")
-                            } label: {
-                                Text(NSLocalizedString("library.view_options", comment: "View Options"))
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                viewMode = (viewMode == "grid") ? "list" : "grid"
                             }
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         } label: {
-                            Image(systemName: viewMode == "grid" ? "square.grid.2x2" : "list.bullet")
+                            Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
                                 .font(.title3.weight(.medium))
                         }
                         .tint(Color.accentColor)
-                        .accessibilityLabel(NSLocalizedString("library.view_options", comment: "View Options"))
+                        .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
                     }
 
                     ToolbarItem(placement: .topBarTrailing) {
