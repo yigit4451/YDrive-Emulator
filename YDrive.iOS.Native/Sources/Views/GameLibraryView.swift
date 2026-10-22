@@ -84,8 +84,9 @@ struct GameLibraryView: View {
                         } label: {
                             Image(systemName: "gearshape")
                                 .font(.title3.weight(.medium))
+                                .foregroundColor(Color.accentColor)
                         }
-                        .tint(Color.accentColor)
+                        .buttonStyle(.plain)
                         .accessibilityLabel(NSLocalizedString("settings", comment: ""))
                     }
                     
@@ -98,8 +99,9 @@ struct GameLibraryView: View {
                         } label: {
                             Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
                                 .font(.title3.weight(.medium))
+                                .foregroundColor(Color.accentColor)
                         }
-                        .tint(Color.accentColor)
+                        .buttonStyle(.plain)
                         .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
                     }
 
@@ -109,8 +111,9 @@ struct GameLibraryView: View {
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title3.weight(.bold))
+                                .foregroundColor(Color.accentColor)
                         }
-                        .tint(Color.accentColor)
+                        .buttonStyle(.plain)
                         .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
                     }
                 }
