@@ -82,31 +82,39 @@ struct GameLibraryView: View {
                             showingSettings = true
                         } label: {
                             Image(systemName: "gearshape")
-                                .font(.title3.weight(.medium))
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(Color.accentColor)
+                                .frame(width: 32, height: 32)
+                                .background(
+                                    Circle()
+                                        .fill(Color(UIColor.secondarySystemFill))
+                                )
                         }
-                        .tint(Color.accentColor)
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Settings")
                     }
                     
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        // Toggle between Grid and List view
-                        Button {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                viewMode = (viewMode == "grid") ? "list" : "grid"
-                            }
-                        } label: {
-                            Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
-                                .font(.title3.weight(.medium))
-                        }
-                        .tint(Color.accentColor)
-                        .accessibilityLabel(viewMode == "grid" ? "Switch to List View" : "Switch to Grid View")
+                    ToolbarItem(placement: .topBarTrailing) {
+                        HStack(spacing: 8) {
+                            // View Mode Capsule: displays both Grid & List options side-by-side
+                            ViewModeCapsule(viewMode: $viewMode)
 
-                        Button {
-                            viewModel.isFilePickerPresented = true
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title3.weight(.bold))
+                            // Add ROM button in its own separate capsule/circle
+                            Button {
+                                viewModel.isFilePickerPresented = true
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(Color.accentColor)
+                                    .frame(width: 32, height: 32)
+                                    .background(
+                                        Circle()
+                                            .fill(Color(UIColor.secondarySystemFill))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
                         }
-                        .tint(Color.accentColor)
                     }
                 }
                 .fileImporter(
@@ -442,6 +450,67 @@ struct GameLibraryView: View {
         } label: {
             Label("Delete", systemImage: "trash")
         }
+    }
+}
+
+// MARK: – View Mode Capsule
+struct ViewModeCapsule: View {
+    @Binding var viewMode: String
+    @Namespace private var animationNamespace
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Button {
+                guard viewMode != "grid" else { return }
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+                    viewMode = "grid"
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: viewMode == "grid" ? "square.grid.2x2.fill" : "square.grid.2x2")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(viewMode == "grid" ? .white : .secondary)
+                    .frame(width: 30, height: 26)
+                    .background {
+                        if viewMode == "grid" {
+                            Capsule()
+                                .fill(Color.accentColor)
+                                .matchedGeometryEffect(id: "viewModePill", in: animationNamespace)
+                        }
+                    }
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString("library.grid_view", comment: "")))
+
+            Button {
+                guard viewMode != "list" else { return }
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+                    viewMode = "list"
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: "list.bullet")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(viewMode == "list" ? .white : .secondary)
+                    .frame(width: 30, height: 26)
+                    .background {
+                        if viewMode == "list" {
+                            Capsule()
+                                .fill(Color.accentColor)
+                                .matchedGeometryEffect(id: "viewModePill", in: animationNamespace)
+                        }
+                    }
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString("library.list_view", comment: "")))
+        }
+        .padding(3)
+        .background(
+            Capsule()
+                .fill(Color(UIColor.secondarySystemFill))
+        )
     }
 }
 
