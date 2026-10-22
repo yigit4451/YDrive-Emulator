@@ -88,6 +88,10 @@ struct GameLibraryView: View {
                     }
                     
                     ToolbarItem(placement: .topBarTrailing) {
+                        viewModeCapsule
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             viewModel.isFilePickerPresented = true
                         } label: {
@@ -210,15 +214,11 @@ struct GameLibraryView: View {
             } else if !viewModel.searchText.isEmpty && viewModel.filteredGames.isEmpty {
                 noResultsState
             } else {
-                VStack(spacing: 0) {
-                    topBarHeader
-
-                    ScrollView {
-                        if viewMode == "grid" {
-                            gameGrid
-                        } else {
-                            gameList
-                        }
+                ScrollView {
+                    if viewMode == "grid" {
+                        gameGrid
+                    } else {
+                        gameList
                     }
                 }
             }
@@ -226,19 +226,9 @@ struct GameLibraryView: View {
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
     }
 
-    // MARK: – Top Bar Header
-    private var topBarHeader: some View {
-        HStack {
-            Spacer()
-            viewModeBox
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 4)
-        .padding(.bottom, 6)
-    }
-
-    private var viewModeBox: some View {
-        HStack(spacing: 8) {
+    // MARK: – View Mode Capsule
+    private var viewModeCapsule: some View {
+        HStack(spacing: 2) {
             Button {
                 guard viewMode != "grid" else { return }
                 withAnimation(.easeInOut(duration: 0.18)) {
@@ -247,21 +237,17 @@ struct GameLibraryView: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
                 Image(systemName: viewMode == "grid" ? "square.grid.2x2.fill" : "square.grid.2x2")
-                    .font(.system(size: 14, weight: viewMode == "grid" ? .bold : .medium))
+                    .font(.system(size: 13, weight: viewMode == "grid" ? .bold : .medium))
                     .foregroundColor(viewMode == "grid" ? Color.accentColor : Color.secondary)
-                    .frame(width: 36, height: 30)
-                    .background(
-                        Capsule()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(viewMode == "grid" ? Color.accentColor : Color(UIColor.separator).opacity(0.6), lineWidth: viewMode == "grid" ? 1.5 : 0.8)
-                    )
-                    .contentShape(Capsule())
+                    .frame(width: 28, height: 26)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text(NSLocalizedString("library.grid_view", comment: "")))
+
+            Rectangle()
+                .fill(Color(UIColor.separator).opacity(0.5))
+                .frame(width: 0.8, height: 14)
 
             Button {
                 guard viewMode != "list" else { return }
@@ -271,22 +257,24 @@ struct GameLibraryView: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
                 Image(systemName: "list.bullet")
-                    .font(.system(size: 14, weight: viewMode == "list" ? .bold : .medium))
+                    .font(.system(size: 13, weight: viewMode == "list" ? .bold : .medium))
                     .foregroundColor(viewMode == "list" ? Color.accentColor : Color.secondary)
-                    .frame(width: 36, height: 30)
-                    .background(
-                        Capsule()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(viewMode == "list" ? Color.accentColor : Color(UIColor.separator).opacity(0.6), lineWidth: viewMode == "list" ? 1.5 : 0.8)
-                    )
-                    .contentShape(Capsule())
+                    .frame(width: 28, height: 26)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text(NSLocalizedString("library.list_view", comment: "")))
         }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 2)
+        .background(
+            Capsule()
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            Capsule()
+                .stroke(Color(UIColor.separator).opacity(0.6), lineWidth: 0.8)
+        )
     }
 
     // MARK: – Empty State
