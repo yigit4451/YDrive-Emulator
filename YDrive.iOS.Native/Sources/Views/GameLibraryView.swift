@@ -70,12 +70,12 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                customTopBar
-                mainContent
-            }
-            .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
-            .toolbar(.hidden, for: .navigationBar)
+            mainContent
+                .safeAreaInset(edge: .top) {
+                    customTopBar
+                }
+                .background(Color(UIColor.systemGroupedBackground))
+                .toolbar(.hidden, for: .navigationBar)
             .fileImporter(
                     isPresented: $viewModel.isFilePickerPresented,
                     allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
@@ -191,45 +191,51 @@ struct GameLibraryView: View {
     // MARK: – Custom Top Bar
     private var customTopBar: some View {
         HStack {
+            // Sol: Ayarlar
             Button {
                 showingSettings = true
             } label: {
                 Image(systemName: "gearshape")
-                    .font(.title3.weight(.medium))
+                    .font(.system(size: 20, weight: .medium))
                     .foregroundColor(.blue)
+                    .frame(width: 44, height: 44)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(NSLocalizedString("settings", comment: ""))
 
             Spacer()
 
-            HStack(spacing: 14) {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        viewMode = (viewMode == "grid") ? "list" : "grid"
-                    }
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                } label: {
-                    Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
-                        .font(.title3.weight(.medium))
-                        .foregroundColor(.blue)
+            // Sağ 1: Liste / Kutu
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewMode = (viewMode == "grid") ? "list" : "grid"
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
-
-                Button {
-                    viewModel.isFilePickerPresented = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.title3.weight(.bold))
-                        .foregroundColor(.blue)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.blue)
+                    .frame(width: 44, height: 44)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
+
+            // Sağ 2: ROM Ekle (+)
+            Button {
+                viewModel.isFilePickerPresented = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundColor(.blue)
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+        .background(Color(UIColor.systemGroupedBackground))
     }
 
     @ViewBuilder
@@ -249,7 +255,7 @@ struct GameLibraryView: View {
                 }
             }
         }
-        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .background(Color(UIColor.systemGroupedBackground))
     }
 
 
