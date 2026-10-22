@@ -70,54 +70,13 @@ struct GameLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            mainContent
-                .navigationTitle("YDrive")
-                .searchable(
-                    text: $viewModel.searchText,
-                    placement: .navigationBarDrawer(displayMode: .always),
-                    prompt: Text(NSLocalizedString("search", comment: ""))
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .font(.title3.weight(.medium))
-                                .foregroundColor(Color.accentColor)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(NSLocalizedString("settings", comment: ""))
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                viewMode = (viewMode == "grid") ? "list" : "grid"
-                            }
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        } label: {
-                            Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
-                                .font(.title3.weight(.medium))
-                                .foregroundColor(Color.accentColor)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
-                    }
-
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.isFilePickerPresented = true
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title3.weight(.bold))
-                                .foregroundColor(Color.accentColor)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
-                    }
-                }
-                .fileImporter(
+            VStack(spacing: 0) {
+                customTopBar
+                mainContent
+            }
+            .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .fileImporter(
                     isPresented: $viewModel.isFilePickerPresented,
                     allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
                     allowsMultipleSelection: true
@@ -229,6 +188,50 @@ struct GameLibraryView: View {
         .preferredColorScheme(colorScheme)
     }
     
+    // MARK: – Custom Top Bar
+    private var customTopBar: some View {
+        HStack {
+            Button {
+                showingSettings = true
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.title3.weight(.medium))
+                    .foregroundColor(.blue)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(NSLocalizedString("settings", comment: ""))
+
+            Spacer()
+
+            HStack(spacing: 14) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewMode = (viewMode == "grid") ? "list" : "grid"
+                    }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
+                        .font(.title3.weight(.medium))
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
+
+                Button {
+                    viewModel.isFilePickerPresented = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title3.weight(.bold))
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+
     @ViewBuilder
     private var mainContent: some View {
         Group {
