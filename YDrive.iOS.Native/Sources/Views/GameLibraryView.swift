@@ -71,11 +71,49 @@ struct GameLibraryView: View {
     var body: some View {
         NavigationStack {
             mainContent
-                .safeAreaInset(edge: .top) {
-                    customTopBar
+                .navigationTitle("YDrive")
+                .searchable(
+                    text: $viewModel.searchText,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: Text(NSLocalizedString("search", comment: ""))
+                )
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                                .font(.title3.weight(.medium))
+                        }
+                        .tint(Color.accentColor)
+                        .accessibilityLabel(NSLocalizedString("settings", comment: ""))
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Picker(selection: $viewMode) {
+                            Image(systemName: "square.grid.2x2")
+                                .tag("grid")
+                                .accessibilityLabel(Text(NSLocalizedString("library.grid_view", comment: "")))
+                            Image(systemName: "list.bullet")
+                                .tag("list")
+                                .accessibilityLabel(Text(NSLocalizedString("library.list_view", comment: "")))
+                        } label: {
+                            Text(NSLocalizedString("library.view_options", comment: "View Options"))
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.isFilePickerPresented = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title3.weight(.bold))
+                        }
+                        .tint(Color.accentColor)
+                        .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
+                    }
                 }
-                .background(Color(UIColor.systemGroupedBackground))
-                .toolbar(.hidden, for: .navigationBar)
             .fileImporter(
                     isPresented: $viewModel.isFilePickerPresented,
                     allowedContentTypes: romUTTypes.isEmpty ? [.data] : romUTTypes,
@@ -188,56 +226,6 @@ struct GameLibraryView: View {
         .preferredColorScheme(colorScheme)
     }
     
-    // MARK: – Custom Top Bar
-    private var customTopBar: some View {
-        HStack {
-            // Sol: Ayarlar
-            Button {
-                showingSettings = true
-            } label: {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(.blue)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(NSLocalizedString("settings", comment: ""))
-
-            Spacer()
-
-            // Sağ 1: Liste / Kutu
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewMode = (viewMode == "grid") ? "list" : "grid"
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(.blue)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
-
-            // Sağ 2: ROM Ekle (+)
-            Button {
-                viewModel.isFilePickerPresented = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundColor(.blue)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
-        .background(Color(UIColor.systemGroupedBackground))
-    }
-
     @ViewBuilder
     private var mainContent: some View {
         Group {
@@ -255,7 +243,7 @@ struct GameLibraryView: View {
                 }
             }
         }
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
     }
 
 
