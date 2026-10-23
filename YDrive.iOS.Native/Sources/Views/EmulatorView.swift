@@ -43,32 +43,36 @@ struct EmulatorView: View {
                 ZStack {
                     Color.black.ignoresSafeArea()
 
-                    // ── Game render surface ──────────────────────────────────────
-                    if engine.coreAvailable {
-                        gameRenderSurface(width: w, height: h, isLandscape: isLandscape, safeTop: safeTop)
-                    } else if let errorMsg = engine.errorMessage {
-                        VStack(spacing: 12) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 40))
-                                .foregroundStyle(.yellow)
-                            Text(NSLocalizedString("emulator.core_unavailable", comment: ""))
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                            Text(errorMsg)
-                                .font(.caption)
-                                .foregroundStyle(.white.opacity(0.5))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 32)
+                    // ── Game render surface & controls (with background blur when Saves is open) ──
+                    ZStack {
+                        if engine.coreAvailable {
+                            gameRenderSurface(width: w, height: h, isLandscape: isLandscape, safeTop: safeTop)
+                        } else if let errorMsg = engine.errorMessage {
+                            VStack(spacing: 12) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundStyle(.yellow)
+                                Text(NSLocalizedString("emulator.core_unavailable", comment: ""))
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                                Text(errorMsg)
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.5))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 32)
+                            }
+                        } else {
+                            ProgressView().tint(.white)
                         }
-                    } else {
-                        ProgressView().tint(.white)
-                    }
 
-                    // ── On-screen controls ───────────────────────────────────────
-                    if !isControllerConnected {
-                        OnScreenControlsView(engine: engine, consoleName: game.consoleName)
-                            .ignoresSafeArea()
+                        // ── On-screen controls ───────────────────────────────────────
+                        if !isControllerConnected {
+                            OnScreenControlsView(engine: engine, consoleName: game.consoleName)
+                                .ignoresSafeArea()
+                        }
                     }
+                    .blur(radius: isSaveManagerPresented ? 14 : 0)
+                    .animation(.easeInOut(duration: 0.25), value: isSaveManagerPresented)
 
                     // ── Screenshot flash overlay ─────────────────────────────────
                     if showFlash {
@@ -78,8 +82,39 @@ struct EmulatorView: View {
                             .transition(.opacity)
                     }
 
+                    // ── Dimming overlay behind Saves (Separate Layer) ────────────
+                    if isSaveManagerPresented {
+                        Color.black.opacity(0.35)
+                            .ignoresSafeArea()
+                            .transition(.opacity)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isSaveManagerPresented = false
+                                    if engine.isPaused { engine.setPaused(false) }
+                                }
+                            }
+                    }
+
+                    // ── Save States Screen (Native Liquid Glass overlay) ─────────
+                    if isSaveManagerPresented {
+                        SaveManagerView(
+                            engine: engine,
+                            gameFileName: game.fileName,
+                            isPresented: $isSaveManagerPresented,
+                            hasActiveGameBackground: true
+                        )
+                        .frame(maxWidth: min(w - 24, 480), maxHeight: min(h - 40, 640))
+                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.95)),
+                            removal: .opacity.combined(with: .scale(scale: 0.98))
+                        ))
+                        .zIndex(100)
+                    }
+
                     // ── Floating collapse button ─────────────────────────────────
-                    if !isTopBarVisible {
+                    if !isTopBarVisible && !isSaveManagerPresented {
                         VStack {
                             HStack {
                                 Spacer()
@@ -87,13 +122,11 @@ struct EmulatorView: View {
                                     withAnimation { isTopBarVisible = true }
                                 } label: {
                                     Image(systemName: "chevron.down")
-                                        .font(.title3.bold())
+                                        .font(.subheadline.bold())
                                         .foregroundStyle(.white)
-                                        .padding(12)
-                                        .background(.ultraThinMaterial)
-                                        .clipShape(Circle())
-                                        .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                                        .frame(width: 36, height: 36)
                                 }
+                                .buttonStyle(.glass)
                                 .padding(16)
                                 .padding(.top, isLandscape ? 16 : max(safeTop, 16))
                             }
@@ -127,86 +160,71 @@ struct EmulatorView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     if verticalSizeClass == .regular {
-                        // Portrait: Minimal icons
-                        HStack(spacing: 16) {
-                            Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
-                            Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
-                            Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
-                            
-                            Menu {
-                                Button {
-                                    engine.reset()
-                                    if engine.isPaused { engine.setPaused(false) }
-                                } label: {
-                                    Label {
-                                        Text(NSLocalizedString("emulator.reset", comment: ""))
-                                            .font(.body.weight(.bold))
-                                            .foregroundStyle(.white)
-                                    } icon: {
-                                        Image(uiImage: whiteMenuIcon("arrow.counterclockwise"))
+                        // Portrait: Minimal icons in GlassEffectContainer
+                        GlassEffectContainer(cornerRadius: 18) {
+                            HStack(spacing: 8) {
+                                Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
+                                Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
+                                
+                                Menu {
+                                    Button {
+                                        engine.reset()
+                                        if engine.isPaused { engine.setPaused(false) }
+                                    } label: {
+                                        Label(NSLocalizedString("emulator.reset", comment: ""), systemImage: "arrow.counterclockwise")
                                     }
+                                    Button {
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            engine.setPaused(true)
+                                            isSaveManagerPresented = true
+                                            isTopBarVisible = false
+                                        }
+                                    } label: {
+                                        Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down.fill")
+                                    }
+                                    Button {
+                                        takeScreenshot()
+                                    } label: {
+                                        Label(NSLocalizedString("emulator.screenshot", comment: ""), systemImage: "camera.fill")
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis.circle")
                                 }
+                                
+                                Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
+                            }
+                            .font(.system(size: 15, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                        }
+                        .tint(.white)
+                        .foregroundStyle(.white)
+                    } else {
+                        // Landscape: All icons in GlassEffectContainer
+                        GlassEffectContainer(cornerRadius: 18) {
+                            HStack(spacing: 12) {
+                                Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
                                 Button {
-                                    withAnimation {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
                                         engine.setPaused(true)
                                         isSaveManagerPresented = true
                                         isTopBarVisible = false
                                     }
-                                } label: {
-                                    Label {
-                                        Text(NSLocalizedString("emulator.save_state", comment: ""))
-                                            .font(.body.weight(.bold))
-                                            .foregroundStyle(.white)
-                                    } icon: {
-                                        Image(uiImage: whiteMenuIcon("tray.and.arrow.down.fill"))
-                                    }
-                                }
-                                Button {
-                                    takeScreenshot()
-                                } label: {
-                                    Label {
-                                        Text(NSLocalizedString("emulator.screenshot", comment: ""))
-                                            .font(.body.weight(.bold))
-                                            .foregroundStyle(.white)
-                                    } icon: {
-                                        Image(uiImage: whiteMenuIcon("camera.fill"))
-                                    }
-                                }
-                            } label: {
-                                Image(systemName: "ellipsis.circle")
-                                    .foregroundStyle(.white)
+                                } label: { Image(systemName: "tray.and.arrow.down") }
+                                Button { takeScreenshot() } label: { Image(systemName: "camera.fill") }
+                                Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
+                                Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
+                                Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             }
-                            .tint(.white)
-                            .foregroundStyle(.white)
-                            .environment(\.colorScheme, .dark)
+                            .font(.system(size: 15, weight: .semibold))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
                         }
-                        .font(.title3)
                         .tint(.white)
                         .foregroundStyle(.white)
-                        .fixedSize()
-                    } else {
-                        // Landscape: All icons
-                        HStack(spacing: 16) {
-                            Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
-                            Button { withAnimation { engine.setPaused(true); isSaveManagerPresented = true; isTopBarVisible = false } } label: { Image(systemName: "tray.and.arrow.down") }
-                            Button { takeScreenshot() } label: { Image(systemName: "camera.fill") }
-                            Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
-                            Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
-                            Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
-                        }
-                        .font(.title3)
-                        .tint(.white)
-                        .foregroundStyle(.white)
-                        .fixedSize()
                     }
                 }
             }
-        }
-        .sheet(isPresented: $isSaveManagerPresented) {
-            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
-                .presentationDetents([.medium, .large])
-                .presentationBackground(.ultraThinMaterial.opacity(0.85))
-                .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)

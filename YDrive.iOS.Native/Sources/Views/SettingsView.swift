@@ -19,6 +19,12 @@ struct SettingsView: View {
     @AppStorage("m30MappingEnabled")   private var m30MappingEnabled   = false
     @AppStorage("allRightShoulders")   private var allRightShoulders   = false
 
+    private var appVersionString: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.2"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "3"
+        return "v\(version) (\(build))"
+    }
+
     var body: some View {
         let colorScheme: ColorScheme? = {
             switch appTheme {
@@ -117,6 +123,13 @@ struct SettingsView: View {
 
                 // ── HAKKINDA ─────────────────────────────────────────────────
                 Section(header: Label("settings.about", systemImage: "info.circle.fill")) {
+                    HStack {
+                        Text(NSLocalizedString("settings.version", comment: "Version"))
+                        Spacer()
+                        Text(appVersionString)
+                            .foregroundStyle(.secondary)
+                    }
+
                     HStack {
                         Text("settings.core")
                         Spacer()

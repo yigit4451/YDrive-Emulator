@@ -60,6 +60,7 @@
 "settings.emulation" = "Emulation & Audio";
 "settings.controller" = "Controller";
 "settings.about" = "About";
+"settings.version" = "Version";
 
 // Settings — Appearance
 "settings.theme" = "Theme";

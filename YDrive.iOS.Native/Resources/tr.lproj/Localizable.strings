@@ -60,6 +60,7 @@
 "settings.emulation" = "Emülasyon & Ses";
 "settings.controller" = "Kontrolcü";
 "settings.about" = "Hakkında";
+"settings.version" = "Sürüm";
 
 // Settings — Appearance
 "settings.theme" = "Tema";
