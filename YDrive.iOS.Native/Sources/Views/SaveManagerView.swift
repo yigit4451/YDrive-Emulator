@@ -55,27 +55,15 @@ struct SaveManagerView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            isPresented = false
-                        }
+                        isPresented = false
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(.secondary)
                             .frame(width: 32, height: 32)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .overlay(
-                                Circle()
-                                    .strokeBorder(
-                                        LinearGradient(
-                                            colors: [Color.white.opacity(0.4), Color.white.opacity(0.1)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
-                            )
+                            .glassEffect(.regular, in: Circle())
                     }
+                    .buttonStyle(.plain)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -93,25 +81,10 @@ struct SaveManagerView: View {
                             Text("New")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.blue, Color(red: 0/255, green: 175/255, blue: 245/255)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                        )
-                        .overlay(
-                            Capsule()
-                                .strokeBorder(Color.white.opacity(0.35), lineWidth: 0.8)
-                        )
-                        .shadow(color: Color.blue.opacity(0.35), radius: 6, x: 0, y: 2)
                     }
+                    .buttonStyle(.glassProminent)
                     .disabled(isSaving)
                 }
             }
@@ -233,8 +206,7 @@ struct SaveManagerView: View {
                     }
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4.5)
-                    .background(Color.blue.opacity(0.12))
-                    .clipShape(Capsule())
+                    .glassEffect(.regular, in: Capsule())
                 }
             }
             .buttonStyle(.plain)
@@ -244,17 +216,11 @@ struct SaveManagerView: View {
                 slotToDelete = slot
                 showingDeleteAlert = true
             } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.red.opacity(0.12))
-                        .frame(width: 34, height: 34)
-                    Circle()
-                        .strokeBorder(Color.red.opacity(0.30), lineWidth: 0.8)
-                        .frame(width: 34, height: 34)
-                    Image(systemName: "trash.fill")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.red)
-                }
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.red)
+                    .frame(width: 34, height: 34)
+                    .glassEffect(.regular, in: Circle())
             }
             .buttonStyle(.borderless)
         }
@@ -324,25 +290,10 @@ struct SaveManagerView: View {
                     Text(NSLocalizedString("saves.create_now", comment: "Create Save State"))
                         .font(.headline)
                 }
-                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.blue, Color(red: 0/255, green: 180/255, blue: 255/255)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
-                )
-                .shadow(color: Color.blue.opacity(0.35), radius: 8, x: 0, y: 4)
+                .padding(.vertical, 8)
             }
+            .buttonStyle(.glassProminent)
             .disabled(isSaving)
             .padding(.horizontal, 20)
             .padding(.top, 6)

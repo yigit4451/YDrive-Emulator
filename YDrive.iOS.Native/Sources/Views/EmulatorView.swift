@@ -46,6 +46,8 @@ struct EmulatorView: View {
                     // ── Game render surface ──────────────────────────────────────
                     if engine.coreAvailable {
                         gameRenderSurface(width: w, height: h, isLandscape: isLandscape, safeTop: safeTop)
+                            .blur(radius: isSaveManagerPresented ? 8 : 0)
+                            .animation(.easeInOut(duration: 0.25), value: isSaveManagerPresented)
                     } else if let errorMsg = engine.errorMessage {
                         VStack(spacing: 12) {
                             Image(systemName: "exclamationmark.triangle.fill")
@@ -79,7 +81,7 @@ struct EmulatorView: View {
                     }
 
                     // ── Floating collapse button ─────────────────────────────────
-                    if !isTopBarVisible && !isSaveManagerPresented {
+                    if !isTopBarVisible {
                         VStack {
                             HStack {
                                 Spacer()
@@ -99,49 +101,6 @@ struct EmulatorView: View {
                             }
                             Spacer()
                         }
-                    }
-
-                    // ── Dimming backdrop behind Saves Window ────────────────────
-                    if isSaveManagerPresented {
-                        Color.black.opacity(0.4)
-                            .ignoresSafeArea()
-                            .transition(.opacity)
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.25)) {
-                                    isSaveManagerPresented = false
-                                }
-                            }
-                            .zIndex(90)
-
-                        // ── Save States Floating Window (Both Portrait & Landscape) ──
-                        SaveManagerView(
-                            engine: engine,
-                            gameFileName: game.fileName,
-                            isPresented: $isSaveManagerPresented
-                        )
-                        .frame(
-                            maxWidth: isLandscape ? min(w - 80, 520) : min(w - 32, 420),
-                            maxHeight: isLandscape ? min(h - 40, 380) : min(h - 100, 580)
-                        )
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                .strokeBorder(
-                                    LinearGradient(
-                                        colors: [Color.white.opacity(0.4), Color.white.opacity(0.1)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
-                        )
-                        .shadow(color: Color.black.opacity(0.35), radius: 24, x: 0, y: 12)
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.94).combined(with: .opacity),
-                            removal: .scale(scale: 0.97).combined(with: .opacity)
-                        ))
-                        .zIndex(100)
                     }
                 }
             }
@@ -244,6 +203,13 @@ struct EmulatorView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $isSaveManagerPresented) {
+            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.ultraThinMaterial)
+                .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)
