@@ -40,22 +40,12 @@ struct GameDetailView: View {
                             .fill(Color(UIColor.secondarySystemFill))
                             .frame(width: 220, height: 290)
 
-                        if let path = game.coverImagePath {
-                            let filename = URL(fileURLWithPath: path).lastPathComponent
-                            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                            let resolvedPath = docs.appendingPathComponent(filename).path
-                            
-                            if let img = UIImage(contentsOfFile: resolvedPath) {
-                                Image(uiImage: img)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 220, height: 290)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            } else {
-                                Image(systemName: "gamecontroller.fill")
-                                    .font(.system(size: 72))
-                                    .foregroundStyle(.tertiary)
-                            }
+                        if let img = game.resolveCoverImage() {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 220, height: 290)
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         } else {
                             Image(systemName: "gamecontroller.fill")
                                 .font(.system(size: 72))

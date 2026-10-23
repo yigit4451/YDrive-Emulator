@@ -9,6 +9,9 @@
 "delete" = "Delete";
 "rename" = "Rename";
 "confirm_delete" = "Are you sure you want to delete this?";
+"play" = "Play";
+"change_cover" = "Change Cover";
+"remove_artwork" = "Remove Artwork";
 
 // Library
 "library.empty.title" = "No Games in Library";

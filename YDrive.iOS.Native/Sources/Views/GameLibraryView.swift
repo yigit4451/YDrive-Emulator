@@ -50,20 +50,23 @@ struct GameLibraryView: View {
         GridItem(.adaptive(minimum: 155, maximum: 195), spacing: 16)
     ]
 
-    /// Red gallery icon with an xmark below it, used for "Remove Artwork" in the card menu.
+    /// Red gallery icon with an xmark at its bottom-right corner, used for "Remove Artwork" in the card menu.
     private static let removeArtworkIcon: UIImage = {
-        let cfg = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        let xCfg = UIImage.SymbolConfiguration(pointSize: 8, weight: .bold)
-        let photo = UIImage(systemName: "photo.on.rectangle", withConfiguration: cfg)?
+        let photoCfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+        let xCfg = UIImage.SymbolConfiguration(pointSize: 9, weight: .bold)
+        let photo = UIImage(systemName: "photo.on.rectangle", withConfiguration: photoCfg)?
             .withTintColor(.systemRed, renderingMode: .alwaysOriginal)
         let xmark = UIImage(systemName: "xmark", withConfiguration: xCfg)?
             .withTintColor(.systemRed, renderingMode: .alwaysOriginal)
         guard let photo, let xmark else { return UIImage() }
-        let size = CGSize(width: max(photo.size.width, xmark.size.width),
-                          height: photo.size.height + xmark.size.height + 1)
+        let canvasWidth = photo.size.width + 4
+        let canvasHeight = photo.size.height + 4
+        let size = CGSize(width: canvasWidth, height: canvasHeight)
         let img = UIGraphicsImageRenderer(size: size).image { _ in
-            photo.draw(at: CGPoint(x: (size.width - photo.size.width) / 2, y: 0))
-            xmark.draw(at: CGPoint(x: (size.width - xmark.size.width) / 2, y: photo.size.height + 1))
+            photo.draw(at: CGPoint(x: 0, y: 0))
+            let xPos = canvasWidth - xmark.size.width
+            let yPos = canvasHeight - xmark.size.height
+            xmark.draw(at: CGPoint(x: xPos, y: yPos))
         }
         return img.withRenderingMode(.alwaysOriginal)
     }()
@@ -340,8 +343,7 @@ struct GameLibraryView: View {
         HStack(spacing: 14) {
             // Artwork / Cover thumbnail
             ZStack {
-                if let coverPath = game.coverImagePath,
-                   let uiImage = UIImage(contentsOfFile: coverPath) {
+                if let uiImage = game.resolveCoverImage() {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
@@ -418,43 +420,49 @@ struct GameLibraryView: View {
     @ViewBuilder
     private func contextMenuContent(for game: GameItem) -> some View {
         Button {
+            playingGame = game
+        } label: {
+            Label(NSLocalizedString("play", comment: ""), systemImage: "play.fill")
+        }
+
+        Button {
             showingDetailsForGame = game
         } label: {
-            Label("Game Info", systemImage: "info.circle")
+            Label(NSLocalizedString("library.game_info", comment: ""), systemImage: "info.circle")
         }
         
         Button {
             coverTarget = game
             showingCoverPicker = true
         } label: {
-            Label("Change Cover", systemImage: "photo.on.rectangle")
+            Label(NSLocalizedString("change_cover", comment: ""), systemImage: "photo.on.rectangle")
         }
 
-        if game.coverImagePath != nil {
-            Button(role: .destructive) {
-                viewModel.removeCoverImage(for: game)
-            } label: {
-                Label {
-                    Text("Remove Artwork")
-                } icon: {
-                    Image(uiImage: Self.removeArtworkIcon)
-                }
-            }
-        }
-        
         Button {
             renameTarget = game
             renameText = game.title
             showingRenameAlert = true
         } label: {
-            Label("Rename", systemImage: "pencil")
+            Label(NSLocalizedString("library.rename", comment: ""), systemImage: "pencil")
+        }
+
+        if game.coverImagePath != nil || game.resolveCoverImage() != nil {
+            Button(role: .destructive) {
+                viewModel.removeCoverImage(for: game)
+            } label: {
+                Label {
+                    Text(NSLocalizedString("remove_artwork", comment: ""))
+                } icon: {
+                    Image(uiImage: Self.removeArtworkIcon)
+                }
+            }
         }
 
         Button(role: .destructive) {
             gameToDelete = game
             showingDeleteAlert = true
         } label: {
-            Label("Delete", systemImage: "trash")
+            Label(NSLocalizedString("library.delete", comment: ""), systemImage: "trash")
         }
     }
 }

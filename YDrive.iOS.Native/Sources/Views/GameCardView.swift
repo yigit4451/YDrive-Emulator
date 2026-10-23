@@ -12,22 +12,12 @@ struct GameCardView: View {
                     .fill(Color(UIColor.secondarySystemFill))
                     .frame(height: 140)
 
-                if let coverPath = game.coverImagePath {
-                    let filename = URL(fileURLWithPath: coverPath).lastPathComponent
-                    let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                    let resolvedPath = docs.appendingPathComponent(filename).path
-                    
-                    if let uiImage = UIImage(contentsOfFile: resolvedPath) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 140)
-                            .clipped()
-                    } else {
-                        Image(systemName: "gamecontroller.fill")
-                            .font(.largeTitle)
-                            .foregroundStyle(.tertiary)
-                    }
+                if let uiImage = game.resolveCoverImage() {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 140)
+                        .clipped()
                 } else {
                     Image(systemName: "gamecontroller.fill")
                         .font(.largeTitle)

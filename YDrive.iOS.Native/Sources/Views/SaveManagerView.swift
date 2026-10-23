@@ -113,21 +113,18 @@ struct SaveManagerView: View {
     }
     
     private func fetchAllSaves() {
-        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
-        let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
-        
         var saves = [Int: Date]()
-        
-        if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+        let gameURL = URL(fileURLWithPath: gameFileName)
+        let gameDir = gameURL.deletingLastPathComponent()
+
+        // 1. Check game directory (slotX.state)
+        if let files = try? FileManager.default.contentsOfDirectory(atPath: gameDir.path) {
             for file in files {
-                if file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") {
-                    let numberString = file
-                        .replacingOccurrences(of: "\(safeName)_slot", with: "")
-                        .replacingOccurrences(of: ".state", with: "")
-                    
-                    if let slot = Int(numberString) {
-                        if let attr = try? FileManager.default.attributesOfItem(atPath: savesDir.appendingPathComponent(file).path),
+                if file.hasPrefix("slot") && file.hasSuffix(".state") {
+                    let numStr = file.replacingOccurrences(of: "slot", with: "").replacingOccurrences(of: ".state", with: "")
+                    if let slot = Int(numStr) {
+                        let fileURL = gameDir.appendingPathComponent(file)
+                        if let attr = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
                            let date = attr[.modificationDate] as? Date {
                             saves[slot] = date
                         }
@@ -135,7 +132,38 @@ struct SaveManagerView: View {
                 }
             }
         }
-        
+
+        // 2. Check legacy Saves/ folder
+        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+            let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
+            if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+                for file in files {
+                    if file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") {
+                        let numberString = file
+                            .replacingOccurrences(of: "\(safeName)_slot", with: "")
+                            .replacingOccurrences(of: ".state", with: "")
+                        if let slot = Int(numberString) {
+                            let legacyURL = savesDir.appendingPathComponent(file)
+                            let newURL = gameDir.appendingPathComponent("slot\(slot).state")
+                            if !FileManager.default.fileExists(atPath: newURL.path) {
+                                try? FileManager.default.moveItem(at: legacyURL, to: newURL)
+                                if let attr = try? FileManager.default.attributesOfItem(atPath: newURL.path),
+                                   let date = attr[.modificationDate] as? Date {
+                                    saves[slot] = date
+                                }
+                            } else if saves[slot] == nil {
+                                if let attr = try? FileManager.default.attributesOfItem(atPath: legacyURL.path),
+                                   let date = attr[.modificationDate] as? Date {
+                                    saves[slot] = date
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         existingSaves = saves
     }
     
@@ -150,12 +178,15 @@ struct SaveManagerView: View {
     }
     
     private func deleteSave(slot: Int) {
-        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
-        let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
-        
-        let fileURL = savesDir.appendingPathComponent("\(safeName)_slot\(slot).state")
+        let gameURL = URL(fileURLWithPath: gameFileName)
+        let gameDir = gameURL.deletingLastPathComponent()
+        let fileURL = gameDir.appendingPathComponent("slot\(slot).state")
         try? FileManager.default.removeItem(at: fileURL)
+
+        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
+            try? FileManager.default.removeItem(at: legacyURL)
+        }
         fetchAllSaves()
     }
 }

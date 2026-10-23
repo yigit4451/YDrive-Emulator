@@ -259,7 +259,12 @@ final class LibretroEmulatorEngine: ObservableObject {
     // MARK: - Save / Load States
     // ─────────────────────────────────────────────────────────────────────────
     
-    private func getSavesDirectory() -> URL {
+    private func getSavesDirectory(for gameFileName: String) -> URL {
+        let gameURL = URL(fileURLWithPath: gameFileName)
+        let gameDir = gameURL.deletingLastPathComponent()
+        if gameDir.path.contains("ROM's") && gameDir.lastPathComponent != "ROM's" {
+            return gameDir
+        }
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
         if !FileManager.default.fileExists(atPath: savesDir.path) {
@@ -269,18 +274,40 @@ final class LibretroEmulatorEngine: ObservableObject {
     }
     
     private func saveStateURL(for gameFileName: String, slot: Int) -> URL {
+        let gameURL = URL(fileURLWithPath: gameFileName)
+        let gameDir = gameURL.deletingLastPathComponent()
+        if gameDir.path.contains("ROM's") && gameDir.lastPathComponent != "ROM's" {
+            return gameDir.appendingPathComponent("slot\(slot).state")
+        }
         let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
-        return getSavesDirectory().appendingPathComponent("\(safeName)_slot\(slot).state")
+        return getSavesDirectory(for: gameFileName).appendingPathComponent("\(safeName)_slot\(slot).state")
     }
     
     func hasSaveState(for gameFileName: String, slot: Int) -> Bool {
-        return FileManager.default.fileExists(atPath: saveStateURL(for: gameFileName, slot: slot).path)
+        let url = saveStateURL(for: gameFileName, slot: slot)
+        if FileManager.default.fileExists(atPath: url.path) {
+            return true
+        }
+        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
+            if FileManager.default.fileExists(atPath: legacyURL.path) {
+                return true
+            }
+        }
+        return false
     }
     
     func getSaveStateDate(for gameFileName: String, slot: Int) -> Date? {
         let url = saveStateURL(for: gameFileName, slot: slot)
-        let attr = try? FileManager.default.attributesOfItem(atPath: url.path)
-        return attr?[.modificationDate] as? Date
+        if let attr = try? FileManager.default.attributesOfItem(atPath: url.path) {
+            return attr[.modificationDate] as? Date
+        }
+        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
+            let attr = try? FileManager.default.attributesOfItem(atPath: legacyURL.path)
+            return attr?[.modificationDate] as? Date
+        }
+        return nil
     }
 
     func saveState(for gameFileName: String, slot: Int) async -> Bool {
@@ -307,12 +334,21 @@ final class LibretroEmulatorEngine: ObservableObject {
     
     func loadState(for gameFileName: String, slot: Int) async -> Bool {
         log.info("[ENGINE] Requesting load state for slot \(slot)")
-        let url = saveStateURL(for: gameFileName, slot: slot)
+        var url = saveStateURL(for: gameFileName, slot: slot)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
+                if FileManager.default.fileExists(atPath: legacyURL.path) {
+                    url = legacyURL
+                }
+            }
+        }
         
         let bridgeRef = bridge
+        let targetURL = url
         return await withCheckedContinuation { continuation in
             emulationQueue?.async {
-                guard let data = try? Data(contentsOf: url) else {
+                guard let data = try? Data(contentsOf: targetURL) else {
                     continuation.resume(returning: false)
                     return
                 }

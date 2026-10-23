@@ -9,6 +9,9 @@
 "delete" = "Sil";
 "rename" = "Yeniden Adlandır";
 "confirm_delete" = "Silmek istediğinize emin misiniz?";
+"play" = "Oyna";
+"change_cover" = "Kapağı Değiştir";
+"remove_artwork" = "Görseli Kaldır";
 
 // Library
 "library.empty.title" = "Kütüphanede Oyun Yok";

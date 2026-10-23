@@ -300,25 +300,44 @@ struct EmulatorView: View {
 
     // ── Quick Load ────────────────────────────────────────────────────────────
     private func quickLoad() {
-        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-        let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
-        let safeName = game.fileName.replacingOccurrences(of: "/", with: "_")
+        let gameURL = URL(fileURLWithPath: game.fileName)
+        let gameDir = gameURL.deletingLastPathComponent()
 
-        // Find the latest save slot
         var latestSlot: Int? = nil
         var latestDate: Date = .distantPast
 
-        if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+        // Check in game's directory
+        if let files = try? FileManager.default.contentsOfDirectory(atPath: gameDir.path) {
             for file in files {
-                guard file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") else { continue }
+                guard file.hasPrefix("slot"), file.hasSuffix(".state") else { continue }
                 let numberStr = file
-                    .replacingOccurrences(of: "\(safeName)_slot", with: "")
+                    .replacingOccurrences(of: "slot", with: "")
                     .replacingOccurrences(of: ".state", with: "")
                 guard let slot = Int(numberStr) else { continue }
-                if let attr = try? FileManager.default.attributesOfItem(atPath: savesDir.appendingPathComponent(file).path),
+                if let attr = try? FileManager.default.attributesOfItem(atPath: gameDir.appendingPathComponent(file).path),
                    let date = attr[.modificationDate] as? Date, date > latestDate {
                     latestDate = date
                     latestSlot = slot
+                }
+            }
+        }
+
+        // Also check legacy Saves folder
+        if latestSlot == nil, let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+            let safeName = game.fileName.replacingOccurrences(of: "/", with: "_")
+            if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+                for file in files {
+                    guard file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") else { continue }
+                    let numberStr = file
+                        .replacingOccurrences(of: "\(safeName)_slot", with: "")
+                        .replacingOccurrences(of: ".state", with: "")
+                    guard let slot = Int(numberStr) else { continue }
+                    if let attr = try? FileManager.default.attributesOfItem(atPath: savesDir.appendingPathComponent(file).path),
+                       let date = attr[.modificationDate] as? Date, date > latestDate {
+                        latestDate = date
+                        latestSlot = slot
+                    }
                 }
             }
         }
@@ -344,16 +363,35 @@ struct EmulatorView: View {
     }
 
     private func resolveRomPath(for fileName: String) -> String {
-        // The container path changes after a reinstall / re-sign, so a stored absolute path
-        // can go stale. Always prefer the same file name inside the *current* Documents folder.
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        // 1. If absolute path is still valid, use it
+        if FileManager.default.fileExists(atPath: fileName) {
+            return fileName
+        }
+
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return fileName
+        }
+
         let name = (fileName as NSString).lastPathComponent
-        if let candidate = docs?.appendingPathComponent(name).path,
-           FileManager.default.fileExists(atPath: candidate) {
+
+        // 2. Search recursively in ROM's folder
+        let romsDir = docs.appendingPathComponent("ROM's", isDirectory: true)
+        if let enumerator = FileManager.default.enumerator(at: romsDir, includingPropertiesForKeys: [.isRegularFileKey]) {
+            for case let fileURL as URL in enumerator {
+                if fileURL.lastPathComponent == name {
+                    return fileURL.path
+                }
+            }
+        }
+
+        // 3. Check directly in docs
+        let candidate = docs.appendingPathComponent(name).path
+        if FileManager.default.fileExists(atPath: candidate) {
             return candidate
         }
+
         if fileName.hasPrefix("/") { return fileName }
-        return docs?.appendingPathComponent(fileName).path ?? fileName
+        return docs.appendingPathComponent(fileName).path
     }
 
     // ── Controller observation ────────────────────────────────────────────────
