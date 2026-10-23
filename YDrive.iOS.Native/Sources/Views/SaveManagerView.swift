@@ -254,62 +254,7 @@ struct SaveManagerView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        // Liquid Glass Multi-Layer Background
-        .background(
-            ZStack {
-                // 1. Frosted ultra thin material
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(.ultraThinMaterial)
-
-                // 2. Liquid gradient wash
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.10),
-                                Color.white.opacity(0.02),
-                                Color.blue.opacity(0.05)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                // 3. Diagonal specular reflection sheen
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .white.opacity(0.24), location: 0.0),
-                                .init(color: .white.opacity(0.05), location: 0.35),
-                                .init(color: .clear, location: 0.65)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-        )
-        // Liquid specular edge border
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.65), location: 0.0),
-                            .init(color: .white.opacity(0.20), location: 0.35),
-                            .init(color: Color.blue.opacity(0.30), location: 0.70),
-                            .init(color: .white.opacity(0.14), location: 1.0)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
-        )
-        // Soft diffused depth shadow
-        .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 5)
-        .shadow(color: Color.blue.opacity(0.08), radius: 12, x: 0, y: 2)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     // MARK: – Empty Saves View
@@ -399,30 +344,7 @@ struct SaveManagerView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color.white.opacity(0.04))
-            }
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.60), location: 0.0),
-                            .init(color: .white.opacity(0.18), location: 0.4),
-                            .init(color: .white.opacity(0.10), location: 1.0)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
-        )
-        .shadow(color: Color.black.opacity(0.16), radius: 12, x: 0, y: 6)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .padding(.top, 20)
     }
     
