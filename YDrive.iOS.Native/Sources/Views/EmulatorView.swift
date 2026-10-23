@@ -71,7 +71,7 @@ struct EmulatorView: View {
                                 .ignoresSafeArea()
                         }
                     }
-                    .blur(radius: isSaveManagerPresented ? 14 : 0)
+                    .blur(radius: isSaveManagerPresented ? 8 : 0)
                     .animation(.easeInOut(duration: 0.25), value: isSaveManagerPresented)
 
                     // ── Screenshot flash overlay ─────────────────────────────────
@@ -82,8 +82,43 @@ struct EmulatorView: View {
                             .transition(.opacity)
                     }
 
+                    // ── Dimming overlay behind Saves (tapping outside dismisses) ─
+                    if isSaveManagerPresented {
+                        Color.black.opacity(0.35)
+                            .ignoresSafeArea()
+                            .transition(.opacity)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isSaveManagerPresented = false
+                                    if engine.isPaused {
+                                        engine.setPaused(false)
+                                    }
+                                }
+                            }
+                            .zIndex(90)
+                    }
+
+                    // ── Save States Floating Liquid Glass Panel ──────────────────
+                    if isSaveManagerPresented {
+                        SaveManagerView(
+                            engine: engine,
+                            gameFileName: game.fileName,
+                            isPresented: $isSaveManagerPresented
+                        )
+                        .frame(
+                            maxWidth: isLandscape ? min(w - 60, 480) : min(w - 32, 400),
+                            maxHeight: isLandscape ? min(h - 32, 320) : min(h - 100, 520)
+                        )
+                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.94).combined(with: .opacity),
+                            removal: .scale(scale: 0.97).combined(with: .opacity)
+                        ))
+                        .zIndex(100)
+                    }
+
                     // ── Floating collapse button ─────────────────────────────────
-                    if !isTopBarVisible {
+                    if !isTopBarVisible && !isSaveManagerPresented {
                         VStack {
                             HStack {
                                 Spacer()
@@ -91,9 +126,9 @@ struct EmulatorView: View {
                                     withAnimation { isTopBarVisible = true }
                                 } label: {
                                     Image(systemName: "chevron.down")
-                                        .font(.title3.bold())
+                                        .font(.system(size: 14, weight: .bold))
                                         .foregroundStyle(.white)
-                                        .frame(width: 44, height: 44)
+                                        .frame(width: 36, height: 36)
                                 }
                                 .buttonStyle(.glass)
                                 .padding(16)
@@ -101,11 +136,12 @@ struct EmulatorView: View {
                             }
                             Spacer()
                         }
+                        .zIndex(50)
                     }
                 }
             }
             .statusBarHidden(true)
-            .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
+            .toolbar(isTopBarVisible && !isSaveManagerPresented ? .visible : .hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarTitleDisplayMode(.inline)
@@ -114,32 +150,37 @@ struct EmulatorView: View {
                     Button {
                         showingGameDetail = true
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: "gamecontroller.fill")
-                                .font(.body.bold())
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.blue)
                             Text(game.title)
-                                .font(.body.bold())
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }
                         .frame(maxWidth: titleMaxWidth, alignment: .leading)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
                     }
+                    .buttonStyle(.glass)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     if verticalSizeClass == .regular {
                         // Portrait: Minimal icons in GlassEffectContainer
                         GlassEffectContainer {
-                            HStack(spacing: 16) {
+                            HStack(spacing: 10) {
                                 Button { engine.setPaused(!engine.isPaused) } label: {
                                     Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
-                                        .font(.title3)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 Button { withAnimation { isTopBarVisible = false } } label: {
                                     Image(systemName: "chevron.up")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 
                                 Menu {
@@ -153,7 +194,6 @@ struct EmulatorView: View {
                                         withAnimation(.easeInOut(duration: 0.25)) {
                                             engine.setPaused(true)
                                             isSaveManagerPresented = true
-                                            isTopBarVisible = false
                                         }
                                     } label: {
                                         Label(NSLocalizedString("emulator.save_state", comment: ""), systemImage: "tray.and.arrow.down.fill")
@@ -165,72 +205,71 @@ struct EmulatorView: View {
                                     }
                                 } label: {
                                     Image(systemName: "ellipsis.circle")
-                                        .font(.title3)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 
                                 Button(role: .destructive) { engine.stop(); dismiss() } label: {
                                     Image(systemName: "xmark")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .bold))
                                         .foregroundStyle(.red)
+                                        .frame(width: 28, height: 28)
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
                         }
                         .tint(.white)
                         .foregroundStyle(.white)
                     } else {
                         // Landscape: All icons in GlassEffectContainer
                         GlassEffectContainer {
-                            HStack(spacing: 16) {
+                            HStack(spacing: 10) {
                                 Button { engine.setPaused(!engine.isPaused) } label: {
                                     Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
-                                        .font(.title3)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.25)) {
                                         engine.setPaused(true)
                                         isSaveManagerPresented = true
-                                        isTopBarVisible = false
                                     }
                                 } label: {
                                     Image(systemName: "tray.and.arrow.down")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 Button { takeScreenshot() } label: {
                                     Image(systemName: "camera.fill")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: {
                                     Image(systemName: "arrow.counterclockwise")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 Button { withAnimation { isTopBarVisible = false } } label: {
                                     Image(systemName: "chevron.up")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .frame(width: 28, height: 28)
                                 }
                                 Button(role: .destructive) { engine.stop(); dismiss() } label: {
                                     Image(systemName: "xmark")
-                                        .font(.title3)
+                                        .font(.system(size: 14, weight: .bold))
                                         .foregroundStyle(.red)
+                                        .frame(width: 28, height: 28)
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
                         }
                         .tint(.white)
                         .foregroundStyle(.white)
                     }
                 }
             }
-        }
-        .sheet(isPresented: $isSaveManagerPresented) {
-            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-                .presentationBackground(.ultraThinMaterial)
-                .preferredColorScheme(colorScheme)
-        }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)
                 .preferredColorScheme(colorScheme)
@@ -247,6 +286,13 @@ struct EmulatorView: View {
         }
         .onChange(of: audioEnabled) { newValue in
             engine.isAudioEnabled = newValue
+        }
+        .onChange(of: isSaveManagerPresented) { isPresented in
+            if !isPresented {
+                withAnimation {
+                    isTopBarVisible = true
+                }
+            }
         }
         .onDisappear {
             NotificationCenter.default.removeObserver(self)
@@ -277,11 +323,18 @@ struct EmulatorView: View {
         }
     }
 
+    private var isLandscapeScreen: Bool {
+        let size = UIScreen.main.bounds.size
+        return size.width > size.height
+    }
+
     // Max width of the top-bar title so it truncates instead of pushing the buttons into the overflow menu.
     private var titleMaxWidth: CGFloat {
+        let isLandscape = isLandscapeScreen
         let width = UIScreen.main.bounds.width
-        let reserved: CGFloat = verticalSizeClass == .regular ? 310 : 430
-        return max(90, width - reserved)
+        let maxAllowed: CGFloat = isLandscape ? 180 : 130
+        let reserved: CGFloat = isLandscape ? 360 : 230
+        return min(maxAllowed, max(80, width - reserved))
     }
 
     // Helper for crisp, bold, solid white icons in UIMenu
