@@ -82,52 +82,16 @@ struct GameCardView: View {
             Spacer(minLength: 0)
         }
         .frame(minHeight: 235, alignment: .top)
-        // Liquid Glass Multi-Layer Background
-        .background(
-            ZStack {
-                // 1. Frosted ultra thin material base
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.ultraThinMaterial)
-
-                // 2. Liquid glass colored ambient wash
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                consoleColor.opacity(0.12),
-                                Color.white.opacity(0.04),
-                                consoleColor.opacity(0.02)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                // 3. Diagonal specular reflection sheen
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .white.opacity(0.24), location: 0.0),
-                                .init(color: .white.opacity(0.06), location: 0.35),
-                                .init(color: .clear, location: 0.65)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-        )
-        // Liquid specular edge border (Prism rim)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .strokeBorder(
                     LinearGradient(
                         stops: [
-                            .init(color: .white.opacity(0.70), location: 0.0),
-                            .init(color: .white.opacity(0.25), location: 0.35),
+                            .init(color: .white.opacity(0.45), location: 0.0),
+                            .init(color: .white.opacity(0.12), location: 0.35),
                             .init(color: consoleColor.opacity(0.35), location: 0.70),
-                            .init(color: .white.opacity(0.18), location: 1.0)
+                            .init(color: .white.opacity(0.15), location: 1.0)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -135,9 +99,8 @@ struct GameCardView: View {
                     lineWidth: 1.2
                 )
         )
-        // Soft diffused depth shadow & glow
-        .shadow(color: Color.black.opacity(0.20), radius: 12, x: 0, y: 6)
-        .shadow(color: consoleColor.opacity(0.15), radius: 16, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.20), radius: 10, x: 0, y: 5)
+        .shadow(color: consoleColor.opacity(0.15), radius: 14, x: 0, y: 4)
     }
 
     private var consoleColor: Color {

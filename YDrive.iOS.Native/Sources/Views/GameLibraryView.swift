@@ -88,7 +88,7 @@ struct GameLibraryView: View {
                             Image(systemName: "gearshape")
                                 .font(.title3.weight(.medium))
                         }
-                        .buttonStyle(.glass)
+                        .tint(Color.accentColor)
                         .accessibilityLabel(NSLocalizedString("settings", comment: ""))
                     }
 
@@ -102,7 +102,7 @@ struct GameLibraryView: View {
                             Image(systemName: viewMode == "grid" ? "list.bullet" : "square.grid.2x2")
                                 .font(.title3.weight(.medium))
                         }
-                        .buttonStyle(.glass)
+                        .tint(Color.accentColor)
                         .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
                     }
 
@@ -113,7 +113,7 @@ struct GameLibraryView: View {
                             Image(systemName: "plus")
                                 .font(.title3.weight(.bold))
                         }
-                        .buttonStyle(.glass)
+                        .tint(Color.accentColor)
                         .accessibilityLabel(Text(NSLocalizedString("library.add_rom", comment: "")))
                     }
                 }
@@ -397,47 +397,14 @@ struct GameLibraryView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        // Liquid Glass Multi-Layer Background
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                consoleColor(for: game.consoleName).opacity(0.08),
-                                Color.white.opacity(0.03),
-                                Color.clear
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .white.opacity(0.20), location: 0.0),
-                                .init(color: .white.opacity(0.04), location: 0.35),
-                                .init(color: .clear, location: 0.65)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-        )
-        // Liquid specular edge border
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(
                     LinearGradient(
                         stops: [
-                            .init(color: .white.opacity(0.65), location: 0.0),
-                            .init(color: .white.opacity(0.20), location: 0.35),
+                            .init(color: .white.opacity(0.45), location: 0.0),
+                            .init(color: .white.opacity(0.12), location: 0.35),
                             .init(color: consoleColor(for: game.consoleName).opacity(0.30), location: 0.70),
                             .init(color: .white.opacity(0.12), location: 1.0)
                         ],

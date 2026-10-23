@@ -20,7 +20,52 @@ struct SaveManagerView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            // Header Bar
+            HStack {
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                        .glassEffect(.regular, in: Circle())
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Text(NSLocalizedString("emulator.saves", comment: "Saves"))
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Button(action: addNewSave) {
+                    HStack(spacing: 5) {
+                        if isSaving {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .scaleEffect(0.7)
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "plus")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        Text("New")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.glassProminent)
+                .disabled(isSaving)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+
             ZStack {
                 // Subtle ambient glass glow at the top
                 RadialGradient(
@@ -43,50 +88,10 @@ struct SaveManagerView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 28)
                 }
                 .scrollContentBackground(.hidden)
-            }
-            .background(Color.clear)
-            .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        isPresented = false
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 32, height: 32)
-                            .glassEffect(.regular, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: addNewSave) {
-                        HStack(spacing: 5) {
-                            if isSaving {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .scaleEffect(0.7)
-                                    .tint(.white)
-                            } else {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 12, weight: .bold))
-                            }
-                            Text("New")
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                    }
-                    .buttonStyle(.glassProminent)
-                    .disabled(isSaving)
-                }
             }
         }
         .background(Color.clear)
@@ -227,6 +232,23 @@ struct SaveManagerView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.45), location: 0.0),
+                            .init(color: .white.opacity(0.12), location: 0.35),
+                            .init(color: Color.blue.opacity(0.35), location: 0.70),
+                            .init(color: .white.opacity(0.15), location: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+        .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 5)
     }
 
     // MARK: – Empty Saves View
@@ -302,6 +324,23 @@ struct SaveManagerView: View {
         .padding(20)
         .frame(maxWidth: .infinity)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.45), location: 0.0),
+                            .init(color: .white.opacity(0.12), location: 0.35),
+                            .init(color: Color.blue.opacity(0.35), location: 0.70),
+                            .init(color: .white.opacity(0.15), location: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+        .shadow(color: Color.black.opacity(0.18), radius: 12, x: 0, y: 6)
         .padding(.top, 20)
     }
     
