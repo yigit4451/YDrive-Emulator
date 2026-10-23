@@ -4,7 +4,6 @@ struct SaveManagerView: View {
     @ObservedObject var engine: LibretroEmulatorEngine
     let gameFileName: String
     @Binding var isPresented: Bool
-    var hasActiveGameBackground: Bool = true
     @AppStorage("appTheme") private var appTheme = "system"
     
     @State private var existingSaves: [Int: Date] = [:]
@@ -21,14 +20,7 @@ struct SaveManagerView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // ── Floating Liquid Glass Header ─────────────────────────────────
-            headerView
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
-
-            // ── Scrollable Save Slots ────────────────────────────────────────
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 12) {
                     if existingSaves.isEmpty {
@@ -39,21 +31,55 @@ struct SaveManagerView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
                 .padding(.bottom, 24)
             }
             .scrollContentBackground(.hidden)
-        }
-        .background(
-            Group {
-                if hasActiveGameBackground {
-                    Color.clear
-                } else {
-                    Color(UIColor.systemGroupedBackground).ignoresSafeArea()
+            .background(Color.clear)
+            .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        isPresented = false
+                        if engine.isPaused {
+                            engine.setPaused(false)
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.primary)
+                            .frame(width: 38, height: 38)
+                    }
+                    .buttonStyle(.glass)
+                    .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: addNewSave) {
+                        HStack(spacing: 6) {
+                            if isSaving {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 16, weight: .bold))
+                            }
+                            Text(NSLocalizedString("saves.create_now", comment: "New Save"))
+                                .font(.system(size: 15, weight: .semibold))
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .disabled(isSaving)
+                    .accessibilityLabel(NSLocalizedString("saves.create_now", comment: "New Save"))
                 }
             }
-        )
+        }
+        .background(Color.clear)
         .onAppear {
             fetchAllSaves()
         }
@@ -75,51 +101,6 @@ struct SaveManagerView: View {
         .preferredColorScheme(colorScheme)
     }
 
-    // MARK: – Header View
-    private var headerView: some View {
-        HStack {
-            // Close Button
-            Button {
-                isPresented = false
-                if engine.isPaused {
-                    engine.setPaused(false)
-                }
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .bold))
-            }
-            .buttonStyle(.glass)
-            .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
-
-            Spacer()
-
-            Text(NSLocalizedString("emulator.saves", comment: "Saves"))
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            // New Save Button
-            Button(action: addNewSave) {
-                HStack(spacing: 6) {
-                    if isSaving {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.white)
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "plus")
-                            .font(.system(size: 13, weight: .bold))
-                    }
-                    Text("New")
-                }
-            }
-            .buttonStyle(.glassProminent)
-            .disabled(isSaving)
-            .accessibilityLabel(NSLocalizedString("saves.create_now", comment: "New Save"))
-        }
-    }
-
     // MARK: – Save Slot Card
     private func saveSlotCard(slot: Int, date: Date) -> some View {
         HStack(spacing: 14) {
@@ -127,7 +108,7 @@ struct SaveManagerView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
                     Text("Slot \(slot + 1)")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.headline)
                         .foregroundStyle(.primary)
 
                     Text("STATE")
@@ -174,7 +155,7 @@ struct SaveManagerView: View {
                 showingDeleteAlert = true
             } label: {
                 Image(systemName: "trash")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.red)
                     .padding(8)
                     .background(.ultraThinMaterial, in: Circle())
@@ -184,16 +165,16 @@ struct SaveManagerView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: – Empty Saves View
     private var emptySavesView: some View {
         VStack(spacing: 16) {
             Image(systemName: "externaldrive.badge.plus")
-                .font(.system(size: 38))
+                .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-                .padding(.top, 12)
+                .padding(.top, 16)
 
             VStack(spacing: 4) {
                 Text(NSLocalizedString("saves.empty.title", comment: "No saves yet"))
@@ -210,22 +191,21 @@ struct SaveManagerView: View {
             Button(action: addNewSave) {
                 HStack(spacing: 6) {
                     if isSaving {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.white)
+                        ProgressView().tint(.white)
                     } else {
                         Image(systemName: "plus.circle.fill")
                     }
                     Text(NSLocalizedString("saves.create_now", comment: "Create Save State"))
                 }
+                .font(.headline)
             }
             .buttonStyle(.glassProminent)
             .disabled(isSaving)
-            .padding(.bottom, 12)
+            .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity)
         .padding(20)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .padding(.top, 24)
     }
 

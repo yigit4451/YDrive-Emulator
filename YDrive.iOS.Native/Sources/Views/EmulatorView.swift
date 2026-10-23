@@ -91,9 +91,9 @@ struct EmulatorView: View {
                                     withAnimation { isTopBarVisible = true }
                                 } label: {
                                     Image(systemName: "chevron.down")
-                                        .font(.subheadline.bold())
+                                        .font(.title3.bold())
                                         .foregroundStyle(.white)
-                                        .frame(width: 36, height: 36)
+                                        .frame(width: 44, height: 44)
                                 }
                                 .buttonStyle(.glass)
                                 .padding(16)
@@ -114,15 +114,16 @@ struct EmulatorView: View {
                     Button {
                         showingGameDetail = true
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 6) {
                             Image(systemName: "gamecontroller.fill")
+                                .font(.body.bold())
                                 .foregroundColor(.blue)
                             Text(game.title)
+                                .font(.body.bold())
                                 .foregroundColor(.white)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }
-                        .font(.subheadline.bold())
                         .frame(maxWidth: titleMaxWidth, alignment: .leading)
                     }
                 }
@@ -131,9 +132,15 @@ struct EmulatorView: View {
                     if verticalSizeClass == .regular {
                         // Portrait: Minimal icons in GlassEffectContainer
                         GlassEffectContainer {
-                            HStack(spacing: 8) {
-                                Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
-                                Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
+                            HStack(spacing: 16) {
+                                Button { engine.setPaused(!engine.isPaused) } label: {
+                                    Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
+                                        .font(.title3)
+                                }
+                                Button { withAnimation { isTopBarVisible = false } } label: {
+                                    Image(systemName: "chevron.up")
+                                        .font(.title3)
+                                }
                                 
                                 Menu {
                                     Button {
@@ -158,36 +165,58 @@ struct EmulatorView: View {
                                     }
                                 } label: {
                                     Image(systemName: "ellipsis.circle")
+                                        .font(.title3)
                                 }
                                 
-                                Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
+                                Button(role: .destructive) { engine.stop(); dismiss() } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.title3)
+                                        .foregroundStyle(.red)
+                                }
                             }
-                            .font(.system(size: 15, weight: .semibold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                         }
                         .tint(.white)
                         .foregroundStyle(.white)
                     } else {
                         // Landscape: All icons in GlassEffectContainer
                         GlassEffectContainer {
-                            HStack(spacing: 12) {
-                                Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
+                            HStack(spacing: 16) {
+                                Button { engine.setPaused(!engine.isPaused) } label: {
+                                    Image(systemName: engine.isPaused ? "play.fill" : "pause.fill")
+                                        .font(.title3)
+                                }
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.25)) {
                                         engine.setPaused(true)
                                         isSaveManagerPresented = true
                                         isTopBarVisible = false
                                     }
-                                } label: { Image(systemName: "tray.and.arrow.down") }
-                                Button { takeScreenshot() } label: { Image(systemName: "camera.fill") }
-                                Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
-                                Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
-                                Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
+                                } label: {
+                                    Image(systemName: "tray.and.arrow.down")
+                                        .font(.title3)
+                                }
+                                Button { takeScreenshot() } label: {
+                                    Image(systemName: "camera.fill")
+                                        .font(.title3)
+                                }
+                                Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: {
+                                    Image(systemName: "arrow.counterclockwise")
+                                        .font(.title3)
+                                }
+                                Button { withAnimation { isTopBarVisible = false } } label: {
+                                    Image(systemName: "chevron.up")
+                                        .font(.title3)
+                                }
+                                Button(role: .destructive) { engine.stop(); dismiss() } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.title3)
+                                        .foregroundStyle(.red)
+                                }
                             }
-                            .font(.system(size: 15, weight: .semibold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                         }
                         .tint(.white)
                         .foregroundStyle(.white)
@@ -199,7 +228,7 @@ struct EmulatorView: View {
             SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(.clear)
+                .presentationBackground(.ultraThinMaterial)
                 .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {
