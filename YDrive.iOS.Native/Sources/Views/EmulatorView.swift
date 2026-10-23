@@ -161,7 +161,7 @@ struct EmulatorView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     if verticalSizeClass == .regular {
                         // Portrait: Minimal icons in GlassEffectContainer
-                        GlassEffectContainer(cornerRadius: 18) {
+                        GlassEffectContainer {
                             HStack(spacing: 8) {
                                 Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
                                 Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
@@ -201,7 +201,7 @@ struct EmulatorView: View {
                         .foregroundStyle(.white)
                     } else {
                         // Landscape: All icons in GlassEffectContainer
-                        GlassEffectContainer(cornerRadius: 18) {
+                        GlassEffectContainer {
                             HStack(spacing: 12) {
                                 Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
                                 Button {
