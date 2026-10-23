@@ -79,7 +79,7 @@ struct EmulatorView: View {
                     }
 
                     // ── Floating collapse button ─────────────────────────────────
-                    if !isTopBarVisible {
+                    if !isTopBarVisible && !isSaveManagerPresented {
                         VStack {
                             HStack {
                                 Spacer()
@@ -99,6 +99,49 @@ struct EmulatorView: View {
                             }
                             Spacer()
                         }
+                    }
+
+                    // ── Dimming backdrop behind Saves Window ────────────────────
+                    if isSaveManagerPresented {
+                        Color.black.opacity(0.4)
+                            .ignoresSafeArea()
+                            .transition(.opacity)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    isSaveManagerPresented = false
+                                }
+                            }
+                            .zIndex(90)
+
+                        // ── Save States Floating Window (Both Portrait & Landscape) ──
+                        SaveManagerView(
+                            engine: engine,
+                            gameFileName: game.fileName,
+                            isPresented: $isSaveManagerPresented
+                        )
+                        .frame(
+                            maxWidth: isLandscape ? min(w - 80, 520) : min(w - 32, 420),
+                            maxHeight: isLandscape ? min(h - 40, 380) : min(h - 100, 580)
+                        )
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .strokeBorder(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.4), Color.white.opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: Color.black.opacity(0.35), radius: 24, x: 0, y: 12)
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.94).combined(with: .opacity),
+                            removal: .scale(scale: 0.97).combined(with: .opacity)
+                        ))
+                        .zIndex(100)
                     }
                 }
             }
@@ -202,12 +245,6 @@ struct EmulatorView: View {
                 }
             }
         }
-        .sheet(isPresented: $isSaveManagerPresented) {
-            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
-                .presentationDetents([.medium, .large])
-                .presentationBackground(.ultraThinMaterial)
-                .preferredColorScheme(colorScheme)
-        }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)
                 .preferredColorScheme(colorScheme)
@@ -224,6 +261,13 @@ struct EmulatorView: View {
         }
         .onChange(of: audioEnabled) { newValue in
             engine.isAudioEnabled = newValue
+        }
+        .onChange(of: isSaveManagerPresented) { isPresented in
+            if !isPresented {
+                withAnimation {
+                    isTopBarVisible = true
+                }
+            }
         }
         .onDisappear {
             NotificationCenter.default.removeObserver(self)

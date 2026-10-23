@@ -51,10 +51,13 @@ struct SaveManagerView: View {
             .background(Color.clear)
             .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        isPresented = false
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isPresented = false
+                        }
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 13, weight: .bold))
@@ -113,6 +116,7 @@ struct SaveManagerView: View {
                 }
             }
         }
+        .background(Color.clear)
         .presentationBackground(.ultraThinMaterial)
         .onAppear {
             fetchAllSaves()
@@ -144,7 +148,9 @@ struct SaveManagerView: View {
                     let success = await engine.loadState(for: gameFileName, slot: slot)
                     if success {
                         engine.setPaused(false)
-                        isPresented = false
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isPresented = false
+                        }
                     }
                 }
             } label: {
