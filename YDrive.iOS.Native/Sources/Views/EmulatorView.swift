@@ -270,6 +270,7 @@ struct EmulatorView: View {
                     }
                 }
             }
+        }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)
                 .preferredColorScheme(colorScheme)
