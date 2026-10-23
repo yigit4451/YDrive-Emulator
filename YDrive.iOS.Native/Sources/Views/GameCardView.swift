@@ -6,12 +6,8 @@ struct GameCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             
-            // ── Cover art ──
+            // ── Cover art with Liquid Glass inner bezel ──
             ZStack {
-                Rectangle()
-                    .fill(Color(UIColor.secondarySystemFill))
-                    .frame(height: 140)
-
                 if let uiImage = game.resolveCoverImage() {
                     Image(uiImage: uiImage)
                         .resizable()
@@ -19,40 +15,129 @@ struct GameCardView: View {
                         .frame(height: 140)
                         .clipped()
                 } else {
-                    Image(systemName: "gamecontroller.fill")
-                        .font(.largeTitle)
-                        .foregroundStyle(.tertiary)
+                    ZStack {
+                        LinearGradient(
+                            colors: [
+                                consoleColor.opacity(0.35),
+                                consoleColor.opacity(0.10)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        Image(systemName: "gamecontroller.fill")
+                            .font(.system(size: 38))
+                            .foregroundStyle(consoleColor.opacity(0.85))
+                    }
+                    .frame(height: 140)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .white.opacity(0.45), location: 0.0),
+                                .init(color: .white.opacity(0.10), location: 0.4),
+                                .init(color: .clear, location: 0.8)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
             .padding([.horizontal, .top], 8)
-            .padding(.bottom, 12)
+            .padding(.bottom, 10)
 
             // ── Title ──
             Text(game.title)
-                .font(.headline)
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(.primary)
                 .lineLimit(2)
                 .padding(.horizontal, 12)
                 .padding(.bottom, 6)
 
-            // ── Console badge ──
-            Text(game.consoleName)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(consoleColor)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(consoleColor.opacity(0.15))
-                .clipShape(Capsule())
-                .padding(.horizontal, 12)
-                .padding(.bottom, 12)
+            // ── Console badge (Liquid Glass Pill) ──
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(consoleColor)
+                    .frame(width: 6, height: 6)
+                Text(game.consoleName)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(
+                ZStack {
+                    Capsule().fill(.ultraThinMaterial)
+                    Capsule().fill(consoleColor.opacity(0.15))
+                    Capsule().strokeBorder(consoleColor.opacity(0.35), lineWidth: 0.8)
+                }
+            )
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
 
             Spacer(minLength: 0)
         }
-        .frame(minHeight: 230, alignment: .top)
-        // iOS native material
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+        .frame(minHeight: 235, alignment: .top)
+        // Liquid Glass Multi-Layer Background
+        .background(
+            ZStack {
+                // 1. Frosted ultra thin material base
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
+
+                // 2. Liquid glass colored ambient wash
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                consoleColor.opacity(0.12),
+                                Color.white.opacity(0.04),
+                                consoleColor.opacity(0.02)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                // 3. Diagonal specular reflection sheen
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .white.opacity(0.24), location: 0.0),
+                                .init(color: .white.opacity(0.06), location: 0.35),
+                                .init(color: .clear, location: 0.65)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+        )
+        // Liquid specular edge border (Prism rim)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.70), location: 0.0),
+                            .init(color: .white.opacity(0.25), location: 0.35),
+                            .init(color: consoleColor.opacity(0.35), location: 0.70),
+                            .init(color: .white.opacity(0.18), location: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+        // Soft diffused depth shadow & glow
+        .shadow(color: Color.black.opacity(0.20), radius: 12, x: 0, y: 6)
+        .shadow(color: consoleColor.opacity(0.15), radius: 16, x: 0, y: 4)
     }
 
     private var consoleColor: Color {

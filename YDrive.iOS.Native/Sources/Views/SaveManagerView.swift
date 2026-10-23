@@ -9,6 +9,7 @@ struct SaveManagerView: View {
     @State private var existingSaves: [Int: Date] = [:]
     @State private var slotToDelete: Int?
     @State private var showingDeleteAlert = false
+    @State private var isSaving = false
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -20,79 +21,99 @@ struct SaveManagerView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                if existingSaves.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "externaldrive.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.blue)
-                        Text("No saves yet")
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
-                } else {
-                    // Sort descending by date so newest is at the top
-                    ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
-                        HStack {
-                            Button(action: {
-                                Task {
-                                    let success = await engine.loadState(for: gameFileName, slot: slot)
-                                    if success {
-                                        engine.setPaused(false)
-                                        isPresented = false
-                                    }
-                                }
-                            }) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "externaldrive.fill")
-                                        .foregroundColor(.blue)
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Slot \(slot + 1)")
-                                            .font(.headline)
-                                            .foregroundStyle(.primary)
-                                        
-                                        Text(date, format: .dateTime)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
+            ZStack {
+                // Subtle ambient glass glow at the top
+                RadialGradient(
+                    colors: [Color.blue.opacity(0.12), Color.clear],
+                    center: .top,
+                    startRadius: 20,
+                    endRadius: 360
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 14) {
+                        if existingSaves.isEmpty {
+                            emptySavesView
+                        } else {
+                            // Sort descending by date so newest is at the top
+                            ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
+                                liquidGlassSaveCard(slot: slot, date: date)
                             }
-                            .buttonStyle(.plain)
-                            
-                            Spacer()
-                            
-                            Button {
-                                slotToDelete = slot
-                                showingDeleteAlert = true
-                            } label: {
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
-                            }
-                            .buttonStyle(.borderless)
                         }
-                        .padding(.vertical, 4)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 28)
                 }
+                .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Saves")
+            .background(Color.clear)
+            .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Close") {
+                    Button {
                         isPresented = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 32, height: 32)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.4), Color.white.opacity(0.1)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                            )
                     }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: addNewSave) {
-                        Image(systemName: "plus")
-                            .font(.headline)
+                        HStack(spacing: 5) {
+                            if isSaving {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .scaleEffect(0.7)
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            Text("New")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color(red: 0/255, green: 175/255, blue: 245/255)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(Color.white.opacity(0.35), lineWidth: 0.8)
+                        )
+                        .shadow(color: Color.blue.opacity(0.35), radius: 6, x: 0, y: 2)
                     }
+                    .disabled(isSaving)
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
         .onAppear {
             fetchAllSaves()
         }
@@ -101,15 +122,308 @@ struct SaveManagerView: View {
                 engine.setPaused(false)
             }
         }
-        .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert(NSLocalizedString("confirm_delete", comment: "Delete?"), isPresented: $showingDeleteAlert) {
+            Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
+            Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
                 if let slot = slotToDelete {
                     deleteSave(slot: slot)
                 }
             }
+        } message: {
+            Text(NSLocalizedString("confirm_delete", comment: "Are you sure you want to delete this?"))
         }
         .preferredColorScheme(colorScheme)
+    }
+
+    // MARK: – Liquid Glass Save Card
+    private func liquidGlassSaveCard(slot: Int, date: Date) -> some View {
+        HStack(spacing: 12) {
+            // Main clickable load state action
+            Button {
+                Task {
+                    let success = await engine.loadState(for: gameFileName, slot: slot)
+                    if success {
+                        engine.setPaused(false)
+                        isPresented = false
+                    }
+                }
+            } label: {
+                HStack(spacing: 14) {
+                    // Glass Icon Orb
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.blue.opacity(0.30),
+                                        Color.cyan.opacity(0.12)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 44, height: 44)
+                        
+                        Circle()
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.55), Color.white.opacity(0.12)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                            .frame(width: 44, height: 44)
+                        
+                        Image(systemName: "externaldrive.fill")
+                            .font(.system(size: 19, weight: .semibold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.white, Color(red: 120/255, green: 220/255, blue: 255/255)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    }
+
+                    // Slot Information
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            Text("Slot \(slot + 1)")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.primary)
+
+                            // Glass pill badge
+                            Text("STATE")
+                                .font(.system(size: 9, weight: .heavy))
+                                .foregroundStyle(Color.cyan)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.cyan.opacity(0.15))
+                                .clipShape(Capsule())
+                                .overlay(Capsule().strokeBorder(Color.cyan.opacity(0.35), lineWidth: 0.8))
+                        }
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                            Text(date, format: .dateTime.month().day().hour().minute().second())
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    Spacer()
+
+                    // Quick Load Indicator Pill
+                    HStack(spacing: 3) {
+                        Text("Load")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color.blue)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color.blue.opacity(0.8))
+                    }
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
+                    .background(Color.blue.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+            }
+            .buttonStyle(.plain)
+
+            // Glass Delete Button
+            Button {
+                slotToDelete = slot
+                showingDeleteAlert = true
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(Color.red.opacity(0.12))
+                        .frame(width: 34, height: 34)
+                    Circle()
+                        .strokeBorder(Color.red.opacity(0.30), lineWidth: 0.8)
+                        .frame(width: 34, height: 34)
+                    Image(systemName: "trash.fill")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.red)
+                }
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        // Liquid Glass Multi-Layer Background
+        .background(
+            ZStack {
+                // 1. Frosted ultra thin material
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial)
+
+                // 2. Liquid gradient wash
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.10),
+                                Color.white.opacity(0.02),
+                                Color.blue.opacity(0.05)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                // 3. Diagonal specular reflection sheen
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .white.opacity(0.24), location: 0.0),
+                                .init(color: .white.opacity(0.05), location: 0.35),
+                                .init(color: .clear, location: 0.65)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+        )
+        // Liquid specular edge border
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.65), location: 0.0),
+                            .init(color: .white.opacity(0.20), location: 0.35),
+                            .init(color: Color.blue.opacity(0.30), location: 0.70),
+                            .init(color: .white.opacity(0.14), location: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+        // Soft diffused depth shadow
+        .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.blue.opacity(0.08), radius: 12, x: 0, y: 2)
+    }
+
+    // MARK: – Empty Saves View
+    private var emptySavesView: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.25), Color.cyan.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 74, height: 74)
+                Circle()
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.45), Color.white.opacity(0.10)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+                    .frame(width: 74, height: 74)
+
+                Image(systemName: "externaldrive.badge.plus")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.white, Color(red: 120/255, green: 220/255, blue: 255/255)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            .padding(.top, 14)
+
+            VStack(spacing: 6) {
+                Text(NSLocalizedString("saves.empty.title", comment: "No saves yet"))
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.primary)
+
+                Text(NSLocalizedString("saves.empty.subtitle", comment: "Save your gameplay state at any time to resume later."))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+            }
+
+            Button(action: addNewSave) {
+                HStack(spacing: 8) {
+                    if isSaving {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.white)
+                    } else {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.headline)
+                    }
+                    Text(NSLocalizedString("saves.create_now", comment: "Create Save State"))
+                        .font(.headline)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.blue, Color(red: 0/255, green: 180/255, blue: 255/255)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
+                )
+                .shadow(color: Color.blue.opacity(0.35), radius: 8, x: 0, y: 4)
+            }
+            .disabled(isSaving)
+            .padding(.horizontal, 20)
+            .padding(.top, 6)
+            .padding(.bottom, 12)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.white.opacity(0.04))
+            }
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.60), location: 0.0),
+                            .init(color: .white.opacity(0.18), location: 0.4),
+                            .init(color: .white.opacity(0.10), location: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+        .shadow(color: Color.black.opacity(0.16), radius: 12, x: 0, y: 6)
+        .padding(.top, 20)
     }
     
     private func fetchAllSaves() {
@@ -168,11 +482,16 @@ struct SaveManagerView: View {
     }
     
     private func addNewSave() {
+        guard !isSaving else { return }
+        isSaving = true
         let nextSlot = (existingSaves.keys.max() ?? -1) + 1
         Task {
             let success = await engine.saveState(for: gameFileName, slot: nextSlot)
-            if success {
-                fetchAllSaves()
+            await MainActor.run {
+                if success {
+                    fetchAllSaves()
+                }
+                isSaving = false
             }
         }
     }

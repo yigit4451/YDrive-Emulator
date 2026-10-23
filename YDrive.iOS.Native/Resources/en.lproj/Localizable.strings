@@ -46,7 +46,11 @@
 "emulator.reset" = "Reset";
 "emulator.pause" = "Pause";
 "emulator.play" = "Play";
-"emulator.save_state" = "Save State";
+"emulator.save_state" = "Saves";
+"emulator.saves" = "Saves";
+"saves.empty.title" = "No Saves Yet";
+"saves.empty.subtitle" = "Save your gameplay state at any time to resume later.";
+"saves.create_now" = "Create Save State";
 "emulator.screenshot" = "Screenshot";
 "emulator.screenshot_saved" = "Screenshot saved to Photos";
 "emulator.core_unavailable" = "Emulator Core Unavailable";

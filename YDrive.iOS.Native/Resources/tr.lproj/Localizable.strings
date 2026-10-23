@@ -46,7 +46,11 @@
 "emulator.reset" = "Yeniden Başlat";
 "emulator.pause" = "Duraklat";
 "emulator.play" = "Oynat";
-"emulator.save_state" = "Durumu Kaydet";
+"emulator.save_state" = "Saves";
+"emulator.saves" = "Saves";
+"saves.empty.title" = "Henüz Kayıt Yok";
+"saves.empty.subtitle" = "Dilediğiniz an oyun durumunuzu kaydedip sonradan devam edebilirsiniz.";
+"saves.create_now" = "Kayıt Oluştur";
 "emulator.screenshot" = "Ekran Görüntüsü";
 "emulator.screenshot_saved" = "Ekran görüntüsü Fotoğraflar'a kaydedildi";
 "emulator.core_unavailable" = "Emülatör Çekirdeği Kullanılamıyor";

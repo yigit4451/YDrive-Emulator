@@ -397,8 +397,57 @@ struct GameLibraryView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 5, x: 0, y: 2)
+        // Liquid Glass Multi-Layer Background
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                consoleColor(for: game.consoleName).opacity(0.08),
+                                Color.white.opacity(0.03),
+                                Color.clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .white.opacity(0.20), location: 0.0),
+                                .init(color: .white.opacity(0.04), location: 0.35),
+                                .init(color: .clear, location: 0.65)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+        )
+        // Liquid specular edge border
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.65), location: 0.0),
+                            .init(color: .white.opacity(0.20), location: 0.35),
+                            .init(color: consoleColor(for: game.consoleName).opacity(0.30), location: 0.70),
+                            .init(color: .white.opacity(0.12), location: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+        .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
     }
 
     private func consoleColor(for name: String) -> Color {
