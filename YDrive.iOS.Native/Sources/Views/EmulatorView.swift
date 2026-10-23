@@ -82,39 +82,8 @@ struct EmulatorView: View {
                             .transition(.opacity)
                     }
 
-                    // ── Dimming overlay behind Saves (Separate Layer) ────────────
-                    if isSaveManagerPresented {
-                        Color.black.opacity(0.35)
-                            .ignoresSafeArea()
-                            .transition(.opacity)
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    isSaveManagerPresented = false
-                                    if engine.isPaused { engine.setPaused(false) }
-                                }
-                            }
-                    }
-
-                    // ── Save States Screen (Native Liquid Glass overlay) ─────────
-                    if isSaveManagerPresented {
-                        SaveManagerView(
-                            engine: engine,
-                            gameFileName: game.fileName,
-                            isPresented: $isSaveManagerPresented,
-                            hasActiveGameBackground: true
-                        )
-                        .frame(maxWidth: min(w - 24, 480), maxHeight: min(h - 40, 640))
-                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-                        .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .scale(scale: 0.95)),
-                            removal: .opacity.combined(with: .scale(scale: 0.98))
-                        ))
-                        .zIndex(100)
-                    }
-
                     // ── Floating collapse button ─────────────────────────────────
-                    if !isTopBarVisible && !isSaveManagerPresented {
+                    if !isTopBarVisible {
                         VStack {
                             HStack {
                                 Spacer()
@@ -225,6 +194,13 @@ struct EmulatorView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $isSaveManagerPresented) {
+            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.clear)
+                .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)

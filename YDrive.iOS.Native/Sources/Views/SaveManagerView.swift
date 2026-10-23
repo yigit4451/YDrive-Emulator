@@ -57,6 +57,11 @@ struct SaveManagerView: View {
         .onAppear {
             fetchAllSaves()
         }
+        .onDisappear {
+            if engine.isPaused {
+                engine.setPaused(false)
+            }
+        }
         .alert(NSLocalizedString("confirm_delete", comment: "Delete?"), isPresented: $showingDeleteAlert) {
             Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
             Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
