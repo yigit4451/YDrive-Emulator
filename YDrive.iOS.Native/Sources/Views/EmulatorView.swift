@@ -207,9 +207,12 @@ struct EmulatorView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $isSaveManagerPresented) {
-            SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
-                .preferredColorScheme(colorScheme)
+        .sheet(isPresented: $isSaveManagerPresented) {
+            NavigationStack {
+                SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
+            }
+            .presentationDetents([.large])
+            .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {
             GameDetailView(initialGame: game, viewModel: viewModel, isPresentedFromEmulator: true)

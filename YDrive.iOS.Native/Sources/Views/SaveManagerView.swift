@@ -20,51 +20,10 @@ struct SaveManagerView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header Bar
-            HStack {
-                Button {
-                    isPresented = false
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 32)
-                        .glassEffect(.regular, in: Circle())
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Text(NSLocalizedString("emulator.saves", comment: "Saves"))
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                Button(action: addNewSave) {
-                    HStack(spacing: 5) {
-                        if isSaving {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .scaleEffect(0.7)
-                                .tint(.white)
-                        } else {
-                            Image(systemName: "plus")
-                                .font(.system(size: 12, weight: .bold))
-                        }
-                        Text("New")
-                            .font(.system(size: 14, weight: .semibold))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                }
-                .buttonStyle(.glassProminent)
-                .disabled(isSaving)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
+        ZStack {
+            // Adaptive background like SettingsView
+            Color(UIColor.systemGroupedBackground)
+                .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -78,13 +37,46 @@ struct SaveManagerView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .padding(.top, 14)
                 .padding(.bottom, 28)
             }
             .scrollContentBackground(.hidden)
         }
-        .background(Color.clear)
-        .presentationBackground(.ultraThinMaterial)
+        .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: addNewSave) {
+                    HStack(spacing: 5) {
+                        if isSaving {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "plus")
+                                .font(.system(size: 13, weight: .bold))
+                        }
+                        Text("New")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                }
+                .buttonStyle(.glassProminent)
+                .disabled(isSaving)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .fontWeight(.semibold)
+                }
+                .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
+                .tint(.primary)
+            }
+        }
+        .preferredColorScheme(colorScheme)
         .onAppear {
             fetchAllSaves()
         }
@@ -103,7 +95,6 @@ struct SaveManagerView: View {
         } message: {
             Text(NSLocalizedString("confirm_delete", comment: "Are you sure you want to delete this?"))
         }
-        .preferredColorScheme(colorScheme)
     }
 
     // MARK: – Liquid Glass Save Card
