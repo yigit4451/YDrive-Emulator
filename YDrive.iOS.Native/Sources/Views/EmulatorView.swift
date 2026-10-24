@@ -216,6 +216,7 @@ struct EmulatorView: View {
                 SaveManagerView(engine: engine, gameFileName: game.fileName, isPresented: $isSaveManagerPresented)
             }
             .presentationDetents([.large])
+            .presentationBackground(.ultraThinMaterial)
             .preferredColorScheme(colorScheme)
         }
         .sheet(isPresented: $showingGameDetail) {

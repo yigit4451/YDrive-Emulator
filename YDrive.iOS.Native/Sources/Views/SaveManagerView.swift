@@ -54,8 +54,8 @@ struct SaveManagerView: View {
     
     var body: some View {
         ZStack {
-            // Adaptive background like SettingsView
-            Color(UIColor.systemGroupedBackground)
+            // Slightly transparent adaptive grouped background
+            Color(UIColor.systemGroupedBackground).opacity(0.85)
                 .ignoresSafeArea()
 
             ScrollView {
