@@ -12,17 +12,20 @@ struct EmulatorView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var showingGameDetail = false
     @State private var isControllerConnected = false
+    @State private var controllerObservers: [NSObjectProtocol] = []
     @StateObject private var engine = LibretroEmulatorEngine()
     @State private var isTopBarVisible = false
     @State private var isSaveManagerPresented = false
     @State private var showingBiosAlert = false
     @State private var showFlash = false
 
-    @AppStorage("showFPS")        private var showFPS        = false
-    @AppStorage("audioEnabled")   private var audioEnabled   = true
-    @AppStorage("videoFilter")    private var videoFilter    = "Off"
-    @AppStorage("hapticFeedback") private var hapticFeedback = true
-    @AppStorage("appTheme")       private var appTheme       = "system"
+    @AppStorage("showFPS")             private var showFPS             = false
+    @AppStorage("audioEnabled")        private var audioEnabled        = true
+    @AppStorage("videoFilter")         private var videoFilter         = "Off"
+    @AppStorage("hapticFeedback")      private var hapticFeedback      = true
+    @AppStorage("m30MappingEnabled")   private var m30MappingEnabled   = false
+    @AppStorage("allRightShoulders")   private var allRightShoulders   = false
+    @AppStorage("appTheme")            private var appTheme            = "system"
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -233,7 +236,7 @@ struct EmulatorView: View {
             }
         }
         .onDisappear {
-            NotificationCenter.default.removeObserver(self)
+            removeControllerObservers()
             engine.stop()
         }
         .defersSystemGestures(on: .bottom)
@@ -405,59 +408,235 @@ struct EmulatorView: View {
 
     // ── Controller observation ────────────────────────────────────────────────
     private func observeControllers() {
-        let check: @Sendable () -> Void = {
+        removeControllerObservers()
+
+        let updateControllers: @Sendable () -> Void = {
             Task { @MainActor in
                 let controllers = GCController.controllers()
                 let physical = controllers.filter { $0.extendedGamepad != nil }
                 self.isControllerConnected = !physical.isEmpty
-                if let controller = physical.first {
+                for controller in physical {
                     self.setupGamepad(controller)
                 }
             }
         }
-        check()
-        NotificationCenter.default.addObserver(forName: .GCControllerDidConnect,    object: nil, queue: .main) { _ in check() }
-        NotificationCenter.default.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in check() }
+
+        updateControllers()
+
+        let connectObserver = NotificationCenter.default.addObserver(
+            forName: .GCControllerDidConnect,
+            object: nil,
+            queue: .main
+        ) { _ in
+            updateControllers()
+        }
+
+        let disconnectObserver = NotificationCenter.default.addObserver(
+            forName: .GCControllerDidDisconnect,
+            object: nil,
+            queue: .main
+        ) { _ in
+            updateControllers()
+        }
+
+        controllerObservers = [connectObserver, disconnectObserver]
+    }
+
+    private func removeControllerObservers() {
+        for observer in controllerObservers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        controllerObservers.removeAll()
     }
 
     private func setupGamepad(_ controller: GCController) {
         guard let gamepad = controller.extendedGamepad else { return }
-        
-        gamepad.buttonA.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(0, pressed: pressed) // Genesis B
+
+        // DualSense Lightbar & Touchpad
+        if let dualSense = gamepad as? GCDualSenseGamepad {
+            controller.light?.color = GCColor(red: 0.0, green: 0.48, blue: 1.0) // YDrive Blue
+            dualSense.touchpadButton.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(2, pressed: pressed) // Genesis MODE
+            }
+        } else {
+            controller.light?.color = GCColor(red: 0.0, green: 0.48, blue: 1.0)
         }
-        gamepad.buttonX.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(1, pressed: pressed) // Genesis A
+
+        let isSMS = game.consoleName == "SEGA Master System" || game.consoleName == "SEGA Game Gear"
+
+        // Directional State: blend D-pad and Left Analog Stick so neither overrides the other
+        final class DirectionState: @unchecked Sendable {
+            var dpadUp = false, dpadDown = false, dpadLeft = false, dpadRight = false
+            var stickUp = false, stickDown = false, stickLeft = false, stickRight = false
         }
-        gamepad.buttonB.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(8, pressed: pressed) // Genesis C
+        let dir = DirectionState()
+
+        // D-Pad
+        gamepad.dpad.up.valueChangedHandler = { [weak engine] _, _, pressed in
+            dir.dpadUp = pressed
+            engine?.setButton(4, pressed: dir.dpadUp || dir.stickUp)
         }
-        gamepad.buttonY.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(9, pressed: pressed) // Genesis X
+        gamepad.dpad.down.valueChangedHandler = { [weak engine] _, _, pressed in
+            dir.dpadDown = pressed
+            engine?.setButton(5, pressed: dir.dpadDown || dir.stickDown)
         }
-        gamepad.leftShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(10, pressed: pressed) // Genesis Y
+        gamepad.dpad.left.valueChangedHandler = { [weak engine] _, _, pressed in
+            dir.dpadLeft = pressed
+            engine?.setButton(6, pressed: dir.dpadLeft || dir.stickLeft)
         }
-        gamepad.rightShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(11, pressed: pressed) // Genesis Z
+        gamepad.dpad.right.valueChangedHandler = { [weak engine] _, _, pressed in
+            dir.dpadRight = pressed
+            engine?.setButton(7, pressed: dir.dpadRight || dir.stickRight)
         }
+
+        // Left Analog Stick (Thumbstick support for DualSense & Xbox)
+        let deadzone: Float = 0.35
+        gamepad.leftThumbstick.valueChangedHandler = { [weak engine] _, xValue, yValue in
+            let newUp = yValue > deadzone
+            let newDown = yValue < -deadzone
+            let newLeft = xValue < -deadzone
+            let newRight = xValue > deadzone
+
+            if newUp != dir.stickUp {
+                dir.stickUp = newUp
+                engine?.setButton(4, pressed: dir.dpadUp || dir.stickUp)
+            }
+            if newDown != dir.stickDown {
+                dir.stickDown = newDown
+                engine?.setButton(5, pressed: dir.dpadDown || dir.stickDown)
+            }
+            if newLeft != dir.stickLeft {
+                dir.stickLeft = newLeft
+                engine?.setButton(6, pressed: dir.dpadLeft || dir.stickLeft)
+            }
+            if newRight != dir.stickRight {
+                dir.stickRight = newRight
+                engine?.setButton(7, pressed: dir.dpadRight || dir.stickRight)
+            }
+        }
+
+        // Action Buttons
+        if isSMS {
+            // Master System & Game Gear: Button 1 (ID 0) and Button 2 (ID 8)
+            // Map both Cross/Square and Circle/Triangle pairs for comfortable 2-button play
+            gamepad.buttonA.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(0, pressed: pressed) // SMS Button 1
+            }
+            gamepad.buttonX.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(0, pressed: pressed) // SMS Button 1
+            }
+            gamepad.buttonB.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(8, pressed: pressed) // SMS Button 2
+            }
+            gamepad.buttonY.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(8, pressed: pressed) // SMS Button 2
+            }
+            gamepad.leftShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(0, pressed: pressed)
+            }
+            gamepad.rightShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(8, pressed: pressed)
+            }
+            gamepad.leftTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(0, pressed: value > 0.3)
+            }
+            gamepad.rightTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(8, pressed: value > 0.3)
+            }
+        } else if m30MappingEnabled {
+            // 8BitDo M30 Layout
+            gamepad.buttonA.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(1, pressed: pressed) // Genesis A
+            }
+            gamepad.buttonB.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(0, pressed: pressed) // Genesis B
+            }
+            gamepad.rightShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(8, pressed: pressed) // Genesis C
+            }
+            gamepad.buttonX.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(9, pressed: pressed) // Genesis X
+            }
+            gamepad.buttonY.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(10, pressed: pressed) // Genesis Y
+            }
+            gamepad.rightTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(11, pressed: value > 0.3) // Genesis Z
+            }
+            gamepad.leftShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(10, pressed: pressed)
+            }
+            gamepad.leftTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(2, pressed: value > 0.3) // Genesis MODE
+            }
+        } else if allRightShoulders {
+            // All-Right Shoulders Layout (Face A, B, C; RB=Y, RT=Z)
+            gamepad.buttonX.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(1, pressed: pressed) // Genesis A
+            }
+            gamepad.buttonA.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(0, pressed: pressed) // Genesis B
+            }
+            gamepad.buttonB.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(8, pressed: pressed) // Genesis C
+            }
+            gamepad.buttonY.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(9, pressed: pressed) // Genesis X
+            }
+            gamepad.leftShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(9, pressed: pressed) // Genesis X
+            }
+            gamepad.rightShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(10, pressed: pressed) // Genesis Y
+            }
+            gamepad.rightTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(11, pressed: value > 0.3) // Genesis Z
+            }
+            gamepad.leftTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(2, pressed: value > 0.3) // Genesis MODE
+            }
+        } else {
+            // Standard DualSense & Xbox Layout
+            // Face: Square/X -> Genesis A, Cross/A -> Genesis B, Circle/B -> Genesis C
+            gamepad.buttonX.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(1, pressed: pressed) // Genesis A
+            }
+            gamepad.buttonA.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(0, pressed: pressed) // Genesis B
+            }
+            gamepad.buttonB.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(8, pressed: pressed) // Genesis C
+            }
+
+            // Top Row / 6-button:
+            // Triangle/Y -> Genesis Y
+            // L1/LB -> Genesis X
+            // R1/RB -> Genesis Z
+            gamepad.buttonY.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(10, pressed: pressed) // Genesis Y
+            }
+            gamepad.leftShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(9, pressed: pressed) // Genesis X
+            }
+            gamepad.rightShoulder.valueChangedHandler = { [weak engine] _, _, pressed in
+                engine?.setButton(11, pressed: pressed) // Genesis Z
+            }
+
+            // L2/LT and R2/RT triggers also provide secondary bindings
+            gamepad.leftTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(9, pressed: value > 0.3) // Genesis X
+            }
+            gamepad.rightTrigger.valueChangedHandler = { [weak engine] _, value, _ in
+                engine?.setButton(11, pressed: value > 0.3) // Genesis Z
+            }
+        }
+
+        // Menu / START & Options / MODE
         gamepad.buttonMenu.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(3, pressed: pressed) // Genesis START
+            engine?.setButton(3, pressed: pressed) // Genesis START / Pause
         }
         gamepad.buttonOptions?.valueChangedHandler = { [weak engine] _, _, pressed in
             engine?.setButton(2, pressed: pressed) // Genesis MODE
-        }
-        gamepad.dpad.up.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(4, pressed: pressed)
-        }
-        gamepad.dpad.down.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(5, pressed: pressed)
-        }
-        gamepad.dpad.left.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(6, pressed: pressed)
-        }
-        gamepad.dpad.right.valueChangedHandler = { [weak engine] _, _, pressed in
-            engine?.setButton(7, pressed: pressed)
         }
     }
     
