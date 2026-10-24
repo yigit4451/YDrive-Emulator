@@ -1,8 +1,9 @@
 import SwiftUI
 
 // MARK: – PNG Icon Generator
+@MainActor
 private enum IconPNGHelper {
-    private static var cache = NSCache<NSString, UIImage>()
+    private static let cache = NSCache<NSString, UIImage>()
     
     static func image(_ name: String, pointSize: CGFloat, weight: UIImage.SymbolWeight = .bold, color: UIColor) -> UIImage {
         let key = "\(name)_\(pointSize)_\(weight.rawValue)_\(color.hashValue)" as NSString
