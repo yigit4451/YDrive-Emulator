@@ -157,13 +157,14 @@ struct SaveManagerView: View {
                 showingDeleteAlert = true
             } label: {
                 Image(systemName: "trash.fill")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.red)
-                    .frame(width: 34, height: 34)
-                    .background(Color.red.opacity(0.10))
+                    .frame(width: 38, height: 38)
+                    .background(Color.red.opacity(0.12))
                     .clipShape(Circle())
             }
             .buttonStyle(.borderless)
+            .contentShape(Circle())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
