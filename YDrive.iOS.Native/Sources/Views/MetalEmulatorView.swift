@@ -51,6 +51,10 @@ struct MetalEmulatorView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MTKView, context: Context) {
+        if uiView.isPaused != engine.isPaused {
+            uiView.isPaused = engine.isPaused
+        }
+
         var mode: Int32 = 0
         if videoFilter == "CRT" { mode = 1 }
         else if videoFilter == "Simple CRT" { mode = 2 }

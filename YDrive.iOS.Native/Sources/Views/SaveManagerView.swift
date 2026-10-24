@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct SaveManagerView: View {
-    @ObservedObject var engine: LibretroEmulatorEngine
+    let engine: LibretroEmulatorEngine
     let gameFileName: String
     @Binding var isPresented: Bool
     @AppStorage("appTheme") private var appTheme = "system"
     
-    @State private var existingSaves: [Int: Date] = [:]
+    @State private var savedSlots: [(slot: Int, date: Date)] = []
     @State private var slotToDelete: Int?
     @State private var showingDeleteAlert = false
     @State private var isSaving = false
@@ -19,10 +19,6 @@ struct SaveManagerView: View {
         default: return nil
         }
     }
-
-    private var sortedSaves: [(slot: Int, date: Date)] {
-        existingSaves.map { ($0.key, $0.value) }.sorted(by: { $0.date > $1.date })
-    }
     
     var body: some View {
         ZStack {
@@ -32,14 +28,14 @@ struct SaveManagerView: View {
 
             ScrollView {
                 LazyVStack(spacing: 14) {
-                    if isLoading && existingSaves.isEmpty {
+                    if isLoading && savedSlots.isEmpty {
                         ProgressView()
                             .padding(.top, 40)
-                    } else if existingSaves.isEmpty {
+                    } else if savedSlots.isEmpty {
                         emptySavesView
                     } else {
-                        // Sort descending by date so newest is at the top
-                        ForEach(sortedSaves, id: \.slot) { item in
+                        // Pre-sorted descending by date
+                        ForEach(savedSlots, id: \.slot) { item in
                             liquidGlassSaveCard(slot: item.slot, date: item.date)
                         }
                     }
@@ -56,19 +52,22 @@ struct SaveManagerView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: addNewSave) {
-                    Group {
+                    ZStack {
                         if isSaving {
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .scaleEffect(0.8)
                         } else {
                             Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .bold))
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(Color.accentColor)
                         }
                     }
                     .frame(width: 32, height: 32)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(Circle())
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.plain)
                 .disabled(isSaving)
                 .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
             }
@@ -78,12 +77,14 @@ struct SaveManagerView: View {
                     isPresented = false
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 17, weight: .bold))
-                        .frame(width: 36, height: 36)
-                        .contentShape(Rectangle())
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color(UIColor.secondaryLabel))
+                        .frame(width: 32, height: 32)
+                        .background(Color(UIColor.secondarySystemFill))
+                        .clipShape(Circle())
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
-                .tint(.primary)
             }
         }
         .preferredColorScheme(colorScheme)
@@ -186,7 +187,6 @@ struct SaveManagerView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: Color.black.opacity(0.10), radius: 8, x: 0, y: 4)
     }
 
     // MARK: – Empty Saves View
@@ -240,7 +240,6 @@ struct SaveManagerView: View {
         .padding(20)
         .frame(maxWidth: .infinity)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: Color.black.opacity(0.10), radius: 8, x: 0, y: 4)
         .padding(.top, 20)
     }
     
@@ -298,8 +297,9 @@ struct SaveManagerView: View {
                 }
             }
 
+            let sorted = saves.map { (slot: $0.key, date: $0.value) }.sorted(by: { $0.date > $1.date })
             await MainActor.run {
-                self.existingSaves = saves
+                self.savedSlots = sorted
                 self.isLoading = false
             }
         }
@@ -308,7 +308,7 @@ struct SaveManagerView: View {
     private func addNewSave() {
         guard !isSaving else { return }
         isSaving = true
-        let nextSlot = (existingSaves.keys.max() ?? -1) + 1
+        let nextSlot = (savedSlots.map(\.slot).max() ?? -1) + 1
         Task {
             let success = await engine.saveState(for: gameFileName, slot: nextSlot)
             await MainActor.run {
@@ -332,9 +332,7 @@ struct SaveManagerView: View {
                 let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(fileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
                 try? FileManager.default.removeItem(at: legacyURL)
             }
-            await MainActor.run {
-                self.fetchAllSaves()
-            }
+            self.fetchAllSaves()
         }
     }
 }
