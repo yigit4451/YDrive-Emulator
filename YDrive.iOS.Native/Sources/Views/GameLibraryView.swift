@@ -274,7 +274,7 @@ struct GameLibraryView: View {
                 Label("Add ROM", systemImage: "plus.circle.fill")
                     .font(.headline)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(Color.accentColor)
             .padding(.top, 12)
