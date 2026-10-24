@@ -66,33 +66,22 @@ struct SaveManagerView: View {
             .padding(.top, 16)
             .padding(.bottom, 8)
 
-            ZStack {
-                // Subtle ambient glass glow at the top
-                RadialGradient(
-                    colors: [Color.blue.opacity(0.12), Color.clear],
-                    center: .top,
-                    startRadius: 20,
-                    endRadius: 360
-                )
-                .ignoresSafeArea()
-
-                ScrollView {
-                    VStack(spacing: 14) {
-                        if existingSaves.isEmpty {
-                            emptySavesView
-                        } else {
-                            // Sort descending by date so newest is at the top
-                            ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
-                                liquidGlassSaveCard(slot: slot, date: date)
-                            }
+            ScrollView {
+                VStack(spacing: 14) {
+                    if existingSaves.isEmpty {
+                        emptySavesView
+                    } else {
+                        // Sort descending by date so newest is at the top
+                        ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
+                            liquidGlassSaveCard(slot: slot, date: date)
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .padding(.bottom, 28)
                 }
-                .scrollContentBackground(.hidden)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 28)
             }
+            .scrollContentBackground(.hidden)
         }
         .background(Color.clear)
         .presentationBackground(.ultraThinMaterial)
@@ -133,41 +122,15 @@ struct SaveManagerView: View {
                 }
             } label: {
                 HStack(spacing: 14) {
-                    // Glass Icon Orb
+                    // Native Icon Orb
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.blue.opacity(0.30),
-                                        Color.cyan.opacity(0.12)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 44, height: 44)
-                        
-                        Circle()
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.55), Color.white.opacity(0.12)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
+                            .fill(Color.accentColor.opacity(0.15))
                             .frame(width: 44, height: 44)
                         
                         Image(systemName: "externaldrive.fill")
                             .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.white, Color(red: 120/255, green: 220/255, blue: 255/255)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                            .foregroundStyle(Color.accentColor)
                     }
 
                     // Slot Information
@@ -177,15 +140,14 @@ struct SaveManagerView: View {
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundStyle(.primary)
 
-                            // Glass pill badge
+                            // Status badge
                             Text("STATE")
-                                .font(.system(size: 9, weight: .heavy))
-                                .foregroundStyle(Color.cyan)
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(Color.accentColor)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.cyan.opacity(0.15))
+                                .background(Color.accentColor.opacity(0.12))
                                 .clipShape(Capsule())
-                                .overlay(Capsule().strokeBorder(Color.cyan.opacity(0.35), lineWidth: 0.8))
                         }
 
                         HStack(spacing: 4) {
@@ -204,10 +166,10 @@ struct SaveManagerView: View {
                     HStack(spacing: 3) {
                         Text("Load")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color.blue)
+                            .foregroundStyle(Color.accentColor)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color.blue.opacity(0.8))
+                            .foregroundStyle(Color.accentColor.opacity(0.8))
                     }
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4.5)
@@ -232,23 +194,7 @@ struct SaveManagerView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.45), location: 0.0),
-                            .init(color: .white.opacity(0.12), location: 0.35),
-                            .init(color: Color.blue.opacity(0.35), location: 0.70),
-                            .init(color: .white.opacity(0.15), location: 1.0)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
-        )
-        .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.black.opacity(0.10), radius: 8, x: 0, y: 4)
     }
 
     // MARK: – Empty Saves View
@@ -256,34 +202,12 @@ struct SaveManagerView: View {
         VStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.blue.opacity(0.25), Color.cyan.opacity(0.08)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 74, height: 74)
-                Circle()
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.45), Color.white.opacity(0.10)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
+                    .fill(Color.accentColor.opacity(0.12))
                     .frame(width: 74, height: 74)
 
                 Image(systemName: "externaldrive.badge.plus")
                     .font(.system(size: 32, weight: .semibold))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.white, Color(red: 120/255, green: 220/255, blue: 255/255)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                    .foregroundStyle(Color.accentColor)
             }
             .padding(.top, 14)
 
@@ -324,23 +248,7 @@ struct SaveManagerView: View {
         .padding(20)
         .frame(maxWidth: .infinity)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.45), location: 0.0),
-                            .init(color: .white.opacity(0.12), location: 0.35),
-                            .init(color: Color.blue.opacity(0.35), location: 0.70),
-                            .init(color: .white.opacity(0.15), location: 1.0)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
-        )
-        .shadow(color: Color.black.opacity(0.18), radius: 12, x: 0, y: 6)
+        .shadow(color: Color.black.opacity(0.10), radius: 8, x: 0, y: 4)
         .padding(.top, 20)
     }
     

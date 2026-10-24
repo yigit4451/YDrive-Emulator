@@ -6,7 +6,7 @@ struct GameCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             
-            // ── Cover art with Liquid Glass inner bezel ──
+            // ── Cover art ──
             ZStack {
                 if let uiImage = game.resolveCoverImage() {
                     Image(uiImage: uiImage)
@@ -16,37 +16,15 @@ struct GameCardView: View {
                         .clipped()
                 } else {
                     ZStack {
-                        LinearGradient(
-                            colors: [
-                                consoleColor.opacity(0.35),
-                                consoleColor.opacity(0.10)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        Color(UIColor.secondarySystemFill)
                         Image(systemName: "gamecontroller.fill")
                             .font(.system(size: 38))
-                            .foregroundStyle(consoleColor.opacity(0.85))
+                            .foregroundStyle(.tertiary)
                     }
                     .frame(height: 140)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .white.opacity(0.45), location: 0.0),
-                                .init(color: .white.opacity(0.10), location: 0.4),
-                                .init(color: .clear, location: 0.8)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
             .padding([.horizontal, .top], 8)
             .padding(.bottom, 10)
 
@@ -58,7 +36,7 @@ struct GameCardView: View {
                 .padding(.horizontal, 12)
                 .padding(.bottom, 6)
 
-            // ── Console badge (Liquid Glass Pill) ──
+            // ── Console badge ──
             HStack(spacing: 5) {
                 Circle()
                     .fill(consoleColor)
@@ -69,13 +47,8 @@ struct GameCardView: View {
             }
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
-            .background(
-                ZStack {
-                    Capsule().fill(.ultraThinMaterial)
-                    Capsule().fill(consoleColor.opacity(0.15))
-                    Capsule().strokeBorder(consoleColor.opacity(0.35), lineWidth: 0.8)
-                }
-            )
+            .background(consoleColor.opacity(0.15))
+            .clipShape(Capsule())
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
 
@@ -83,24 +56,7 @@ struct GameCardView: View {
         }
         .frame(minHeight: 235, alignment: .top)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.45), location: 0.0),
-                            .init(color: .white.opacity(0.12), location: 0.35),
-                            .init(color: consoleColor.opacity(0.35), location: 0.70),
-                            .init(color: .white.opacity(0.15), location: 1.0)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
-        )
-        .shadow(color: Color.black.opacity(0.20), radius: 10, x: 0, y: 5)
-        .shadow(color: consoleColor.opacity(0.15), radius: 14, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
     }
 
     private var consoleColor: Color {

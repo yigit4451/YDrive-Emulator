@@ -348,22 +348,14 @@ struct GameLibraryView: View {
                         .resizable()
                         .scaledToFill()
                 } else {
-                    LinearGradient(
-                        colors: [Color.accentColor.opacity(0.35), Color.accentColor.opacity(0.12)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                    Color(UIColor.secondarySystemFill)
                     Image(systemName: "gamecontroller.fill")
                         .font(.title3)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(.tertiary)
                 }
             }
             .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.white.opacity(0.14), lineWidth: 1)
-            )
 
             // Info
             VStack(alignment: .leading, spacing: 4) {
@@ -398,23 +390,7 @@ struct GameLibraryView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.45), location: 0.0),
-                            .init(color: .white.opacity(0.12), location: 0.35),
-                            .init(color: consoleColor(for: game.consoleName).opacity(0.30), location: 0.70),
-                            .init(color: .white.opacity(0.12), location: 1.0)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
-        )
-        .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 3)
     }
 
     private func consoleColor(for name: String) -> Color {
