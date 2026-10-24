@@ -332,7 +332,9 @@ struct SaveManagerView: View {
                 let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(fileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
                 try? FileManager.default.removeItem(at: legacyURL)
             }
-            self.fetchAllSaves()
+            await MainActor.run {
+                self.fetchAllSaves()
+            }
         }
     }
 }
