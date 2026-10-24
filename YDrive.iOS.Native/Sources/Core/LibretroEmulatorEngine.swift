@@ -86,6 +86,14 @@ final class LibretroEmulatorEngine: ObservableObject {
 
             cons?.enqueueFrame(ef)
         }
+
+        func resetFPS() {
+            lock.lock()
+            _frameCount = 0
+            _lastFPSTime = Date()
+            _fps = 0.0
+            lock.unlock()
+        }
     }
 
     private let videoHub = VideoFrameHub()
@@ -231,9 +239,7 @@ final class LibretroEmulatorEngine: ObservableObject {
                     self.coreAvailable = true
                     self.isRunning   = true
                     
-                    self.lastFPSTime = Date()
-                    self.frameCount = 0
-                    self.currentFPS = 0.0
+                    self.videoHub.resetFPS()
                     
                     if self.isAudioEnabled {
                         self.audioEngine.start(sampleRate: bridgeRef.audioSampleRate)
