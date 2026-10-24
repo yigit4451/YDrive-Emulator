@@ -247,7 +247,7 @@ struct EmulatorView: View {
             removeControllerObservers()
             engine.stop()
         }
-        .defersSystemGestures(on: .bottom)
+        .defersSystemGestures(on: .all)
         .persistentSystemOverlays(.hidden)
         .preferredColorScheme(.dark)
     }
@@ -943,9 +943,16 @@ struct OnScreenControlsView: View {
         }
     }
 
+    private static let hapticFeedbackGenerator: UIImpactFeedbackGenerator = {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.prepare()
+        return generator
+    }()
+
     private func press(_ isPressed: Bool, id: UInt32) {
         if isPressed && hapticFeedback {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            Self.hapticFeedbackGenerator.impactOccurred()
+            Self.hapticFeedbackGenerator.prepare()
         }
         engine.setButton(id, pressed: isPressed)
     }

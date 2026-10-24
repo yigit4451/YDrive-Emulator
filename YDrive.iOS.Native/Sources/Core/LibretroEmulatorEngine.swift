@@ -27,9 +27,72 @@ struct EmulatorFrame: Sendable {
     let pixelFormat: YDrivePixelFormat
 }
 
+/// Consumer protocol for direct, zero-delay video frame delivery from the emulation queue to Metal
+protocol VideoFrameConsumer: AnyObject, Sendable {
+    func enqueueFrame(_ frame: EmulatorFrame)
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 @MainActor
 final class LibretroEmulatorEngine: ObservableObject {
+
+    // ── Video delivery hub (thread-safe, eliminates main-thread hopping) ───────
+    private final class VideoFrameHub: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _consumer: (any VideoFrameConsumer)?
+        private var _latestFrame: EmulatorFrame?
+        private var _frameCount: Int = 0
+        private var _lastFPSTime: Date = Date()
+
+        var consumer: (any VideoFrameConsumer)? {
+            get {
+                lock.lock()
+                defer { lock.unlock() }
+                return _consumer
+            }
+            set {
+                lock.lock()
+                _consumer = newValue
+                lock.unlock()
+            }
+        }
+
+        var latestFrame: EmulatorFrame? {
+            lock.lock()
+            defer { lock.unlock() }
+            return _latestFrame
+        }
+
+        func handleFrame(_ ef: EmulatorFrame, onFPSUpdate: @Sendable @escaping (Double) -> Void) {
+            lock.lock()
+            _latestFrame = ef
+            let cons = _consumer
+            _frameCount += 1
+            let now = Date()
+            let elapsed = now.timeIntervalSince(_lastFPSTime)
+            var reportFPS: Double?
+            if elapsed >= 1.0 {
+                reportFPS = Double(_frameCount) / elapsed
+                _frameCount = 0
+                _lastFPSTime = now
+            }
+            lock.unlock()
+
+            cons?.enqueueFrame(ef)
+
+            if let reportFPS {
+                onFPSUpdate(reportFPS)
+            }
+        }
+    }
+
+    private let videoHub = VideoFrameHub()
+
+    /// Direct consumer for video frames (MetalCoordinator)
+    var videoFrameConsumer: (any VideoFrameConsumer)? {
+        get { videoHub.consumer }
+        set { videoHub.consumer = newValue }
+    }
 
     // ── Public state ─────────────────────────────────────────────────────────
     @Published private(set) var isRunning   = false
@@ -37,13 +100,13 @@ final class LibretroEmulatorEngine: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var coreAvailable = false
 
-    /// Latest rendered frame — observed by MetalEmulatorView
-    @Published private(set) var currentFrame: EmulatorFrame?
+    /// Latest rendered frame — queried for screenshots (thread-safe, not published to prevent 60fps view invalidations)
+    var currentFrame: EmulatorFrame? {
+        videoHub.latestFrame
+    }
     
     /// Current frames per second
     @Published private(set) var currentFPS: Double = 0.0
-    private var frameCount = 0
-    private var lastFPSTime = Date()
     
     var isAudioEnabled = true {
         didSet {
@@ -92,7 +155,8 @@ final class LibretroEmulatorEngine: ObservableObject {
         log.info("[ENGINE] start() — ROM: \(romPath, privacy: .public)")
 
         // Wire up video callback before loadGame
-        bridge.onVideoFrame = { @Sendable frame in
+        let hub = self.videoHub
+        bridge.onVideoFrame = { [weak self] @Sendable frame in
             // This is called on the emulation queue — copy data immediately
             // so the raw pointer is safe to hand off across threads.
             let copied: Data?
@@ -111,17 +175,9 @@ final class LibretroEmulatorEngine: ObservableObject {
                 pixelFormat: frame.pixelFormat
             )
 
-            Task { @MainActor [weak self] in
-                guard let self = self else { return }
-                self.currentFrame = ef
-                
-                self.frameCount += 1
-                let now = Date()
-                let elapsed = now.timeIntervalSince(self.lastFPSTime)
-                if elapsed >= 1.0 {
-                    self.currentFPS = Double(self.frameCount) / elapsed
-                    self.frameCount = 0
-                    self.lastFPSTime = now
+            hub.handleFrame(ef) { fps in
+                Task { @MainActor [weak self] in
+                    self?.currentFPS = fps
                 }
             }
         }

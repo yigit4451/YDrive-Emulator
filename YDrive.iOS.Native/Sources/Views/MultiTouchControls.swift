@@ -17,6 +17,11 @@ struct TouchRegion: Equatable {
 
     let kind: Kind
     let rect: CGRect
+
+    /// Generous hit test rectangle so slight thumb offsets and edge taps register immediately on touchDown.
+    var hitRect: CGRect {
+        rect.insetBy(dx: -14, dy: -14)
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,7 +91,7 @@ struct TouchControlSurface: UIViewRepresentable {
 
         override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
             for region in regions {
-                if region.rect.contains(point) {
+                if region.hitRect.contains(point) {
                     return true
                 }
             }
@@ -116,7 +121,41 @@ struct TouchControlSurface: UIViewRepresentable {
 
         override func didMoveToWindow() {
             super.didMoveToWindow()
-            if window == nil { releaseAll() }
+            if window == nil {
+                releaseAll()
+            } else {
+                configureGestureRecognizers()
+            }
+        }
+
+        override func didMoveToSuperview() {
+            super.didMoveToSuperview()
+            configureGestureRecognizers()
+        }
+
+        private func configureGestureRecognizers() {
+            // Disable delaysTouchesBegan on window and all ancestor gesture recognizers
+            // so touchDown is delivered to SurfaceView on the very first pixel contact.
+            if let window = window {
+                for gr in window.gestureRecognizers ?? [] {
+                    gr.delaysTouchesBegan = false
+                }
+            }
+            var v: UIView? = self.superview
+            while let cur = v {
+                for gr in cur.gestureRecognizers ?? [] {
+                    gr.delaysTouchesBegan = false
+                }
+                v = cur.superview
+            }
+            var responder: UIResponder? = self
+            while let r = responder {
+                if let nav = r as? UINavigationController {
+                    nav.interactivePopGestureRecognizer?.delaysTouchesBegan = false
+                    break
+                }
+                responder = r.next
+            }
         }
 
         /// Releases every button (used when the view goes away).
@@ -134,7 +173,7 @@ struct TouchControlSurface: UIViewRepresentable {
                 let point = touch.location(in: self)
 
                 // D-pad: a touch inside the pad is translated into directions.
-                for region in regions where region.kind == .dpad && region.rect.contains(point) {
+                for region in regions where region.kind == .dpad && region.hitRect.contains(point) {
                     let dx = point.x - region.rect.midX
                     let dy = point.y - region.rect.midY
                     if dx < -Self.dpadThreshold { next.insert(Self.idLeft) }
@@ -147,7 +186,7 @@ struct TouchControlSurface: UIViewRepresentable {
                 var bestID: UInt32?
                 var bestDistance = CGFloat.greatestFiniteMagnitude
                 for region in regions {
-                    guard case .button(let id) = region.kind, region.rect.contains(point) else { continue }
+                    guard case .button(let id) = region.kind, region.hitRect.contains(point) else { continue }
                     let distance = hypot(point.x - region.rect.midX, point.y - region.rect.midY)
                     if distance < bestDistance {
                         bestDistance = distance

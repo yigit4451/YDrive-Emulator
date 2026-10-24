@@ -46,6 +46,7 @@ struct MetalEmulatorView: UIViewRepresentable {
 
         context.coordinator.mtkView = view
         context.coordinator.setup(device: view.device)
+        engine.videoFrameConsumer = context.coordinator
         log.info("[METAL] MTKView created, device: \(view.device?.name ?? "nil", privacy: .public)")
         return view
     }
@@ -59,15 +60,11 @@ struct MetalEmulatorView: UIViewRepresentable {
         if videoFilter == "CRT" { mode = 1 }
         else if videoFilter == "Simple CRT" { mode = 2 }
         context.coordinator.filterMode = mode
-        
-        if let frame = engine.currentFrame {
-            context.coordinator.enqueueFrame(frame)
-        }
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-final class MetalCoordinator: NSObject, MTKViewDelegate {
+final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @unchecked Sendable {
 
     weak var mtkView: MTKView?
 
