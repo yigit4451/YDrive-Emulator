@@ -49,8 +49,6 @@ struct EmulatorView: View {
                     // ── Game render surface ──────────────────────────────────────
                     if engine.coreAvailable {
                         gameRenderSurface(width: w, height: h, isLandscape: isLandscape, safeTop: safeTop)
-                            .blur(radius: isSaveManagerPresented ? 8 : 0)
-                            .animation(.easeInOut(duration: 0.25), value: isSaveManagerPresented)
                     } else if let errorMsg = engine.errorMessage {
                         VStack(spacing: 12) {
                             Image(systemName: "exclamationmark.triangle.fill")
