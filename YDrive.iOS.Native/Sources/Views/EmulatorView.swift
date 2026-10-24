@@ -946,6 +946,7 @@ struct OnScreenControlsView: View {
     @State private var hapticGenerator: UIImpactFeedbackGenerator?
 
     private func press(_ isPressed: Bool, id: UInt32) {
+        engine.setButton(id, pressed: isPressed)
         if isPressed && hapticFeedback {
             if let gen = hapticGenerator {
                 gen.impactOccurred()
@@ -957,7 +958,6 @@ struct OnScreenControlsView: View {
                 hapticGenerator = gen
             }
         }
-        engine.setButton(id, pressed: isPressed)
     }
 
     private func dpadArea(visualSize: CGFloat, hitSize: CGFloat) -> some View {

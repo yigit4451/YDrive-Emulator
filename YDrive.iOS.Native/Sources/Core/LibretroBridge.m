@@ -145,6 +145,7 @@ static size_t audio_batch_callback(const int16_t *data, size_t frames) {
 
 // ── Input State ───────────────────────────────────────────────────────────────
 static atomic_uint_fast16_t gInputBitmask = 0;
+static atomic_uint_fast16_t gLatchedPressBitmask = 0;
 
 static void input_poll_callback(void) {
     // Input is pushed directly via setButton:pressed:
@@ -154,12 +155,16 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     if (port != 0) return 0; // Only player 1 for now
     unsigned baseDevice = device & RETRO_DEVICE_MASK;
     if (baseDevice == RETRO_DEVICE_JOYPAD || baseDevice == 1) {
-        uint16_t mask = (uint16_t)atomic_load(&gInputBitmask);
         if (id == RETRO_DEVICE_ID_JOYPAD_MASK) {
-            return (int16_t)mask;
+            uint16_t latched = (uint16_t)atomic_exchange(&gLatchedPressBitmask, 0);
+            uint16_t held    = (uint16_t)atomic_load(&gInputBitmask);
+            return (int16_t)(held | latched);
         }
         if (id < 16) {
-            return (mask & (1 << id)) ? 1 : 0;
+            uint16_t bit     = (uint16_t)(1u << id);
+            uint16_t latched = (uint16_t)atomic_fetch_and(&gLatchedPressBitmask, ~bit);
+            uint16_t held    = (uint16_t)atomic_load(&gInputBitmask);
+            return ((held | latched) & bit) ? 1 : 0;
         }
     }
     return 0;
@@ -203,6 +208,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     // ── Register C callbacks ──────────────────────────────────────────────────
     gBridgeInstance = self;
     atomic_store(&gInputBitmask, 0); // Clear stuck inputs from previous runs
+    atomic_store(&gLatchedPressBitmask, 0);
 
     // ── Init ─────────────────────────────────────────────────────────────────
     if (!gCoreGlobalInitialized) {
@@ -307,10 +313,12 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (void)setButton:(unsigned)buttonID pressed:(BOOL)pressed {
 #if YDRIVE_CORE_AVAILABLE
     if (buttonID >= 16) return;
+    uint16_t bit = (uint16_t)(1u << buttonID);
     if (pressed) {
-        atomic_fetch_or(&gInputBitmask, (1 << buttonID));
+        atomic_fetch_or(&gInputBitmask, bit);
+        atomic_fetch_or(&gLatchedPressBitmask, bit);
     } else {
-        atomic_fetch_and(&gInputBitmask, ~(1 << buttonID));
+        atomic_fetch_and(&gInputBitmask, ~bit);
     }
 #endif
 }
@@ -319,6 +327,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     os_log(gLog, "[CORE] reset called");
 #if YDRIVE_CORE_AVAILABLE
     atomic_store(&gInputBitmask, 0);
+    atomic_store(&gLatchedPressBitmask, 0);
     if (_isRunning) {
         retro_reset();
     }
@@ -385,6 +394,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     }
     if (gBridgeInstance == self) {
         atomic_store(&gInputBitmask, 0);
+        atomic_store(&gLatchedPressBitmask, 0);
         gBridgeInstance = nil;
     }
 #endif

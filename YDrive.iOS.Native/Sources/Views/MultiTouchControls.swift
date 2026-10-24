@@ -101,6 +101,7 @@ struct TouchControlSurface: UIViewRepresentable {
         // MARK: Touch events
 
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+            configureGestureRecognizers()
             activeTouches.formUnion(touches)
             recompute()
         }
@@ -134,25 +135,46 @@ struct TouchControlSurface: UIViewRepresentable {
         }
 
         private func configureGestureRecognizers() {
-            // Disable delaysTouchesBegan on window and all ancestor gesture recognizers
-            // so touchDown is delivered to SurfaceView on the very first pixel contact.
+            // Disable delaysTouchesBegan and delaysTouchesEnded on window and all
+            // ancestor gesture recognizers so touchDown and touchUp are delivered to
+            // SurfaceView on the very first pixel contact without gesture wait delays.
             if let window = window {
                 for gr in window.gestureRecognizers ?? [] {
                     gr.delaysTouchesBegan = false
+                    gr.delaysTouchesEnded = false
                 }
             }
             var v: UIView? = self.superview
             while let cur = v {
                 for gr in cur.gestureRecognizers ?? [] {
                     gr.delaysTouchesBegan = false
+                    gr.delaysTouchesEnded = false
                 }
                 v = cur.superview
             }
             var responder: UIResponder? = self
             while let r = responder {
+                if let vc = r as? UIViewController {
+                    for gr in vc.view.gestureRecognizers ?? [] {
+                        gr.delaysTouchesBegan = false
+                        gr.delaysTouchesEnded = false
+                    }
+                    if let pop = vc.navigationController?.interactivePopGestureRecognizer {
+                        pop.delaysTouchesBegan = false
+                        pop.delaysTouchesEnded = false
+                        pop.isEnabled = false
+                    }
+                    if let pres = vc.presentationController?.presentedView?.gestureRecognizers {
+                        for gr in pres {
+                            gr.delaysTouchesBegan = false
+                            gr.delaysTouchesEnded = false
+                        }
+                    }
+                }
                 if let nav = r as? UINavigationController {
                     nav.interactivePopGestureRecognizer?.delaysTouchesBegan = false
-                    break
+                    nav.interactivePopGestureRecognizer?.delaysTouchesEnded = false
+                    nav.interactivePopGestureRecognizer?.isEnabled = false
                 }
                 responder = r.next
             }
