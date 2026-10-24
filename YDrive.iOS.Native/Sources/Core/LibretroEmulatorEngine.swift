@@ -43,6 +43,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         private var _latestFrame: EmulatorFrame?
         private var _frameCount: Int = 0
         private var _lastFPSTime: Date = Date()
+        private var _fps: Double = 0.0
 
         var consumer: (any VideoFrameConsumer)? {
             get {
@@ -63,26 +64,27 @@ final class LibretroEmulatorEngine: ObservableObject {
             return _latestFrame
         }
 
-        func handleFrame(_ ef: EmulatorFrame, onFPSUpdate: @Sendable @escaping (Double) -> Void) {
+        var fps: Double {
+            lock.lock()
+            defer { lock.unlock() }
+            return _fps
+        }
+
+        func handleFrame(_ ef: EmulatorFrame) {
             lock.lock()
             _latestFrame = ef
             let cons = _consumer
             _frameCount += 1
             let now = Date()
             let elapsed = now.timeIntervalSince(_lastFPSTime)
-            var reportFPS: Double?
             if elapsed >= 1.0 {
-                reportFPS = Double(_frameCount) / elapsed
+                _fps = Double(_frameCount) / elapsed
                 _frameCount = 0
                 _lastFPSTime = now
             }
             lock.unlock()
 
             cons?.enqueueFrame(ef)
-
-            if let reportFPS {
-                onFPSUpdate(reportFPS)
-            }
         }
     }
 
@@ -106,7 +108,9 @@ final class LibretroEmulatorEngine: ObservableObject {
     }
     
     /// Current frames per second
-    @Published private(set) var currentFPS: Double = 0.0
+    var currentFPS: Double {
+        videoHub.fps
+    }
     
     var isAudioEnabled = true {
         didSet {
@@ -156,7 +160,7 @@ final class LibretroEmulatorEngine: ObservableObject {
 
         // Wire up video callback before loadGame
         let hub = self.videoHub
-        bridge.onVideoFrame = { [weak self] @Sendable frame in
+        bridge.onVideoFrame = { @Sendable frame in
             // This is called on the emulation queue — copy data immediately
             // so the raw pointer is safe to hand off across threads.
             let copied: Data?
@@ -175,11 +179,7 @@ final class LibretroEmulatorEngine: ObservableObject {
                 pixelFormat: frame.pixelFormat
             )
 
-            hub.handleFrame(ef) { fps in
-                Task { @MainActor [weak self] in
-                    self?.currentFPS = fps
-                }
-            }
+            hub.handleFrame(ef)
         }
         
         bridge.onAudioPCM = { [weak audioEngine] data, frames in

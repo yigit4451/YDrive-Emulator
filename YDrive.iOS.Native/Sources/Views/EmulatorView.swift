@@ -943,16 +943,19 @@ struct OnScreenControlsView: View {
         }
     }
 
-    private static let hapticFeedbackGenerator: UIImpactFeedbackGenerator = {
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.prepare()
-        return generator
-    }()
+    @State private var hapticGenerator: UIImpactFeedbackGenerator?
 
     private func press(_ isPressed: Bool, id: UInt32) {
         if isPressed && hapticFeedback {
-            Self.hapticFeedbackGenerator.impactOccurred()
-            Self.hapticFeedbackGenerator.prepare()
+            if let gen = hapticGenerator {
+                gen.impactOccurred()
+                gen.prepare()
+            } else {
+                let gen = UIImpactFeedbackGenerator(style: .light)
+                gen.prepare()
+                gen.impactOccurred()
+                hapticGenerator = gen
+            }
         }
         engine.setButton(id, pressed: isPressed)
     }
