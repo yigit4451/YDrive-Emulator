@@ -51,25 +51,18 @@ struct SaveManagerView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: addNewSave) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(UIColor.systemGray5))
-                            .frame(width: 32, height: 32)
-
-                        if isSaving {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: "plus")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(.primary)
-                        }
+                    if isSaving {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.blue)
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "plus")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(Color.blue)
                     }
-                    .frame(width: 32, height: 32)
-                    .clipShape(Circle())
                 }
-                .buttonStyle(.plain)
+                .tint(.blue)
                 .disabled(isSaving)
                 .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
             }
@@ -78,19 +71,11 @@ struct SaveManagerView: View {
                 Button {
                     isPresented = false
                 } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color(UIColor.systemGray5))
-                            .frame(width: 32, height: 32)
-
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(width: 32, height: 32)
-                    .clipShape(Circle())
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Color.white)
                 }
-                .buttonStyle(.plain)
+                .tint(.white)
                 .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
             }
         }
