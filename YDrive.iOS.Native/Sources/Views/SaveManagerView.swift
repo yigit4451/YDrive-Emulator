@@ -1,37 +1,5 @@
 import SwiftUI
 
-// MARK: – PNG Icon Generator
-@MainActor
-private enum IconPNGHelper {
-    private static let cache = NSCache<NSString, UIImage>()
-    
-    static func image(_ name: String, pointSize: CGFloat, weight: UIImage.SymbolWeight = .bold, color: UIColor) -> UIImage {
-        let key = "\(name)_\(pointSize)_\(weight.rawValue)_\(color.hashValue)" as NSString
-        if let cached = cache.object(forKey: key) {
-            return cached
-        }
-        
-        let config = UIImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
-        guard let base = UIImage(systemName: name, withConfiguration: config)?
-            .withTintColor(color, renderingMode: .alwaysOriginal) else {
-            return UIImage()
-        }
-        
-        let format = UIGraphicsImageRendererFormat.preferred()
-        format.scale = UIScreen.main.scale
-        format.opaque = false
-        
-        let renderer = UIGraphicsImageRenderer(size: base.size, format: format)
-        let pngData = renderer.pngData { _ in
-            base.draw(at: .zero)
-        }
-        
-        let result = (UIImage(data: pngData) ?? base).withRenderingMode(.alwaysOriginal)
-        cache.setObject(result, forKey: key)
-        return result
-    }
-}
-
 struct SaveManagerView: View {
     let engine: LibretroEmulatorEngine
     let gameFileName: String
@@ -85,16 +53,17 @@ struct SaveManagerView: View {
                 Button(action: addNewSave) {
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                            .fill(Color(UIColor.systemGray5))
                             .frame(width: 32, height: 32)
 
                         if isSaving {
                             ProgressView()
                                 .progressViewStyle(.circular)
-                                .scaleEffect(0.8)
+                                .scaleEffect(0.7)
                         } else {
-                            Image(uiImage: IconPNGHelper.image("plus", pointSize: 14, weight: .bold, color: .systemBlue))
-                                .renderingMode(.original)
+                            Image(systemName: "plus")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(.primary)
                         }
                     }
                     .frame(width: 32, height: 32)
@@ -111,11 +80,12 @@ struct SaveManagerView: View {
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                            .fill(Color(UIColor.systemGray5))
                             .frame(width: 32, height: 32)
 
-                        Image(uiImage: IconPNGHelper.image("xmark", pointSize: 12, weight: .bold, color: .secondaryLabel))
-                            .renderingMode(.original)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.secondary)
                     }
                     .frame(width: 32, height: 32)
                     .clipShape(Circle())
@@ -161,14 +131,15 @@ struct SaveManagerView: View {
                 }
             } label: {
                 HStack(spacing: 14) {
-                    // Native Icon Orb with PNG icon
+                    // Native Icon Orb
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                            .fill(Color.accentColor.opacity(0.12))
                             .frame(width: 44, height: 44)
                         
-                        Image(uiImage: IconPNGHelper.image("externaldrive.fill", pointSize: 18, weight: .semibold, color: .systemBlue))
-                            .renderingMode(.original)
+                        Image(systemName: "externaldrive.fill")
+                            .font(.system(size: 19, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
                     }
 
                     // Slot Information
@@ -178,8 +149,9 @@ struct SaveManagerView: View {
                             .foregroundStyle(.primary)
 
                         HStack(spacing: 4) {
-                            Image(uiImage: IconPNGHelper.image("clock", pointSize: 11, weight: .regular, color: .secondaryLabel))
-                                .renderingMode(.original)
+                            Image(systemName: "clock")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
                             Text(date, format: .dateTime.month().day().hour().minute().second())
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -188,37 +160,34 @@ struct SaveManagerView: View {
 
                     Spacer()
 
-                    // Quick Load Indicator Pill with PNG chevron
-                    HStack(spacing: 4) {
+                    // Quick Load Indicator Pill
+                    HStack(spacing: 3) {
                         Text("Load")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(Color.accentColor)
-                        Image(uiImage: IconPNGHelper.image("chevron.right", pointSize: 10, weight: .bold, color: .systemBlue))
-                            .renderingMode(.original)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color.accentColor.opacity(0.8))
                     }
                     .padding(.horizontal, 9)
-                    .padding(.vertical, 5)
-                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .padding(.vertical, 4.5)
+                    .background(Color.accentColor.opacity(0.12))
                     .clipShape(Capsule())
                 }
             }
             .buttonStyle(.plain)
 
-            // Delete Button with PNG trash icon
+            // Delete Button
             Button {
                 slotToDelete = slot
                 showingDeleteAlert = true
             } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color(UIColor.secondarySystemGroupedBackground))
-                        .frame(width: 34, height: 34)
-
-                    Image(uiImage: IconPNGHelper.image("trash.fill", pointSize: 12, weight: .medium, color: .systemRed))
-                        .renderingMode(.original)
-                }
-                .frame(width: 34, height: 34)
-                .clipShape(Circle())
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.red)
+                    .frame(width: 34, height: 34)
+                    .background(Color.red.opacity(0.10))
+                    .clipShape(Circle())
             }
             .buttonStyle(.borderless)
         }
@@ -232,11 +201,12 @@ struct SaveManagerView: View {
         VStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    .fill(Color.accentColor.opacity(0.12))
                     .frame(width: 74, height: 74)
 
-                Image(uiImage: IconPNGHelper.image("externaldrive.badge.plus", pointSize: 32, weight: .semibold, color: .systemBlue))
-                    .renderingMode(.original)
+                Image(systemName: "externaldrive.badge.plus")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
             }
             .padding(.top, 14)
 
@@ -259,8 +229,8 @@ struct SaveManagerView: View {
                             .progressViewStyle(.circular)
                             .tint(.white)
                     } else {
-                        Image(uiImage: IconPNGHelper.image("plus.circle.fill", pointSize: 16, weight: .bold, color: .white))
-                            .renderingMode(.original)
+                        Image(systemName: "plus.circle.fill")
+                            .font(.headline)
                     }
                     Text(NSLocalizedString("saves.create_now", comment: "Create Save State"))
                         .font(.headline)
