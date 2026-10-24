@@ -10,6 +10,7 @@ struct SaveManagerView: View {
     @State private var slotToDelete: Int?
     @State private var showingDeleteAlert = false
     @State private var isSaving = false
+    @State private var isLoading = true
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -17,6 +18,10 @@ struct SaveManagerView: View {
         case "light": return .light
         default: return nil
         }
+    }
+
+    private var sortedSaves: [(slot: Int, date: Date)] {
+        existingSaves.map { ($0.key, $0.value) }.sorted(by: { $0.date > $1.date })
     }
     
     var body: some View {
@@ -26,13 +31,16 @@ struct SaveManagerView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 14) {
-                    if existingSaves.isEmpty {
+                LazyVStack(spacing: 14) {
+                    if isLoading && existingSaves.isEmpty {
+                        ProgressView()
+                            .padding(.top, 40)
+                    } else if existingSaves.isEmpty {
                         emptySavesView
                     } else {
                         // Sort descending by date so newest is at the top
-                        ForEach(existingSaves.sorted(by: { $0.value > $1.value }), id: \.key) { slot, date in
-                            liquidGlassSaveCard(slot: slot, date: date)
+                        ForEach(sortedSaves, id: \.slot) { item in
+                            liquidGlassSaveCard(slot: item.slot, date: item.date)
                         }
                     }
                 }
@@ -48,21 +56,21 @@ struct SaveManagerView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: addNewSave) {
-                    HStack(spacing: 5) {
+                    Group {
                         if isSaving {
                             ProgressView()
                                 .progressViewStyle(.circular)
-                                .scaleEffect(0.7)
+                                .scaleEffect(0.8)
                         } else {
                             Image(systemName: "plus")
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: 16, weight: .bold))
                         }
-                        Text("New")
-                            .font(.system(size: 14, weight: .semibold))
                     }
+                    .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.glassProminent)
                 .disabled(isSaving)
+                .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -70,7 +78,9 @@ struct SaveManagerView: View {
                     isPresented = false
                 } label: {
                     Image(systemName: "xmark")
-                        .fontWeight(.semibold)
+                        .font(.system(size: 17, weight: .bold))
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
                 }
                 .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
                 .tint(.primary)
@@ -126,20 +136,9 @@ struct SaveManagerView: View {
 
                     // Slot Information
                     VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 8) {
-                            Text("Slot \(slot + 1)")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(.primary)
-
-                            // Status badge
-                            Text("STATE")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundStyle(Color.accentColor)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.12))
-                                .clipShape(Capsule())
-                        }
+                        Text("Slot \(slot + 1)")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.primary)
 
                         HStack(spacing: 4) {
                             Image(systemName: "clock")
@@ -164,12 +163,13 @@ struct SaveManagerView: View {
                     }
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4.5)
-                    .glassEffect(.regular, in: Capsule())
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(Capsule())
                 }
             }
             .buttonStyle(.plain)
 
-            // Glass Delete Button
+            // Delete Button
             Button {
                 slotToDelete = slot
                 showingDeleteAlert = true
@@ -178,7 +178,8 @@ struct SaveManagerView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.red)
                     .frame(width: 34, height: 34)
-                    .glassEffect(.regular, in: Circle())
+                    .background(Color.red.opacity(0.10))
+                    .clipShape(Circle())
             }
             .buttonStyle(.borderless)
         }
@@ -244,58 +245,64 @@ struct SaveManagerView: View {
     }
     
     private func fetchAllSaves() {
-        var saves = [Int: Date]()
-        let gameURL = URL(fileURLWithPath: gameFileName)
-        let gameDir = gameURL.deletingLastPathComponent()
+        let fileName = gameFileName
+        Task.detached(priority: .userInitiated) {
+            var saves = [Int: Date]()
+            let gameURL = URL(fileURLWithPath: fileName)
+            let gameDir = gameURL.deletingLastPathComponent()
 
-        // 1. Check game directory (slotX.state)
-        if let files = try? FileManager.default.contentsOfDirectory(atPath: gameDir.path) {
-            for file in files {
-                if file.hasPrefix("slot") && file.hasSuffix(".state") {
-                    let numStr = file.replacingOccurrences(of: "slot", with: "").replacingOccurrences(of: ".state", with: "")
-                    if let slot = Int(numStr) {
-                        let fileURL = gameDir.appendingPathComponent(file)
-                        if let attr = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
-                           let date = attr[.modificationDate] as? Date {
-                            saves[slot] = date
+            // 1. Check game directory (slotX.state)
+            if let files = try? FileManager.default.contentsOfDirectory(atPath: gameDir.path) {
+                for file in files {
+                    if file.hasPrefix("slot") && file.hasSuffix(".state") {
+                        let numStr = file.replacingOccurrences(of: "slot", with: "").replacingOccurrences(of: ".state", with: "")
+                        if let slot = Int(numStr) {
+                            let fileURL = gameDir.appendingPathComponent(file)
+                            if let attr = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
+                               let date = attr[.modificationDate] as? Date {
+                                saves[slot] = date
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // 2. Check legacy Saves/ folder
-        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
-            let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
-            if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
-                for file in files {
-                    if file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") {
-                        let numberString = file
-                            .replacingOccurrences(of: "\(safeName)_slot", with: "")
-                            .replacingOccurrences(of: ".state", with: "")
-                        if let slot = Int(numberString) {
-                            let legacyURL = savesDir.appendingPathComponent(file)
-                            let newURL = gameDir.appendingPathComponent("slot\(slot).state")
-                            if !FileManager.default.fileExists(atPath: newURL.path) {
-                                try? FileManager.default.moveItem(at: legacyURL, to: newURL)
-                                if let attr = try? FileManager.default.attributesOfItem(atPath: newURL.path),
-                                   let date = attr[.modificationDate] as? Date {
-                                    saves[slot] = date
-                                }
-                            } else if saves[slot] == nil {
-                                if let attr = try? FileManager.default.attributesOfItem(atPath: legacyURL.path),
-                                   let date = attr[.modificationDate] as? Date {
-                                    saves[slot] = date
+            // 2. Check legacy Saves/ folder
+            if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                let savesDir = docs.appendingPathComponent("Saves", isDirectory: true)
+                let safeName = fileName.replacingOccurrences(of: "/", with: "_")
+                if let files = try? FileManager.default.contentsOfDirectory(atPath: savesDir.path) {
+                    for file in files {
+                        if file.hasPrefix("\(safeName)_slot"), file.hasSuffix(".state") {
+                            let numberString = file
+                                .replacingOccurrences(of: "\(safeName)_slot", with: "")
+                                .replacingOccurrences(of: ".state", with: "")
+                            if let slot = Int(numberString) {
+                                let legacyURL = savesDir.appendingPathComponent(file)
+                                let newURL = gameDir.appendingPathComponent("slot\(slot).state")
+                                if !FileManager.default.fileExists(atPath: newURL.path) {
+                                    try? FileManager.default.moveItem(at: legacyURL, to: newURL)
+                                    if let attr = try? FileManager.default.attributesOfItem(atPath: newURL.path),
+                                       let date = attr[.modificationDate] as? Date {
+                                        saves[slot] = date
+                                    }
+                                } else if saves[slot] == nil {
+                                    if let attr = try? FileManager.default.attributesOfItem(atPath: legacyURL.path),
+                                       let date = attr[.modificationDate] as? Date {
+                                        saves[slot] = date
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
 
-        existingSaves = saves
+            await MainActor.run {
+                self.existingSaves = saves
+                self.isLoading = false
+            }
+        }
     }
     
     private func addNewSave() {
@@ -314,15 +321,20 @@ struct SaveManagerView: View {
     }
     
     private func deleteSave(slot: Int) {
-        let gameURL = URL(fileURLWithPath: gameFileName)
-        let gameDir = gameURL.deletingLastPathComponent()
-        let fileURL = gameDir.appendingPathComponent("slot\(slot).state")
-        try? FileManager.default.removeItem(at: fileURL)
+        let fileName = gameFileName
+        Task.detached(priority: .userInitiated) {
+            let gameURL = URL(fileURLWithPath: fileName)
+            let gameDir = gameURL.deletingLastPathComponent()
+            let fileURL = gameDir.appendingPathComponent("slot\(slot).state")
+            try? FileManager.default.removeItem(at: fileURL)
 
-        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
-            try? FileManager.default.removeItem(at: legacyURL)
+            if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(fileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
+                try? FileManager.default.removeItem(at: legacyURL)
+            }
+            await MainActor.run {
+                self.fetchAllSaves()
+            }
         }
-        fetchAllSaves()
     }
 }
