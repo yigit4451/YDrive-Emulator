@@ -41,14 +41,13 @@ struct EmulatorView: View {
                 let w = geo.size.width
                 let h = geo.size.height
                 let isLandscape = w > h
-                let safeTop = geo.safeAreaInsets.top
 
                 ZStack {
                     Color.black.ignoresSafeArea()
 
                     // ── Game render surface ──────────────────────────────────────
                     if engine.coreAvailable {
-                        gameRenderSurface(width: w, height: h, isLandscape: isLandscape, safeTop: safeTop)
+                        gameRenderSurface(width: w, height: h, isLandscape: isLandscape)
                     } else if let errorMsg = engine.errorMessage {
                         VStack(spacing: 12) {
                             Image(systemName: "exclamationmark.triangle.fill")
@@ -98,13 +97,14 @@ struct EmulatorView: View {
                                         .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                                 }
                                 .padding(16)
-                                .padding(.top, isLandscape ? 16 : max(safeTop, 16))
+                                .padding(.top, isLandscape ? 16 : max(stableSafeTop, 16))
                             }
                             Spacer()
                         }
                     }
                 }
             }
+            .ignoresSafeArea()
             .statusBarHidden(true)
             .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -252,22 +252,39 @@ struct EmulatorView: View {
         .preferredColorScheme(.dark)
     }
 
+    @MainActor
+    private var stableSafeTop: CGFloat {
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+            ?? scenes.first as? UIWindowScene
+        let top = windowScene?.windows.first(where: { $0.isKeyWindow })?.safeAreaInsets.top
+            ?? windowScene?.windows.first?.safeAreaInsets.top
+        if let top = top, top > 0 {
+            return top
+        }
+        return 47
+    }
+
     @ViewBuilder
-    private func gameRenderSurface(width: CGFloat, height: CGFloat, isLandscape: Bool, safeTop: CGFloat) -> some View {
+    private func gameRenderSurface(width: CGFloat, height: CGFloat, isLandscape: Bool) -> some View {
         if isLandscape {
             MetalEmulatorView(engine: engine, videoFilter: videoFilter)
                 .ignoresSafeArea()
-                .overlay(fpsOverlay, alignment: .topLeading)
+                .overlay(fpsOverlay(isLandscape: true), alignment: .topLeading)
         } else {
+            let safeTop = stableSafeTop
             let aspect = CGFloat(engine.aspectRatio > 0.01 ? engine.aspectRatio : 4.0/3.0)
-            let maxGameH = (height - safeTop) * 0.48
+            let topClearance = safeTop + 54
+            let controlsTop = height * 0.58
+            let availableH = max(100, controlsTop - topClearance - 8)
+            let maxGameH = min((height - safeTop) * 0.48, availableH)
             let gameW = min(width, maxGameH * aspect)
             let gameH = gameW / aspect
-            let gameY = safeTop + (gameH / 2) + 6
+            let gameY = (topClearance + controlsTop) / 2
 
             MetalEmulatorView(engine: engine, videoFilter: videoFilter)
                 .frame(width: gameW, height: gameH)
-                .overlay(fpsOverlay, alignment: .topLeading)
+                .overlay(fpsOverlay(isLandscape: false), alignment: .topLeading)
                 .position(x: width / 2, y: gameY)
         }
     }
@@ -654,7 +671,7 @@ struct EmulatorView: View {
     }
     
     @ViewBuilder
-    private var fpsOverlay: some View {
+    private func fpsOverlay(isLandscape: Bool) -> some View {
         if showFPS {
             Text(formattedFPS)
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
@@ -662,7 +679,7 @@ struct EmulatorView: View {
                 .padding(6)
                 .background(Color.black.opacity(0.6))
                 .cornerRadius(4)
-                .padding(.top, isTopBarVisible ? 60 : 10)
+                .padding(.top, (isLandscape && isTopBarVisible) ? 60 : 10)
                 .padding(.leading, 10)
                 .allowsHitTesting(false)
         }
