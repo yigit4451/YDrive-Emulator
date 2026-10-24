@@ -51,6 +51,7 @@ struct TouchControlSurface: UIViewRepresentable {
     func updateUIView(_ uiView: SurfaceView, context: Context) {
         uiView.onButton = onButton
         uiView.regions = regions
+        uiView.ensureGestureRecognizersConfigured()
     }
 
     static func dismantleUIView(_ uiView: SurfaceView, coordinator: ()) {
@@ -98,10 +99,15 @@ struct TouchControlSurface: UIViewRepresentable {
             return false
         }
 
+        override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+            // Prevent any parent/container gesture recognizer (like sheet/cover pan or navigation pop)
+            // from claiming or delaying touches that started inside the virtual gamepad buttons.
+            return false
+        }
+
         // MARK: Touch events
 
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-            configureGestureRecognizers()
             activeTouches.formUnion(touches)
             recompute()
         }
@@ -125,33 +131,36 @@ struct TouchControlSurface: UIViewRepresentable {
             if window == nil {
                 releaseAll()
             } else {
-                configureGestureRecognizers()
+                ensureGestureRecognizersConfigured()
+                // Also run after the presentation transition finishes on the next runloop turn
+                DispatchQueue.main.async { [weak self] in
+                    self?.ensureGestureRecognizersConfigured()
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+                    self?.ensureGestureRecognizersConfigured()
+                }
             }
         }
 
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
-            configureGestureRecognizers()
+            ensureGestureRecognizersConfigured()
         }
 
-        private func configureGestureRecognizers() {
-            // Disable delaysTouchesBegan and delaysTouchesEnded on window and all
-            // ancestor gesture recognizers so touchDown and touchUp are delivered to
-            // SurfaceView on the very first pixel contact without gesture wait delays.
-            if let window = window {
-                for gr in window.gestureRecognizers ?? [] {
-                    gr.delaysTouchesBegan = false
-                    gr.delaysTouchesEnded = false
-                }
-            }
-            var v: UIView? = self.superview
-            while let cur = v {
-                for gr in cur.gestureRecognizers ?? [] {
-                    gr.delaysTouchesBegan = false
-                    gr.delaysTouchesEnded = false
-                }
-                v = cur.superview
-            }
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            ensureGestureRecognizersConfigured()
+        }
+
+        func ensureGestureRecognizersConfigured() {
+            guard let window = self.window else { return }
+
+            // 1. Recursively disable delaysTouchesBegan & delaysTouchesEnded on the entire
+            //    window view hierarchy so fullScreenCover / sheet / UIHostingView containers
+            //    never hold back touchDown on the 2nd or subsequent ROM launch.
+            Self.disableTouchDelaysRecursively(in: window)
+
+            // 2. Walk responder chain to cover all UIViewControllers and presentationControllers.
             var responder: UIResponder? = self
             while let r = responder {
                 if let vc = r as? UIViewController {
@@ -164,11 +173,11 @@ struct TouchControlSurface: UIViewRepresentable {
                         pop.delaysTouchesEnded = false
                         pop.isEnabled = false
                     }
-                    if let pres = vc.presentationController?.presentedView?.gestureRecognizers {
-                        for gr in pres {
-                            gr.delaysTouchesBegan = false
-                            gr.delaysTouchesEnded = false
-                        }
+                    if let presented = vc.presentationController?.presentedView {
+                        Self.disableTouchDelaysRecursively(in: presented)
+                    }
+                    if let container = vc.presentationController?.containerView {
+                        Self.disableTouchDelaysRecursively(in: container)
                     }
                 }
                 if let nav = r as? UINavigationController {
@@ -177,6 +186,16 @@ struct TouchControlSurface: UIViewRepresentable {
                     nav.interactivePopGestureRecognizer?.isEnabled = false
                 }
                 responder = r.next
+            }
+        }
+
+        private static func disableTouchDelaysRecursively(in view: UIView) {
+            for gr in view.gestureRecognizers ?? [] {
+                gr.delaysTouchesBegan = false
+                gr.delaysTouchesEnded = false
+            }
+            for sub in view.subviews {
+                disableTouchDelaysRecursively(in: sub)
             }
         }
 
@@ -192,6 +211,10 @@ struct TouchControlSurface: UIViewRepresentable {
             var next = Set<UInt32>()
 
             for touch in activeTouches {
+                // Ignore stale touches that have already ended or been cancelled
+                if touch.phase == .ended || touch.phase == .cancelled {
+                    continue
+                }
                 let point = touch.location(in: self)
 
                 // D-pad: a touch inside the pad is translated into directions.

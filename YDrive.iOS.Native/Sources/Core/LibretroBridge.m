@@ -83,6 +83,7 @@ extern void retro_set_controller_port_device(unsigned port, unsigned device);
 static __weak YDriveLibretroBridge *gBridgeInstance = nil;
 static YDrivePixelFormat gCurrentPixelFormat = YDrivePixelFormatRGB565;
 static BOOL gCoreGlobalInitialized = NO;
+static BOOL gCoreGameLoaded = NO;
 
 // ── C-level callbacks ─────────────────────────────────────────────────────────
 
@@ -205,22 +206,27 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     os_log(gLog, "[CORE] loadGameAtPath: %{public}@", romPath.lastPathComponent);
 
 #if YDRIVE_CORE_AVAILABLE
-    // ── Register C callbacks ──────────────────────────────────────────────────
+    // Ensure any previously loaded game in the global static core is cleanly unloaded first
+    if (gCoreGameLoaded) {
+        os_log(gLog, "[CORE] Unloading previous global game before loading new ROM");
+        retro_unload_game();
+        gCoreGameLoaded = NO;
+    }
+
+    // ── Register C callbacks (always re-bind to ensure function pointers stay valid) ──
     gBridgeInstance = self;
-    atomic_store(&gInputBitmask, 0); // Clear stuck inputs from previous runs
+    atomic_store(&gInputBitmask, 0);
     atomic_store(&gLatchedPressBitmask, 0);
+
+    retro_set_environment(env_callback);
+    retro_set_video_refresh(video_refresh_callback);
+    retro_set_audio_sample(audio_sample_callback);
+    retro_set_audio_sample_batch(audio_batch_callback);
+    retro_set_input_poll(input_poll_callback);
+    retro_set_input_state(input_state_callback);
 
     // ── Init ─────────────────────────────────────────────────────────────────
     if (!gCoreGlobalInitialized) {
-        retro_set_environment(env_callback);
-        retro_set_video_refresh(video_refresh_callback);
-        retro_set_audio_sample(audio_sample_callback);
-        retro_set_audio_sample_batch(audio_batch_callback);
-        retro_set_input_poll(input_poll_callback);
-        retro_set_input_state(input_state_callback);
-        
-        os_log(gLog, "[CORE] Callbacks registered");
-        
         retro_init();
         gCoreGlobalInitialized = YES;
         os_log(gLog, "[CORE] retro_init() completed globally");
@@ -266,6 +272,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         }
         return NO;
     }
+    gCoreGameLoaded = YES;
     os_log(gLog, "[CORE] retro_load_game SUCCESS");
 
     // ── AV info ──────────────────────────────────────────────────────────────
@@ -305,7 +312,8 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 
 - (void)runFrame {
 #if YDRIVE_CORE_AVAILABLE
-    if (!_isRunning) return;
+    if (!_isRunning || !gCoreGameLoaded) return;
+    if (gBridgeInstance != self) return;
     retro_run();
 #endif
 }
@@ -328,7 +336,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     atomic_store(&gInputBitmask, 0);
     atomic_store(&gLatchedPressBitmask, 0);
-    if (_isRunning) {
+    if (_isRunning && gCoreGameLoaded && gBridgeInstance == self) {
         retro_reset();
     }
 #endif
@@ -337,7 +345,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (NSData * _Nullable)saveState {
     os_log(gLog, "[CORE] saveState called");
 #if YDRIVE_CORE_AVAILABLE
-    if (!_isRunning) return nil;
+    if (!_isRunning || !gCoreGameLoaded || gBridgeInstance != self) return nil;
     
     size_t size = retro_serialize_size();
     if (size == 0) {
@@ -360,7 +368,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (BOOL)loadState:(NSData *)data {
     os_log(gLog, "[CORE] loadState called");
 #if YDRIVE_CORE_AVAILABLE
-    if (!_isRunning || !data || data.length == 0) return NO;
+    if (!_isRunning || !gCoreGameLoaded || gBridgeInstance != self || !data || data.length == 0) return NO;
     
     size_t expectedSize = retro_serialize_size();
     if (expectedSize == 0 || data.length != expectedSize) {
@@ -382,23 +390,22 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (void)unload {
     os_log(gLog, "[CORE] unload called");
 #if YDRIVE_CORE_AVAILABLE
-    if (_isRunning) {
-        retro_unload_game();
-        _isRunning = NO;
-    }
-    // We intentionally DO NOT call retro_deinit() because PicoDrive is statically linked
-    // and its global variables do not get zeroed out. Calling retro_deinit and retro_init
-    // again in the same process leads to input pointer corruption.
-    if (_coreInitialized) {
-        _coreInitialized = NO;
-    }
+    // Guard with gBridgeInstance == self so a deallocating old YDriveLibretroBridge
+    // never unloads or clobbers a newly started session's global core!
     if (gBridgeInstance == self) {
+        if (_isRunning && gCoreGameLoaded) {
+            retro_unload_game();
+            gCoreGameLoaded = NO;
+        }
         atomic_store(&gInputBitmask, 0);
         atomic_store(&gLatchedPressBitmask, 0);
         gBridgeInstance = nil;
     }
-#endif
     _isRunning = NO;
+    _coreInitialized = NO;
+#else
+    _isRunning = NO;
+#endif
 }
 
 - (void)dealloc {

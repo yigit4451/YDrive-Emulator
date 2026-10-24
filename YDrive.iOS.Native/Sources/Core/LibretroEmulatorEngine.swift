@@ -5,7 +5,7 @@
 //  Manages the full emulator lifecycle:
 //    ROM path → ObjC bridge → retro_init/load/run → frame callback → Metal
 //
-//  The emulation loop runs on a dedicated background DispatchQueue.
+//  The emulation loop runs on a dedicated serial background DispatchQueue.
 //  All @Published state updates are dispatched to the main actor.
 //  The main thread / SwiftUI thread is NEVER blocked.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -35,6 +35,14 @@ protocol VideoFrameConsumer: AnyObject, Sendable {
 // ─────────────────────────────────────────────────────────────────────────────
 @MainActor
 final class LibretroEmulatorEngine: ObservableObject {
+
+    /// Single shared serial queue for all libretro C core operations across the entire app lifecycle.
+    /// Because the statically linked libretro core has global C state, serializing all load, runFrame,
+    /// and unload calls on one queue guarantees two sessions can never race or overlap.
+    private static let sharedEmulationQueue = DispatchQueue(
+        label: "com.yigit.ydrive.emulation.serial",
+        qos: .userInteractive
+    )
 
     // ── Video delivery hub (thread-safe, eliminates main-thread hopping) ───────
     private final class VideoFrameHub: @unchecked Sendable {
@@ -194,18 +202,14 @@ final class LibretroEmulatorEngine: ObservableObject {
             audioEngine?.pushAudio(data: data, frames: frames)
         }
 
-        // Load game on background queue to avoid blocking UI thread
-        let queue = DispatchQueue(label: "com.yigit.ydrive.emulation",
-                                  qos: .userInteractive)
+        // Use the single shared serial emulation queue so previous session unload()
+        // always finishes before the next session's loadGame() begins.
+        let queue = Self.sharedEmulationQueue
         self.emulationQueue = queue
 
-        // YDriveLibretroBridge is now marked as @Sendable in Objective-C.
-        // It uses thread-safe mechanisms internally (atomic properties, locks).
         let bridgeRef = self.bridge
 
         queue.async { @Sendable in
-            // Swift imports `- (BOOL)loadGameAtPath:error:` as `throws`.
-            // The error: label is swallowed into Swift's throws mechanism.
             var ok = false
             var errorMessage: String = "Emulator core not available"
             do {
@@ -214,7 +218,7 @@ final class LibretroEmulatorEngine: ObservableObject {
             } catch {
                 errorMessage = error.localizedDescription
             }
-            let finalError = errorMessage // Immutable snapshot
+            let finalError = errorMessage
 
             if ok {
                 let w = Int(bridgeRef.videoWidth)
@@ -276,9 +280,9 @@ final class LibretroEmulatorEngine: ObservableObject {
 
         audioEngine.stop()
 
-        // Unload on the emulation queue to avoid race with runFrame
+        // Unload on the shared serial emulation queue
         let bridgeRef = bridge
-        emulationQueue?.async { @Sendable in
+        Self.sharedEmulationQueue.async { @Sendable in
             bridgeRef.unload()
         }
         emulationQueue = nil
@@ -378,7 +382,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         
         let bridgeRef = bridge
         return await withCheckedContinuation { continuation in
-            emulationQueue?.async {
+            Self.sharedEmulationQueue.async {
                 guard let data = bridgeRef.saveState() else {
                     continuation.resume(returning: false)
                     return
@@ -409,7 +413,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         let bridgeRef = bridge
         let targetURL = url
         return await withCheckedContinuation { continuation in
-            emulationQueue?.async {
+            Self.sharedEmulationQueue.async {
                 guard let data = try? Data(contentsOf: targetURL) else {
                     continuation.resume(returning: false)
                     return
@@ -425,13 +429,18 @@ final class LibretroEmulatorEngine: ObservableObject {
     // ─────────────────────────────────────────────────────────────────────────
 
     private func startFrameTimer(on queue: DispatchQueue, bridge: YDriveLibretroBridge) {
+        frameTimer?.cancel()
+        frameTimer = nil
+
         let fps  = targetFPS > 0 ? targetFPS : 60.0
         let interval = DispatchTimeInterval.nanoseconds(Int(1_000_000_000.0 / fps))
 
         let bridgeRef = bridge
 
-        let timer = DispatchSource.makeTimerSource(flags: .strict, queue: queue)
-        timer.schedule(deadline: .now(), repeating: interval, leeway: .nanoseconds(500_000))
+        // Use normal DispatchSource timer (without .strict) with 1ms leeway to avoid
+        // kernel thread-starvation bursts and catch-up stutters that freeze the UI thread.
+        let timer = DispatchSource.makeTimerSource(flags: [], queue: queue)
+        timer.schedule(deadline: .now(), repeating: interval, leeway: .milliseconds(1))
         timer.setEventHandler { @Sendable in
             guard !bridgeRef.isPaused else { return }
             bridgeRef.runFrame()

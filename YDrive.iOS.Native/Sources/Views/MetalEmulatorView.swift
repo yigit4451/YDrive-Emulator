@@ -9,8 +9,8 @@
 //    YDrivePixelFormatXRGB8888 → MTLPixelFormatBGRA8Unorm   (32-bit, X ignored)
 //    YDrivePixelFormat0RGB1555 → MTLPixelFormatBGR5A1Unorm  (15-bit packed)
 //
-//  The view observes LibretroEmulatorEngine.currentFrame and blits each
-//  new EmulatorFrame into an MTLTexture via replaceRegion.
+//  The view receives frames directly from LibretroEmulatorEngine via
+//  VideoFrameConsumer and blits each new EmulatorFrame into an MTLTexture.
 //
 //  Aspect ratio is preserved using a letterbox/pillarbox approach:
 //  the draw region is centred in the MTKView without stretching the image.
@@ -37,12 +37,13 @@ struct MetalEmulatorView: UIViewRepresentable {
         let view = MTKView()
         view.device          = MTLCreateSystemDefaultDevice()
         view.delegate        = context.coordinator
-        view.enableSetNeedsDisplay = false        // driven by frame timer, not display link
+        view.enableSetNeedsDisplay = false        // driven by display link at 60fps
         view.isPaused        = false
         view.preferredFramesPerSecond = 60
         view.clearColor      = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
-        view.colorPixelFormat = .bgra8Unorm      // fallback; coordinator may override
-        view.framebufferOnly = false
+        view.colorPixelFormat = .bgra8Unorm
+        view.framebufferOnly = true
+        view.isUserInteractionEnabled = false     // never intercept or delay touch events
 
         context.coordinator.mtkView = view
         context.coordinator.setup(device: view.device)
@@ -61,6 +62,11 @@ struct MetalEmulatorView: UIViewRepresentable {
         else if videoFilter == "Simple CRT" { mode = 2 }
         context.coordinator.filterMode = mode
     }
+
+    static func dismantleUIView(_ uiView: MTKView, coordinator: MetalCoordinator) {
+        uiView.isPaused = true
+        uiView.delegate = nil
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,7 +82,11 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
     private var samplerState:    MTLSamplerState?
     private var vertexBuffer:    MTLBuffer?
 
-    // Pending frame from emulation queue (lock-free single-slot mailbox)
+    // Reusable conversion buffer (avoids per-frame heap allocation)
+    private var stagingBuffer:   UnsafeMutablePointer<UInt32>?
+    private var stagingCapacity: Int = 0
+
+    // Pending frame from emulation queue (single-slot mailbox)
     private var pendingFrame:    EmulatorFrame?
     private let frameLock        = NSLock()
     
@@ -94,6 +104,10 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
         -1, -1,  0, 1,   // bottom-left
          1, -1,  1, 1,   // bottom-right
     ]
+
+    deinit {
+        stagingBuffer?.deallocate()
+    }
 
     // ── Setup ─────────────────────────────────────────────────────────────────
     func setup(device: MTLDevice?) {
@@ -220,16 +234,6 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
         // Recreate only when dimensions or format change
         if texture != nil && texWidth == width && texHeight == height && texFormat == format { return }
 
-        let metalFormat: MTLPixelFormat
-        switch format {
-        case .xrgb8888: metalFormat = .bgra8Unorm
-        case .rgb565:   metalFormat = .b5g6r5Unorm
-        case .trgb1555: metalFormat = .bgr5A1Unorm
-        @unknown default: metalFormat = .bgra8Unorm
-        }
-
-        // Update the MTKView pixel format to match (bgra8Unorm covers all cases after conversion)
-        // We blit into bgra8Unorm always for simplicity; format conversion is in updateTexture.
         let texDesc              = MTLTextureDescriptor.texture2DDescriptor(
                                        pixelFormat: .bgra8Unorm,
                                        width: width,
@@ -242,8 +246,14 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
         texHeight                = height
         texFormat                = format
 
-        log.info("[METAL] Texture created: \(width)x\(height) fmt=\(metalFormat.rawValue)")
-        _ = metalFormat // suppress unused warning
+        let needed = width * height
+        if needed > stagingCapacity {
+            stagingBuffer?.deallocate()
+            stagingBuffer = UnsafeMutablePointer<UInt32>.allocate(capacity: needed)
+            stagingCapacity = needed
+        }
+
+        log.info("[METAL] Texture created: \(width)x\(height)")
     }
 
     private func updateTexture(frame: EmulatorFrame) {
@@ -251,11 +261,9 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
 
         let w = frame.width, h = frame.height, pitch = frame.pitch
 
-        // For BGRA8 / XRGB8888 we can blit directly; for 16-bit we convert to 32-bit.
         switch frame.pixelFormat {
 
         case .xrgb8888:
-            // libretro XRGB8888 is actually stored as BGRA on little-endian — blit directly.
             data.withUnsafeBytes { ptr in
                 texture.replace(region: MTLRegionMake2D(0, 0, w, h),
                                 mipmapLevel: 0,
@@ -264,9 +272,7 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
             }
 
         case .rgb565:
-            // Convert RGB565 → BGRA8 row by row
-            let dest = UnsafeMutablePointer<UInt32>.allocate(capacity: w * h)
-            defer { dest.deallocate() }
+            guard let dest = stagingBuffer else { return }
             data.withUnsafeBytes { src in
                 let src16 = src.bindMemory(to: UInt16.self)
                 for y in 0..<h {
@@ -277,11 +283,9 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
                         let r5 = UInt32((p >> 11) & 0x1F)
                         let g6 = UInt32((p >> 5)  & 0x3F)
                         let b5 = UInt32( p         & 0x1F)
-                        // Expand to 8 bits
                         let r8 = (r5 << 3) | (r5 >> 2)
                         let g8 = (g6 << 2) | (g6 >> 4)
                         let b8 = (b5 << 3) | (b5 >> 2)
-                        // Pack as BGRA (Metal .bgra8Unorm)
                         rowDst[x] = 0xFF000000 | (r8 << 16) | (g8 << 8) | b8
                     }
                 }
@@ -292,9 +296,7 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
                             bytesPerRow: w * 4)
 
         case .trgb1555:
-            // Convert 0RGB1555 → BGRA8
-            let dest = UnsafeMutablePointer<UInt32>.allocate(capacity: w * h)
-            defer { dest.deallocate() }
+            guard let dest = stagingBuffer else { return }
             data.withUnsafeBytes { src in
                 let src16 = src.bindMemory(to: UInt16.self)
                 for y in 0..<h {
