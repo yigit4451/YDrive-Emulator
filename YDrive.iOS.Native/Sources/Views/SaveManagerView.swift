@@ -50,21 +50,23 @@ struct SaveManagerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(action: addNewSave) {
-                    if isSaving {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.blue)
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "plus")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(Color.blue)
+                if !savedSlots.isEmpty {
+                    Button(action: addNewSave) {
+                        if isSaving {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.blue)
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "plus")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(Color.blue)
+                        }
                     }
+                    .tint(.blue)
+                    .disabled(isSaving)
+                    .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
                 }
-                .tint(.blue)
-                .disabled(isSaving)
-                .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -103,7 +105,7 @@ struct SaveManagerView: View {
     // MARK: – Liquid Glass Save Card
     private func liquidGlassSaveCard(slot: Int, date: Date) -> some View {
         HStack(spacing: 12) {
-            // Main clickable load state action
+            // Main clickable load state action (tap card to load)
             Button {
                 Task {
                     let success = await engine.loadState(for: gameFileName, slot: slot)
@@ -144,21 +146,8 @@ struct SaveManagerView: View {
                     }
 
                     Spacer()
-
-                    // Quick Load Indicator Pill
-                    HStack(spacing: 3) {
-                        Text("Load")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color.accentColor.opacity(0.8))
-                    }
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4.5)
-                    .background(Color.accentColor.opacity(0.12))
-                    .clipShape(Capsule())
                 }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
