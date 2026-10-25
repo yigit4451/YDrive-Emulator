@@ -55,7 +55,9 @@ struct GameCardView: View {
             Spacer(minLength: 0)
         }
         .frame(minHeight: 235, alignment: .top)
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
     }
 

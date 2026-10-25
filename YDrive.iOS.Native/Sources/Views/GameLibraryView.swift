@@ -312,6 +312,8 @@ struct GameLibraryView: View {
                     GameCardView(game: game)
                 }
                 .buttonStyle(.plain)
+                .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .contextMenu {
                     contextMenuContent(for: game)
                 }
@@ -330,6 +332,8 @@ struct GameLibraryView: View {
                     gameRow(for: game)
                 }
                 .buttonStyle(.plain)
+                .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .contextMenu {
                     contextMenuContent(for: game)
                 }
@@ -347,6 +351,8 @@ struct GameLibraryView: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
+                        .frame(width: 52, height: 52)
+                        .clipped()
                 } else {
                     Color(UIColor.secondarySystemFill)
                     Image(systemName: "gamecontroller.fill")
@@ -389,7 +395,10 @@ struct GameLibraryView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 3)
     }
 
