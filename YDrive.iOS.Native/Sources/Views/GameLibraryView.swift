@@ -106,6 +106,8 @@ struct GameLibraryView: View {
                         .accessibilityLabel(viewMode == "grid" ? Text(NSLocalizedString("library.list_view", comment: "")) : Text(NSLocalizedString("library.grid_view", comment: "")))
                     }
 
+                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             viewModel.isFilePickerPresented = true
