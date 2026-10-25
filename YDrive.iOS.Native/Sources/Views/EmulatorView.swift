@@ -31,7 +31,11 @@ struct EmulatorView: View {
         switch appTheme {
         case "dark":  return .dark
         case "light": return .light
-        default:      return nil
+        default:
+            let style = UIScreen.main.traitCollection.userInterfaceStyle
+            if style == .light { return .light }
+            if style == .dark { return .dark }
+            return nil
         }
     }
 

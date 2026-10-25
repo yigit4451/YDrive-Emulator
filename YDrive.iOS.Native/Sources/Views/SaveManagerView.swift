@@ -16,8 +16,16 @@ struct SaveManagerView: View {
         switch appTheme {
         case "dark": return .dark
         case "light": return .light
-        default: return nil
+        default:
+            let style = UIScreen.main.traitCollection.userInterfaceStyle
+            if style == .light { return .light }
+            if style == .dark { return .dark }
+            return nil
         }
+    }
+
+    private var isLightMode: Bool {
+        colorScheme == .light
     }
     
     var body: some View {
@@ -55,15 +63,22 @@ struct SaveManagerView: View {
                         if isSaving {
                             ProgressView()
                                 .progressViewStyle(.circular)
-                                .tint(.blue)
+                                .tint(isLightMode ? .black : .blue)
                                 .scaleEffect(0.8)
+                        } else if isLightMode,
+                                  let blackPlus = UIImage(
+                                      systemName: "plus",
+                                      withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+                                  )?.withTintColor(.black, renderingMode: .alwaysOriginal) {
+                            Image(uiImage: blackPlus)
+                                .renderingMode(.original)
                         } else {
                             Image(systemName: "plus")
                                 .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(Color.blue)
+                                .foregroundStyle(isLightMode ? Color.black : Color.blue)
                         }
                     }
-                    .tint(.blue)
+                    .tint(isLightMode ? .black : .blue)
                     .disabled(isSaving)
                     .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
                 }
