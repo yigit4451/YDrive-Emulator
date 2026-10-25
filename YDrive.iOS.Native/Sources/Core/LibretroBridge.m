@@ -147,25 +147,28 @@ static size_t audio_batch_callback(const int16_t *data, size_t frames) {
 // ── Input State ───────────────────────────────────────────────────────────────
 static atomic_uint_fast16_t gInputBitmask = 0;
 static atomic_uint_fast16_t gLatchedPressBitmask = 0;
+static uint16_t gPolledInputBitmask = 0;
 
 static void input_poll_callback(void) {
-    // Input is pushed directly via setButton:pressed:
+    // Snapshot held + latched presses once per frame so all input_state_callback
+    // queries within the same retro_run() frame observe a consistent press state.
+    uint16_t latched = (uint16_t)atomic_exchange(&gLatchedPressBitmask, 0);
+    uint16_t held    = (uint16_t)atomic_load(&gInputBitmask);
+    gPolledInputBitmask = held | latched;
 }
 
 static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id) {
     if (port != 0) return 0; // Only player 1 for now
     unsigned baseDevice = device & RETRO_DEVICE_MASK;
     if (baseDevice == RETRO_DEVICE_JOYPAD || baseDevice == 1) {
+        // Combine the frame-polled snapshot with the live atomic bitmask so a touchDown
+        // that arrives mid-frame (after input_poll_callback) is also visible immediately.
+        uint16_t mask = gPolledInputBitmask | (uint16_t)atomic_load(&gInputBitmask);
         if (id == RETRO_DEVICE_ID_JOYPAD_MASK) {
-            uint16_t latched = (uint16_t)atomic_exchange(&gLatchedPressBitmask, 0);
-            uint16_t held    = (uint16_t)atomic_load(&gInputBitmask);
-            return (int16_t)(held | latched);
+            return (int16_t)mask;
         }
         if (id < 16) {
-            uint16_t bit     = (uint16_t)(1u << id);
-            uint16_t latched = (uint16_t)atomic_fetch_and(&gLatchedPressBitmask, ~bit);
-            uint16_t held    = (uint16_t)atomic_load(&gInputBitmask);
-            return ((held | latched) & bit) ? 1 : 0;
+            return (mask & (1u << id)) ? 1 : 0;
         }
     }
     return 0;
@@ -217,6 +220,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     gBridgeInstance = self;
     atomic_store(&gInputBitmask, 0);
     atomic_store(&gLatchedPressBitmask, 0);
+    gPolledInputBitmask = 0;
 
     retro_set_environment(env_callback);
     retro_set_video_refresh(video_refresh_callback);
@@ -336,6 +340,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     atomic_store(&gInputBitmask, 0);
     atomic_store(&gLatchedPressBitmask, 0);
+    gPolledInputBitmask = 0;
     if (_isRunning && gCoreGameLoaded && gBridgeInstance == self) {
         retro_reset();
     }
@@ -399,6 +404,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         }
         atomic_store(&gInputBitmask, 0);
         atomic_store(&gLatchedPressBitmask, 0);
+        gPolledInputBitmask = 0;
         gBridgeInstance = nil;
     }
     _isRunning = NO;

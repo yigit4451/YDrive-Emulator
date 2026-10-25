@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UIKit.UIGestureRecognizerSubclass
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MARK: - Touch regions
@@ -25,6 +26,90 @@ struct TouchRegion: Equatable {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// MARK: - Direct Zero-Delay Multi-Touch Gesture Recognizer
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Attached directly to `SurfaceView` so that `touchesBegan` is delivered during
+/// Phase A of `UIWindow.sendEvent(_:)` (the gesture recognizer pass) on the very
+/// first millisecond of finger contact (`touchDown`), bypassing any `delaysTouchesBegan`
+/// gate imposed on `UIResponder.touchesBegan` by system/container gesture recognizers.
+private final class DirectGamepadTouchRecognizer: UIGestureRecognizer {
+    weak var surfaceView: TouchControlSurface.SurfaceView?
+
+    init(surfaceView: TouchControlSurface.SurfaceView) {
+        self.surfaceView = surfaceView
+        super.init(target: nil, action: nil)
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+        cancelsTouchesInView = false
+        requiresExclusiveTouchType = false
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        // Immediately strip touch-begin delays from any other recognizer tracking this touch
+        for touch in touches {
+            for gr in touch.gestureRecognizers ?? [] where gr !== self {
+                gr.delaysTouchesBegan = false
+                gr.delaysTouchesEnded = false
+            }
+        }
+        // Synchronously forward touchDown to SurfaceView before any gesture state evaluation
+        surfaceView?.handleTouchesBegan(touches, with: event)
+        if state == .possible {
+            state = .began
+        } else {
+            state = .changed
+        }
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        surfaceView?.handleTouchesMoved(touches, with: event)
+        if state == .began || state == .changed {
+            state = .changed
+        }
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        surfaceView?.handleTouchesEnded(touches, with: event)
+        if surfaceView?.hasActiveTouches == false {
+            state = .ended
+        } else if state == .began || state == .changed {
+            state = .changed
+        }
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        surfaceView?.handleTouchesCancelled(touches, with: event)
+        if surfaceView?.hasActiveTouches == false {
+            state = .cancelled
+        } else if state == .began || state == .changed {
+            state = .changed
+        }
+    }
+
+    override func reset() {
+        super.reset()
+        surfaceView?.pruneStaleTouches()
+    }
+
+    override func canPrevent(_ preventedGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return preventedGestureRecognizer !== self
+    }
+
+    override func canBePrevented(by preventingGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return false
+    }
+
+    override func shouldRequireFailure(of otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return false
+    }
+
+    override func shouldBeRequiredToFail(by otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return otherGestureRecognizer !== self
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MARK: - Touch control surface
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -39,17 +124,20 @@ struct TouchRegion: Equatable {
 /// cancelled or the view disappears.
 struct TouchControlSurface: UIViewRepresentable {
     var regions: [TouchRegion]
+    var hapticEnabled: Bool = true
     var onButton: (UInt32, Bool) -> Void
 
     func makeUIView(context: Context) -> SurfaceView {
         let view = SurfaceView()
         view.onButton = onButton
+        view.hapticEnabled = hapticEnabled
         view.regions = regions
         return view
     }
 
     func updateUIView(_ uiView: SurfaceView, context: Context) {
         uiView.onButton = onButton
+        uiView.hapticEnabled = hapticEnabled
         uiView.regions = regions
         uiView.ensureGestureRecognizersConfigured()
     }
@@ -58,7 +146,7 @@ struct TouchControlSurface: UIViewRepresentable {
         uiView.releaseAll()
     }
 
-    final class SurfaceView: UIView {
+    final class SurfaceView: UIView, UIGestureRecognizerDelegate {
         // RetroPad IDs used for the D-pad
         private static let idUp:    UInt32 = 4
         private static let idDown:  UInt32 = 5
@@ -69,6 +157,7 @@ struct TouchControlSurface: UIViewRepresentable {
         private static let dpadThreshold: CGFloat = 20
 
         var onButton: ((UInt32, Bool) -> Void)?
+        var hapticEnabled: Bool = true
         var regions: [TouchRegion] = [] {
             didSet {
                 if oldValue != regions { recompute() }
@@ -77,6 +166,12 @@ struct TouchControlSurface: UIViewRepresentable {
 
         private var activeTouches = Set<UITouch>()
         private var pressed = Set<UInt32>()
+        private var directTouchRecognizer: DirectGamepadTouchRecognizer!
+        private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
+
+        var hasActiveTouches: Bool {
+            !activeTouches.isEmpty
+        }
 
         init() {
             super.init(frame: .zero)
@@ -84,6 +179,11 @@ struct TouchControlSurface: UIViewRepresentable {
             isUserInteractionEnabled = true
             isExclusiveTouch = false
             backgroundColor = .clear
+
+            let recognizer = DirectGamepadTouchRecognizer(surfaceView: self)
+            recognizer.delegate = self
+            addGestureRecognizer(recognizer)
+            self.directTouchRecognizer = recognizer
         }
 
         required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -100,30 +200,103 @@ struct TouchControlSurface: UIViewRepresentable {
         }
 
         override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-            // Prevent any parent/container gesture recognizer (like sheet/cover pan or navigation pop)
-            // from claiming or delaying touches that started inside the virtual gamepad buttons.
+            // Allow our own immediate touch recognizer; block any parent/container pan or pop recognizer.
+            return gestureRecognizer === directTouchRecognizer
+        }
+
+        // MARK: UIGestureRecognizerDelegate
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
             return false
         }
 
-        // MARK: Touch events
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
+            return false
+        }
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
+            return otherGestureRecognizer !== directTouchRecognizer
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+            return true
+        }
+
+        // MARK: Touch events (both DirectGamepadTouchRecognizer and UIResponder forward here)
+
+        func handleTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+            for touch in touches where touch.phase != .ended && touch.phase != .cancelled {
+                activeTouches.insert(touch)
+            }
+            syncWithEventTouches(event)
+            recompute()
+        }
+
+        func handleTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+            for touch in touches where touch.phase != .ended && touch.phase != .cancelled {
+                activeTouches.insert(touch)
+            }
+            syncWithEventTouches(event)
+            recompute()
+        }
+
+        func handleTouchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+            activeTouches.subtract(touches)
+            syncWithEventTouches(event)
+            recompute()
+        }
+
+        func handleTouchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+            activeTouches.subtract(touches)
+            syncWithEventTouches(event)
+            recompute()
+        }
+
+        private func syncWithEventTouches(_ event: UIEvent?) {
+            if let viewTouches = event?.touches(for: self) {
+                for touch in viewTouches {
+                    if touch.phase == .ended || touch.phase == .cancelled {
+                        activeTouches.remove(touch)
+                    } else {
+                        activeTouches.insert(touch)
+                    }
+                }
+            }
+        }
+
+        func pruneStaleTouches() {
+            let before = activeTouches.count
+            activeTouches = activeTouches.filter {
+                $0.phase != .ended && $0.phase != .cancelled && $0.window != nil
+            }
+            if activeTouches.count != before {
+                recompute()
+            }
+        }
 
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-            activeTouches.formUnion(touches)
-            recompute()
+            handleTouchesBegan(touches, with: event)
         }
 
         override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-            recompute()
+            handleTouchesMoved(touches, with: event)
         }
 
         override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-            activeTouches.subtract(touches)
-            recompute()
+            handleTouchesEnded(touches, with: event)
         }
 
         override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-            activeTouches.subtract(touches)
-            recompute()
+            handleTouchesCancelled(touches, with: event)
         }
 
         override func didMoveToWindow() {
@@ -131,8 +304,8 @@ struct TouchControlSurface: UIViewRepresentable {
             if window == nil {
                 releaseAll()
             } else {
+                hapticGenerator.prepare()
                 ensureGestureRecognizersConfigured()
-                // Also run after the presentation transition finishes on the next runloop turn
                 DispatchQueue.main.async { [weak self] in
                     self?.ensureGestureRecognizersConfigured()
                 }
@@ -155,12 +328,8 @@ struct TouchControlSurface: UIViewRepresentable {
         func ensureGestureRecognizersConfigured() {
             guard let window = self.window else { return }
 
-            // 1. Recursively disable delaysTouchesBegan & delaysTouchesEnded on the entire
-            //    window view hierarchy so fullScreenCover / sheet / UIHostingView containers
-            //    never hold back touchDown on the 2nd or subsequent ROM launch.
             Self.disableTouchDelaysRecursively(in: window)
 
-            // 2. Walk responder chain to cover all UIViewControllers and presentationControllers.
             var responder: UIResponder? = self
             while let r = responder {
                 if let vc = r as? UIViewController {
@@ -173,6 +342,12 @@ struct TouchControlSurface: UIViewRepresentable {
                         pop.delaysTouchesEnded = false
                         pop.isEnabled = false
                     }
+                    if #available(iOS 18.0, *),
+                       let contentPop = vc.navigationController?.interactiveContentPopGestureRecognizer {
+                        contentPop.delaysTouchesBegan = false
+                        contentPop.delaysTouchesEnded = false
+                        contentPop.isEnabled = false
+                    }
                     if let presented = vc.presentationController?.presentedView {
                         Self.disableTouchDelaysRecursively(in: presented)
                     }
@@ -184,6 +359,11 @@ struct TouchControlSurface: UIViewRepresentable {
                     nav.interactivePopGestureRecognizer?.delaysTouchesBegan = false
                     nav.interactivePopGestureRecognizer?.delaysTouchesEnded = false
                     nav.interactivePopGestureRecognizer?.isEnabled = false
+                    if #available(iOS 18.0, *) {
+                        nav.interactiveContentPopGestureRecognizer?.delaysTouchesBegan = false
+                        nav.interactiveContentPopGestureRecognizer?.delaysTouchesEnded = false
+                        nav.interactiveContentPopGestureRecognizer?.isEnabled = false
+                    }
                 }
                 responder = r.next
             }
@@ -208,13 +388,13 @@ struct TouchControlSurface: UIViewRepresentable {
         // MARK: State computation
 
         private func recompute() {
+            activeTouches = activeTouches.filter {
+                $0.phase != .ended && $0.phase != .cancelled && $0.window != nil
+            }
+
             var next = Set<UInt32>()
 
             for touch in activeTouches {
-                // Ignore stale touches that have already ended or been cancelled
-                if touch.phase == .ended || touch.phase == .cancelled {
-                    continue
-                }
                 let point = touch.location(in: self)
 
                 // D-pad: a touch inside the pad is translated into directions.
@@ -249,6 +429,11 @@ struct TouchControlSurface: UIViewRepresentable {
 
             for id in released.sorted() { onButton?(id, false) }
             for id in newlyPressed.sorted() { onButton?(id, true) }
+
+            if !newlyPressed.isEmpty && hapticEnabled {
+                hapticGenerator.impactOccurred()
+                hapticGenerator.prepare()
+            }
         }
     }
 }

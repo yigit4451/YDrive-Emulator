@@ -247,7 +247,6 @@ struct EmulatorView: View {
             removeControllerObservers()
             engine.stop()
         }
-        .defersSystemGestures(on: .all)
         .persistentSystemOverlays(.hidden)
         .preferredColorScheme(.dark)
     }
@@ -934,29 +933,12 @@ struct OnScreenControlsView: View {
                 .allowsHitTesting(false)
 
                 // ── Single multi-touch UIKit surface that drives the emulator input ──
-                TouchControlSurface(regions: regions) { id, pressed in
-                    press(pressed, id: id)
+                TouchControlSurface(regions: regions, hapticEnabled: hapticFeedback) { id, pressed in
+                    engine.setButton(id, pressed: pressed)
                 }
                 .frame(width: w, height: h)
             }
             .frame(width: w, height: h, alignment: .topLeading)
-        }
-    }
-
-    @State private var hapticGenerator: UIImpactFeedbackGenerator?
-
-    private func press(_ isPressed: Bool, id: UInt32) {
-        engine.setButton(id, pressed: isPressed)
-        if isPressed && hapticFeedback {
-            if let gen = hapticGenerator {
-                gen.impactOccurred()
-                gen.prepare()
-            } else {
-                let gen = UIImpactFeedbackGenerator(style: .light)
-                gen.prepare()
-                gen.impactOccurred()
-                hapticGenerator = gen
-            }
         }
     }
 
