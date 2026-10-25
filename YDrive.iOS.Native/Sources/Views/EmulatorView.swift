@@ -106,6 +106,7 @@ struct EmulatorView: View {
             }
             .ignoresSafeArea()
             .statusBarHidden(true)
+            .defersSystemGestures(on: .all)
             .toolbar(isTopBarVisible ? .visible : .hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
@@ -247,7 +248,7 @@ struct EmulatorView: View {
             removeControllerObservers()
             engine.stop()
         }
-        .persistentSystemOverlays(.hidden)
+        .defersSystemGestures(on: .all)
         .preferredColorScheme(.dark)
     }
 
@@ -832,11 +833,11 @@ struct OnScreenControlsView: View {
                                          rect: CGRect(x: c.x - width / 2, y: c.y - height / 2,
                                                       width: width, height: height)))
                 }
-                add(.dpad, centers.dpad, dpadHit + 40, dpadHit + 40)
+                add(.dpad, centers.dpad, dpadHit, dpadHit)
                 if self.is2ButtonLayout {
                     add(.button(self.ID_B),     CGPoint(x: centers.b.x, y: centers.a.y), btnHit + 12, btnHit + 12)
                     add(.button(self.ID_A),     CGPoint(x: centers.c.x, y: centers.b.y), btnHit + 12, btnHit + 12)
-                    add(.button(self.ID_START), centers.start, startVisualW * 1.15 + 40, startVisualH + 40)
+                    add(.button(self.ID_START), centers.start, startVisualW * 1.15 + 12, startVisualH + 12)
                 } else {
                     add(.button(self.ID_Y), centers.a, btnHit + 12, btnHit + 12)
                     add(.button(self.ID_B), centers.b, btnHit + 12, btnHit + 12)
@@ -846,8 +847,8 @@ struct OnScreenControlsView: View {
                         add(.button(self.ID_L), yCenter, btnSmallHit + 12, btnSmallHit + 12)
                         add(.button(self.ID_R), zCenter, btnSmallHit + 12, btnSmallHit + 12)
                     }
-                    add(.button(self.ID_START),  centers.start, startVisualW + 40, startVisualH + 40)
-                    add(.button(self.ID_SELECT), centers.mode, startVisualW * 0.7 + 32, startVisualH + 32)
+                    add(.button(self.ID_START),  centers.start, startVisualW + 12, startVisualH + 12)
+                    add(.button(self.ID_SELECT), centers.mode, startVisualW * 0.7 + 12, startVisualH + 12)
                 }
                 return r
             }()

@@ -52,39 +52,26 @@ private final class DirectGamepadTouchRecognizer: UIGestureRecognizer {
                 gr.delaysTouchesBegan = false
                 gr.delaysTouchesEnded = false
             }
+            for gr in touch.window?.gestureRecognizers ?? [] where gr !== self {
+                gr.delaysTouchesBegan = false
+                gr.delaysTouchesEnded = false
+            }
         }
-        // Synchronously forward touchDown to SurfaceView before any gesture state evaluation
+        // Synchronously forward touchDown to SurfaceView while remaining in .possible
+        // so system gesture gate recognizers never block or fail multi-touch sequences.
         surfaceView?.handleTouchesBegan(touches, with: event)
-        if state == .possible {
-            state = .began
-        } else {
-            state = .changed
-        }
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
         surfaceView?.handleTouchesMoved(touches, with: event)
-        if state == .began || state == .changed {
-            state = .changed
-        }
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
         surfaceView?.handleTouchesEnded(touches, with: event)
-        if surfaceView?.hasActiveTouches == false {
-            state = .ended
-        } else if state == .began || state == .changed {
-            state = .changed
-        }
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
         surfaceView?.handleTouchesCancelled(touches, with: event)
-        if surfaceView?.hasActiveTouches == false {
-            state = .cancelled
-        } else if state == .began || state == .changed {
-            state = .changed
-        }
     }
 
     override func reset() {
@@ -93,7 +80,7 @@ private final class DirectGamepadTouchRecognizer: UIGestureRecognizer {
     }
 
     override func canPrevent(_ preventedGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return preventedGestureRecognizer !== self
+        return false
     }
 
     override func canBePrevented(by preventingGestureRecognizer: UIGestureRecognizer) -> Bool {
@@ -105,7 +92,7 @@ private final class DirectGamepadTouchRecognizer: UIGestureRecognizer {
     }
 
     override func shouldBeRequiredToFail(by otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return otherGestureRecognizer !== self
+        return false
     }
 }
 
@@ -193,6 +180,14 @@ struct TouchControlSurface: UIViewRepresentable {
         override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
             for region in regions {
                 if region.hitRect.contains(point) {
+                    // Strip touch-begin delays on window recognizers during hitTest, BEFORE
+                    // UIWindow attaches gesture recognizers to the incoming UITouch.
+                    if let window = self.window {
+                        for gr in window.gestureRecognizers ?? [] {
+                            gr.delaysTouchesBegan = false
+                            gr.delaysTouchesEnded = false
+                        }
+                    }
                     return true
                 }
             }
@@ -210,7 +205,7 @@ struct TouchControlSurface: UIViewRepresentable {
             _ gestureRecognizer: UIGestureRecognizer,
             shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
         ) -> Bool {
-            return false
+            return true
         }
 
         func gestureRecognizer(
@@ -224,10 +219,14 @@ struct TouchControlSurface: UIViewRepresentable {
             _ gestureRecognizer: UIGestureRecognizer,
             shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer
         ) -> Bool {
-            return otherGestureRecognizer !== directTouchRecognizer
+            return false
         }
 
         func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+            for gr in touch.window?.gestureRecognizers ?? [] where gr !== directTouchRecognizer {
+                gr.delaysTouchesBegan = false
+                gr.delaysTouchesEnded = false
+            }
             return true
         }
 
@@ -397,28 +396,43 @@ struct TouchControlSurface: UIViewRepresentable {
             for touch in activeTouches {
                 let point = touch.location(in: self)
 
-                // D-pad: a touch inside the pad is translated into directions.
-                for region in regions where region.kind == .dpad && region.hitRect.contains(point) {
-                    let dx = point.x - region.rect.midX
-                    let dy = point.y - region.rect.midY
-                    if dx < -Self.dpadThreshold { next.insert(Self.idLeft) }
-                    if dx >  Self.dpadThreshold { next.insert(Self.idRight) }
-                    if dy < -Self.dpadThreshold { next.insert(Self.idUp) }
-                    if dy >  Self.dpadThreshold { next.insert(Self.idDown) }
-                }
-
-                // Buttons: when padded hit areas overlap, the nearest button wins.
+                // Buttons: prioritize direct hits inside `rect` over outer `hitRect` padding,
+                // then pick the nearest button center.
                 var bestID: UInt32?
+                var bestIsInsidePrimaryRect = false
                 var bestDistance = CGFloat.greatestFiniteMagnitude
                 for region in regions {
                     guard case .button(let id) = region.kind, region.hitRect.contains(point) else { continue }
+                    let insidePrimary = region.rect.contains(point)
                     let distance = hypot(point.x - region.rect.midX, point.y - region.rect.midY)
-                    if distance < bestDistance {
+                    if insidePrimary && !bestIsInsidePrimaryRect {
+                        bestIsInsidePrimaryRect = true
+                        bestDistance = distance
+                        bestID = id
+                    } else if insidePrimary == bestIsInsidePrimaryRect && distance < bestDistance {
                         bestDistance = distance
                         bestID = id
                     }
                 }
-                if let bestID { next.insert(bestID) }
+
+                // D-pad: evaluate if this touch did not match a button, or if it is closer to the D-pad center.
+                var matchedDpad = false
+                for region in regions where region.kind == .dpad && region.hitRect.contains(point) {
+                    let dpadDistance = hypot(point.x - region.rect.midX, point.y - region.rect.midY)
+                    if bestID == nil || (!bestIsInsidePrimaryRect && dpadDistance < bestDistance) {
+                        matchedDpad = true
+                        let dx = point.x - region.rect.midX
+                        let dy = point.y - region.rect.midY
+                        if dx < -Self.dpadThreshold { next.insert(Self.idLeft) }
+                        if dx >  Self.dpadThreshold { next.insert(Self.idRight) }
+                        if dy < -Self.dpadThreshold { next.insert(Self.idUp) }
+                        if dy >  Self.dpadThreshold { next.insert(Self.idDown) }
+                    }
+                }
+
+                if !matchedDpad, let bestID {
+                    next.insert(bestID)
+                }
             }
 
             guard next != pressed else { return }
