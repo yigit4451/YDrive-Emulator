@@ -150,6 +150,7 @@ struct GameLibraryView: View {
                 }
                 .fullScreenCover(item: $playingGame) { game in
                     EmulatorView(game: game, viewModel: viewModel)
+                        .defersSystemGestures(on: .all)
                         .preferredColorScheme(colorScheme)
                 }
                 .sheet(item: $showingDetailsForGame) { game in

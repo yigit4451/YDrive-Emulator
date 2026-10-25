@@ -88,11 +88,20 @@ struct SaveManagerView: View {
                 Button {
                     isPresented = false
                 } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color.white)
+                    if isLightMode,
+                       let blackXmark = UIImage(
+                           systemName: "xmark",
+                           withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
+                       )?.withTintColor(.black, renderingMode: .alwaysOriginal) {
+                        Image(uiImage: blackXmark)
+                            .renderingMode(.original)
+                    } else {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(isLightMode ? Color.black : Color.white)
+                    }
                 }
-                .tint(.white)
+                .tint(isLightMode ? .black : .white)
                 .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
             }
         }

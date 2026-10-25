@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import UIKit.UIGestureRecognizerSubclass
+import ObjectiveC.runtime
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MARK: - Touch regions
@@ -151,7 +152,21 @@ struct TouchControlSurface: UIViewRepresentable {
             }
         }
 
+        private static let activeSurfaces = NSHashTable<SurfaceView>.weakObjects()
+        private static var swizzledWindowClasses = Set<ObjectIdentifier>()
+        private static var swizzledVCClasses = Set<ObjectIdentifier>()
+
+        static var hasActiveSurfaceInWindow: Bool {
+            for surface in activeSurfaces.allObjects {
+                if surface.window != nil && !surface.isHidden && surface.alpha > 0.01 {
+                    return true
+                }
+            }
+            return false
+        }
+
         private var activeTouches = Set<UITouch>()
+        private let endedTouches = NSHashTable<UITouch>.weakObjects()
         private var pressed = Set<UInt32>()
         private var directTouchRecognizer: DirectGamepadTouchRecognizer!
         private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -167,6 +182,8 @@ struct TouchControlSurface: UIViewRepresentable {
             isExclusiveTouch = false
             backgroundColor = .clear
 
+            Self.activeSurfaces.add(self)
+
             let recognizer = DirectGamepadTouchRecognizer(surfaceView: self)
             recognizer.delegate = self
             addGestureRecognizer(recognizer)
@@ -177,19 +194,23 @@ struct TouchControlSurface: UIViewRepresentable {
 
         // MARK: Hit testing
 
-        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        func isPointInAnyRegion(_ point: CGPoint) -> Bool {
             for region in regions {
                 if region.hitRect.contains(point) {
-                    // Strip touch-begin delays on window recognizers during hitTest, BEFORE
-                    // UIWindow attaches gesture recognizers to the incoming UITouch.
-                    if let window = self.window {
-                        for gr in window.gestureRecognizers ?? [] {
-                            gr.delaysTouchesBegan = false
-                            gr.delaysTouchesEnded = false
-                        }
-                    }
                     return true
                 }
+            }
+            return false
+        }
+
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            if isPointInAnyRegion(point) {
+                // Strip touch-begin delays on window recognizers during hitTest, BEFORE
+                // UIWindow attaches gesture recognizers to the incoming UITouch.
+                if let window = self.window {
+                    Self.stripGestureGateDelays(in: window)
+                }
+                return true
             }
             return false
         }
@@ -230,52 +251,212 @@ struct TouchControlSurface: UIViewRepresentable {
             return true
         }
 
+        // MARK: Direct UIWindow.sendEvent interception & System Gesture Deferral
+
+        private static func stripGestureGateDelays(in window: UIWindow) {
+            for gr in window.gestureRecognizers ?? [] {
+                gr.delaysTouchesBegan = false
+                gr.delaysTouchesEnded = false
+                gr.cancelsTouchesInView = false
+                let clsName = NSStringFromClass(type(of: gr))
+                if clsName.contains("SystemGestureGate") || clsName.contains("DelayedTouch") {
+                    gr.isEnabled = false
+                }
+            }
+        }
+
+        private static func interceptWindowEvent(window: UIWindow, event: UIEvent) {
+            guard event.type == .touches else { return }
+            let surfaces = activeSurfaces.allObjects.filter {
+                $0.window === window && !$0.isHidden && $0.alpha > 0.01 && $0.isUserInteractionEnabled
+            }
+            guard !surfaces.isEmpty else { return }
+
+            stripGestureGateDelays(in: window)
+
+            for surface in surfaces {
+                surface.processDirectWindowEvent(event, in: window)
+            }
+        }
+
+        private func processDirectWindowEvent(_ event: UIEvent, in window: UIWindow) {
+            guard let allTouches = event.allTouches, !allTouches.isEmpty else { return }
+            var needsRecompute = false
+
+            for touch in allTouches {
+                for gr in touch.gestureRecognizers ?? [] where gr !== directTouchRecognizer {
+                    gr.delaysTouchesBegan = false
+                    gr.delaysTouchesEnded = false
+                }
+
+                switch touch.phase {
+                case .began:
+                    guard !endedTouches.contains(touch) else { continue }
+                    let winPoint = touch.location(in: window)
+                    let localPoint = convert(winPoint, from: window)
+                    if isPointInAnyRegion(localPoint) {
+                        let hitView = window.hitTest(winPoint, with: nil)
+                        if hitView === self || (hitView?.isDescendant(of: self) == true) {
+                            activeTouches.insert(touch)
+                            needsRecompute = true
+                        }
+                    }
+                case .moved, .stationary:
+                    if endedTouches.contains(touch) {
+                        if activeTouches.remove(touch) != nil {
+                            needsRecompute = true
+                        }
+                    } else if activeTouches.contains(touch) {
+                        needsRecompute = true
+                    } else {
+                        let winPoint = touch.location(in: window)
+                        let localPoint = convert(winPoint, from: window)
+                        if isPointInAnyRegion(localPoint) {
+                            let hitView = window.hitTest(winPoint, with: nil)
+                            if hitView === self || (hitView?.isDescendant(of: self) == true) {
+                                activeTouches.insert(touch)
+                                needsRecompute = true
+                            }
+                        }
+                    }
+                case .ended, .cancelled:
+                    endedTouches.add(touch)
+                    if activeTouches.remove(touch) != nil {
+                        needsRecompute = true
+                    }
+                @unknown default:
+                    break
+                }
+            }
+
+            if needsRecompute {
+                recompute()
+            }
+        }
+
+        private static func swizzleWindowClassIfNeeded(_ cls: AnyClass) {
+            let id = ObjectIdentifier(cls)
+            guard !swizzledWindowClasses.contains(id) else { return }
+            swizzledWindowClasses.insert(id)
+
+            let sendEventSel = #selector(UIWindow.sendEvent(_:))
+            guard let method = class_getInstanceMethod(cls, sendEventSel) else { return }
+            typealias OrigFn = @convention(c) (UIWindow, Selector, UIEvent) -> Void
+            let origImp = method_getImplementation(method)
+            let origFn = unsafeBitCast(origImp, to: OrigFn.self)
+
+            let block: @convention(block) (UIWindow, UIEvent) -> Void = { window, event in
+                MainActor.assumeIsolated {
+                    TouchControlSurface.SurfaceView.interceptWindowEvent(window: window, event: event)
+                }
+                origFn(window, sendEventSel, event)
+            }
+            let newImp = imp_implementationWithBlock(block)
+            if !class_addMethod(cls, sendEventSel, newImp, method_getTypeEncoding(method)) {
+                method_setImplementation(method, newImp)
+            }
+        }
+
+        private static func swizzleViewControllerClassIfNeeded(_ cls: AnyClass) {
+            let id = ObjectIdentifier(cls)
+            guard !swizzledVCClasses.contains(id) else { return }
+            swizzledVCClasses.insert(id)
+
+            let edgeSel = #selector(getter: UIViewController.preferredScreenEdgesDeferringSystemGestures)
+            if let method = class_getInstanceMethod(cls, edgeSel) {
+                typealias OrigFn = @convention(c) (AnyObject, Selector) -> UInt
+                let origImp = method_getImplementation(method)
+                let origFn = unsafeBitCast(origImp, to: OrigFn.self)
+                let block: @convention(block) (AnyObject) -> UInt = { obj in
+                    if MainActor.assumeIsolated({ TouchControlSurface.SurfaceView.hasActiveSurfaceInWindow }) {
+                        return UIRectEdge.all.rawValue
+                    }
+                    return origFn(obj, edgeSel)
+                }
+                let newImp = imp_implementationWithBlock(block)
+                if !class_addMethod(cls, edgeSel, newImp, method_getTypeEncoding(method)) {
+                    method_setImplementation(method, newImp)
+                }
+            }
+
+            let autoHideSel = #selector(getter: UIViewController.prefersHomeIndicatorAutoHidden)
+            if let method = class_getInstanceMethod(cls, autoHideSel) {
+                typealias OrigFn = @convention(c) (AnyObject, Selector) -> Bool
+                let origImp = method_getImplementation(method)
+                let origFn = unsafeBitCast(origImp, to: OrigFn.self)
+                let block: @convention(block) (AnyObject) -> Bool = { obj in
+                    if MainActor.assumeIsolated({ TouchControlSurface.SurfaceView.hasActiveSurfaceInWindow }) {
+                        return false
+                    }
+                    return origFn(obj, autoHideSel)
+                }
+                let newImp = imp_implementationWithBlock(block)
+                if !class_addMethod(cls, autoHideSel, newImp, method_getTypeEncoding(method)) {
+                    method_setImplementation(method, newImp)
+                }
+            }
+
+            let childSel = #selector(getter: UIViewController.childForScreenEdgesDeferringSystemGestures)
+            if let method = class_getInstanceMethod(cls, childSel) {
+                typealias OrigFn = @convention(c) (AnyObject, Selector) -> UIViewController?
+                let origImp = method_getImplementation(method)
+                let origFn = unsafeBitCast(origImp, to: OrigFn.self)
+                let block: @convention(block) (AnyObject) -> UIViewController? = { obj in
+                    if MainActor.assumeIsolated({ TouchControlSurface.SurfaceView.hasActiveSurfaceInWindow }) {
+                        if let nav = obj as? UINavigationController {
+                            return nav.topViewController
+                        }
+                    }
+                    return origFn(obj, childSel)
+                }
+                let newImp = imp_implementationWithBlock(block)
+                if !class_addMethod(cls, childSel, newImp, method_getTypeEncoding(method)) {
+                    method_setImplementation(method, newImp)
+                }
+            }
+        }
+
         // MARK: Touch events (both DirectGamepadTouchRecognizer and UIResponder forward here)
 
         func handleTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-            for touch in touches where touch.phase != .ended && touch.phase != .cancelled {
+            for touch in touches where touch.phase == .began && !endedTouches.contains(touch) {
                 activeTouches.insert(touch)
             }
-            syncWithEventTouches(event)
             recompute()
         }
 
         func handleTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-            for touch in touches where touch.phase != .ended && touch.phase != .cancelled {
-                activeTouches.insert(touch)
+            for touch in touches {
+                if touch.phase == .ended || touch.phase == .cancelled || endedTouches.contains(touch) {
+                    endedTouches.add(touch)
+                    activeTouches.remove(touch)
+                } else {
+                    activeTouches.insert(touch)
+                }
             }
-            syncWithEventTouches(event)
             recompute()
         }
 
         func handleTouchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-            activeTouches.subtract(touches)
-            syncWithEventTouches(event)
+            for touch in touches {
+                endedTouches.add(touch)
+                activeTouches.remove(touch)
+            }
             recompute()
         }
 
         func handleTouchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-            activeTouches.subtract(touches)
-            syncWithEventTouches(event)
-            recompute()
-        }
-
-        private func syncWithEventTouches(_ event: UIEvent?) {
-            if let viewTouches = event?.touches(for: self) {
-                for touch in viewTouches {
-                    if touch.phase == .ended || touch.phase == .cancelled {
-                        activeTouches.remove(touch)
-                    } else {
-                        activeTouches.insert(touch)
-                    }
-                }
+            for touch in touches {
+                endedTouches.add(touch)
+                activeTouches.remove(touch)
             }
+            recompute()
         }
 
         func pruneStaleTouches() {
             let before = activeTouches.count
             activeTouches = activeTouches.filter {
-                $0.phase != .ended && $0.phase != .cancelled && $0.window != nil
+                $0.phase != .ended && $0.phase != .cancelled && !endedTouches.contains($0) && $0.window != nil
             }
             if activeTouches.count != before {
                 recompute()
@@ -327,11 +508,22 @@ struct TouchControlSurface: UIViewRepresentable {
         func ensureGestureRecognizersConfigured() {
             guard let window = self.window else { return }
 
+            Self.activeSurfaces.add(self)
+            Self.swizzleWindowClassIfNeeded(type(of: window))
+            Self.stripGestureGateDelays(in: window)
             Self.disableTouchDelaysRecursively(in: window)
+
+            if let rootVC = window.rootViewController {
+                Self.configureViewControllerHierarchy(rootVC)
+            }
 
             var responder: UIResponder? = self
             while let r = responder {
                 if let vc = r as? UIViewController {
+                    Self.swizzleViewControllerClassIfNeeded(type(of: vc))
+                    vc.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+                    vc.setNeedsUpdateOfHomeIndicatorAutoHidden()
+
                     for gr in vc.view.gestureRecognizers ?? [] {
                         gr.delaysTouchesBegan = false
                         gr.delaysTouchesEnded = false
@@ -355,6 +547,9 @@ struct TouchControlSurface: UIViewRepresentable {
                     }
                 }
                 if let nav = r as? UINavigationController {
+                    Self.swizzleViewControllerClassIfNeeded(type(of: nav))
+                    nav.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+                    nav.setNeedsUpdateOfHomeIndicatorAutoHidden()
                     nav.interactivePopGestureRecognizer?.delaysTouchesBegan = false
                     nav.interactivePopGestureRecognizer?.delaysTouchesEnded = false
                     nav.interactivePopGestureRecognizer?.isEnabled = false
@@ -368,10 +563,26 @@ struct TouchControlSurface: UIViewRepresentable {
             }
         }
 
+        private static func configureViewControllerHierarchy(_ vc: UIViewController) {
+            swizzleViewControllerClassIfNeeded(type(of: vc))
+            vc.setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+            vc.setNeedsUpdateOfHomeIndicatorAutoHidden()
+            for child in vc.children {
+                configureViewControllerHierarchy(child)
+            }
+            if let presented = vc.presentedViewController {
+                configureViewControllerHierarchy(presented)
+            }
+        }
+
         private static func disableTouchDelaysRecursively(in view: UIView) {
             for gr in view.gestureRecognizers ?? [] {
                 gr.delaysTouchesBegan = false
                 gr.delaysTouchesEnded = false
+                let clsName = NSStringFromClass(type(of: gr))
+                if clsName.contains("SystemGestureGate") || clsName.contains("DelayedTouch") {
+                    gr.isEnabled = false
+                }
             }
             for sub in view.subviews {
                 disableTouchDelaysRecursively(in: sub)
@@ -388,7 +599,7 @@ struct TouchControlSurface: UIViewRepresentable {
 
         private func recompute() {
             activeTouches = activeTouches.filter {
-                $0.phase != .ended && $0.phase != .cancelled && $0.window != nil
+                $0.phase != .ended && $0.phase != .cancelled && !endedTouches.contains($0) && $0.window != nil
             }
 
             var next = Set<UInt32>()
