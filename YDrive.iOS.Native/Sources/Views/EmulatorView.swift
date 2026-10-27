@@ -70,20 +70,6 @@ struct EmulatorView: View {
                         ProgressView().tint(.white)
                     }
 
-                    // ── On-screen controls ───────────────────────────────────────
-                    if !isControllerConnected {
-                        OnScreenControlsView(engine: engine, consoleName: game.consoleName)
-                            .ignoresSafeArea()
-                    }
-
-                    // ── Screenshot flash overlay ─────────────────────────────────
-                    if showFlash {
-                        Color.white
-                            .ignoresSafeArea()
-                            .allowsHitTesting(false)
-                            .transition(.opacity)
-                    }
-
                     // ── Floating collapse button ─────────────────────────────────
                     if !isTopBarVisible {
                         VStack {
@@ -105,6 +91,20 @@ struct EmulatorView: View {
                             }
                             Spacer()
                         }
+                    }
+
+                    // ── On-screen controls ───────────────────────────────────────
+                    if !isControllerConnected {
+                        OnScreenControlsView(engine: engine, consoleName: game.consoleName)
+                            .ignoresSafeArea()
+                    }
+
+                    // ── Screenshot flash overlay ─────────────────────────────────
+                    if showFlash {
+                        Color.white
+                            .ignoresSafeArea()
+                            .allowsHitTesting(false)
+                            .transition(.opacity)
                     }
                 }
             }

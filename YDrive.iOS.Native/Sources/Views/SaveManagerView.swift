@@ -12,6 +12,8 @@ struct SaveManagerView: View {
     @State private var isSaving = false
     @State private var isLoading = true
 
+    @Environment(\.colorScheme) private var envColorScheme
+
     private var colorScheme: ColorScheme? {
         switch appTheme {
         case "dark": return .dark
@@ -25,7 +27,21 @@ struct SaveManagerView: View {
     }
 
     private var isLightMode: Bool {
-        colorScheme == .light
+        if appTheme == "light" { return true }
+        if appTheme == "dark" { return false }
+        return colorScheme == .light || envColorScheme == .light
+    }
+
+    private static func rasterizedIcon(_ systemName: String, pointSize: CGFloat, weight: UIImage.SymbolWeight, color: UIColor) -> UIImage {
+        let cfg = UIImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
+        guard let symbol = UIImage(systemName: systemName, withConfiguration: cfg)?
+            .withTintColor(color, renderingMode: .alwaysOriginal) else {
+            return UIImage()
+        }
+        let img = UIGraphicsImageRenderer(size: symbol.size).image { _ in
+            symbol.draw(at: .zero)
+        }
+        return img.withRenderingMode(.alwaysOriginal)
     }
     
     var body: some View {
@@ -56,6 +72,7 @@ struct SaveManagerView: View {
         }
         .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(isLightMode ? .light : .dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 if !savedSlots.isEmpty {
@@ -65,17 +82,13 @@ struct SaveManagerView: View {
                                 .progressViewStyle(.circular)
                                 .tint(isLightMode ? .black : .blue)
                                 .scaleEffect(0.8)
-                        } else if isLightMode,
-                                  let blackPlus = UIImage(
-                                      systemName: "plus",
-                                      withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-                                  )?.withTintColor(.black, renderingMode: .alwaysOriginal) {
-                            Image(uiImage: blackPlus)
+                        } else if isLightMode {
+                            Image(uiImage: Self.rasterizedIcon("plus", pointSize: 15, weight: .bold, color: .black))
                                 .renderingMode(.original)
                         } else {
                             Image(systemName: "plus")
                                 .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(isLightMode ? Color.black : Color.blue)
+                                .foregroundStyle(Color.blue)
                         }
                     }
                     .tint(isLightMode ? .black : .blue)
@@ -88,17 +101,13 @@ struct SaveManagerView: View {
                 Button {
                     isPresented = false
                 } label: {
-                    if isLightMode,
-                       let blackXmark = UIImage(
-                           systemName: "xmark",
-                           withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
-                       )?.withTintColor(.black, renderingMode: .alwaysOriginal) {
-                        Image(uiImage: blackXmark)
+                    if isLightMode {
+                        Image(uiImage: Self.rasterizedIcon("xmark", pointSize: 14, weight: .bold, color: .black))
                             .renderingMode(.original)
                     } else {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(isLightMode ? Color.black : Color.white)
+                            .foregroundStyle(Color.white)
                     }
                 }
                 .tint(isLightMode ? .black : .white)
