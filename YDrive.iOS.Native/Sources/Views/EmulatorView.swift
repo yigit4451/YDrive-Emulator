@@ -702,6 +702,8 @@ struct OnScreenControlsView: View {
     @AppStorage("controllerLayout")    private var controllerLayout    = "Auto"
     @AppStorage("buttonSize")          private var buttonSize          = "Normal"
 
+    @State private var pressedButtons: Set<UInt32> = []
+
     // RetroPad IDs
     let ID_B:      UInt32 = 0
     let ID_Y:      UInt32 = 1
@@ -872,8 +874,15 @@ struct OnScreenControlsView: View {
                 // ── Visuals (never intercept touches) ─────────────────────────
                 ZStack(alignment: .topLeading) {
                     // D-Pad
-                    dpadArea(visualSize: dpadVisual, hitSize: dpadHit)
-                        .position(centers.dpad)
+                    dpadArea(
+                        visualSize: dpadVisual,
+                        hitSize: dpadHit,
+                        upPressed: pressedButtons.contains(ID_UP),
+                        downPressed: pressedButtons.contains(ID_DOWN),
+                        leftPressed: pressedButtons.contains(ID_LEFT),
+                        rightPressed: pressedButtons.contains(ID_RIGHT)
+                    )
+                    .position(centers.dpad)
 
                     if is2ButtonLayout {
                         // Master System & Game Gear: Button 1 & 2
@@ -882,7 +891,8 @@ struct OnScreenControlsView: View {
                             color: buttonColorsEnabled ? Color(red: 225/255, green: 45/255, blue: 57/255) : defaultBg,
                             borderColor: buttonColorsEnabled ? Color(red: 255/255, green: 130/255, blue: 140/255) : defaultBorder,
                             visualSize: btnVisual * 1.08,
-                            hitSize: btnHit + 12
+                            hitSize: btnHit + 12,
+                            isPressed: pressedButtons.contains(ID_B)
                         )
                         .position(CGPoint(x: centers.b.x, y: centers.a.y))
 
@@ -891,7 +901,8 @@ struct OnScreenControlsView: View {
                             color: buttonColorsEnabled ? Color(red: 0/255, green: 115/255, blue: 230/255) : defaultBg,
                             borderColor: buttonColorsEnabled ? Color(red: 100/255, green: 181/255, blue: 246/255) : defaultBorder,
                             visualSize: btnVisual * 1.08,
-                            hitSize: btnHit + 12
+                            hitSize: btnHit + 12,
+                            isPressed: pressedButtons.contains(ID_A)
                         )
                         .position(CGPoint(x: centers.c.x, y: centers.b.y))
 
@@ -901,45 +912,84 @@ struct OnScreenControlsView: View {
                             visualWidth: startVisualW * 1.15,
                             visualHeight: startVisualH,
                             hitWidth: startVisualW * 1.15 + 40,
-                            hitHeight: startVisualH + 40
+                            hitHeight: startVisualH + 40,
+                            isPressed: pressedButtons.contains(ID_START)
                         )
                         .position(centers.start)
                     } else {
                         // A B C
-                        actionButton("A", color: colorA, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit)
-                            .position(centers.a)
-                        actionButton("B", color: colorB, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit)
-                            .position(centers.b)
-                        actionButton("C", color: colorC, borderColor: defaultBorder, visualSize: btnVisual, hitSize: btnHit)
-                            .position(centers.c)
+                        actionButton(
+                            "A", color: colorA, borderColor: defaultBorder,
+                            visualSize: btnVisual, hitSize: btnHit,
+                            isPressed: pressedButtons.contains(ID_Y)
+                        )
+                        .position(centers.a)
+
+                        actionButton(
+                            "B", color: colorB, borderColor: defaultBorder,
+                            visualSize: btnVisual, hitSize: btnHit,
+                            isPressed: pressedButtons.contains(ID_B)
+                        )
+                        .position(centers.b)
+
+                        actionButton(
+                            "C", color: colorC, borderColor: defaultBorder,
+                            visualSize: btnVisual, hitSize: btnHit,
+                            isPressed: pressedButtons.contains(ID_A)
+                        )
+                        .position(centers.c)
 
                         // X Y Z (6-button only)
                         if is6Button {
-                            actionButton("X", color: colorX, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit)
-                                .position(xCenter)
-                            actionButton("Y", color: colorY, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit)
-                                .position(yCenter)
-                            actionButton("Z", color: colorZ, borderColor: defaultBorder, visualSize: btnSmall, hitSize: btnSmallHit)
-                                .position(zCenter)
+                            actionButton(
+                                "X", color: colorX, borderColor: defaultBorder,
+                                visualSize: btnSmall, hitSize: btnSmallHit,
+                                isPressed: pressedButtons.contains(ID_X)
+                            )
+                            .position(xCenter)
+
+                            actionButton(
+                                "Y", color: colorY, borderColor: defaultBorder,
+                                visualSize: btnSmall, hitSize: btnSmallHit,
+                                isPressed: pressedButtons.contains(ID_L)
+                            )
+                            .position(yCenter)
+
+                            actionButton(
+                                "Z", color: colorZ, borderColor: defaultBorder,
+                                visualSize: btnSmall, hitSize: btnSmallHit,
+                                isPressed: pressedButtons.contains(ID_R)
+                            )
+                            .position(zCenter)
                         }
 
                         // START + MODE
-                        startButton(label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
-                                    hitWidth: startVisualW + 40, hitHeight: startVisualH + 40)
-                            .position(centers.start)
+                        startButton(
+                            label: "START", visualWidth: startVisualW, visualHeight: startVisualH,
+                            hitWidth: startVisualW + 40, hitHeight: startVisualH + 40,
+                            isPressed: pressedButtons.contains(ID_START)
+                        )
+                        .position(centers.start)
 
-                        smallButton(label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
-                                    hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32)
-                            .position(centers.mode)
+                        smallButton(
+                            label: "MODE", visualWidth: startVisualW * 0.7, visualHeight: startVisualH,
+                            hitWidth: startVisualW * 0.7 + 32, hitHeight: startVisualH + 32,
+                            isPressed: pressedButtons.contains(ID_SELECT)
+                        )
+                        .position(centers.mode)
                     }
                 }
                 .frame(width: w, height: h, alignment: .topLeading)
-                .opacity(controllerOpacity)
                 .allowsHitTesting(false)
 
                 // ── Single multi-touch UIKit surface that drives the emulator input ──
                 TouchControlSurface(regions: regions, hapticEnabled: hapticFeedback) { id, pressed in
                     engine.setButton(id, pressed: pressed)
+                    if pressed {
+                        pressedButtons.insert(id)
+                    } else {
+                        pressedButtons.remove(id)
+                    }
                 }
                 .frame(width: w, height: h)
             }
@@ -947,74 +997,190 @@ struct OnScreenControlsView: View {
         }
     }
 
-    private func dpadArea(visualSize: CGFloat, hitSize: CGFloat) -> some View {
-        ZStack {
+    private func dpadArea(
+        visualSize: CGFloat, hitSize: CGFloat,
+        upPressed: Bool, downPressed: Bool, leftPressed: Bool, rightPressed: Bool
+    ) -> some View {
+        let anyPressed = upPressed || downPressed || leftPressed || rightPressed
+        let baseOpacity = controllerOpacity
+        let activeOpacity = max(controllerOpacity, 0.88)
+        let offset    = visualSize * 0.32
+        let iconSize  = visualSize * 0.14
+        let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
+
+        return ZStack {
             Circle()
-                .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(0.44))
+                .fill(Color(red: 18/255, green: 19/255, blue: 26/255).opacity(anyPressed ? 0.68 : 0.44))
                 .frame(width: visualSize, height: visualSize)
-                .overlay(Circle().stroke(Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31), lineWidth: 2))
+                .overlay(
+                    Circle()
+                        .fill(Color.white.opacity(anyPressed ? 0.10 : 0.0))
+                        .frame(width: visualSize, height: visualSize)
+                )
+                .overlay(
+                    Circle()
+                        .stroke(
+                            anyPressed ? Color.white.opacity(0.85) : Color(red: 168/255, green: 199/255, blue: 250/255).opacity(0.31),
+                            lineWidth: anyPressed ? 2.5 : 2
+                        )
+                )
             Circle()
-                .fill(Color.white.opacity(0.19))
+                .fill(Color.white.opacity(anyPressed ? 0.30 : 0.19))
                 .frame(width: visualSize * 0.31, height: visualSize * 0.31)
 
-            let offset    = visualSize * 0.32
-            let iconSize  = visualSize * 0.14
-            let iconColor = Color(red: 240/255, green: 244/255, blue: 249/255)
-            Image(systemName: "arrowtriangle.up.fill")    .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y: -offset)
-            Image(systemName: "arrowtriangle.down.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(y:  offset)
-            Image(systemName: "arrowtriangle.left.fill")  .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x: -offset)
-            Image(systemName: "arrowtriangle.right.fill") .font(.system(size: iconSize)).foregroundStyle(iconColor).offset(x:  offset)
+            ZStack {
+                if upPressed {
+                    Circle()
+                        .fill(Color.white.opacity(0.28))
+                        .frame(width: iconSize * 2.1, height: iconSize * 2.1)
+                }
+                Image(systemName: "arrowtriangle.up.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(upPressed ? Color.white : iconColor)
+            }
+            .scaleEffect(upPressed ? 0.90 : 1.0)
+            .offset(y: -offset)
+
+            ZStack {
+                if downPressed {
+                    Circle()
+                        .fill(Color.white.opacity(0.28))
+                        .frame(width: iconSize * 2.1, height: iconSize * 2.1)
+                }
+                Image(systemName: "arrowtriangle.down.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(downPressed ? Color.white : iconColor)
+            }
+            .scaleEffect(downPressed ? 0.90 : 1.0)
+            .offset(y: offset)
+
+            ZStack {
+                if leftPressed {
+                    Circle()
+                        .fill(Color.white.opacity(0.28))
+                        .frame(width: iconSize * 2.1, height: iconSize * 2.1)
+                }
+                Image(systemName: "arrowtriangle.left.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(leftPressed ? Color.white : iconColor)
+            }
+            .scaleEffect(leftPressed ? 0.90 : 1.0)
+            .offset(x: -offset)
+
+            ZStack {
+                if rightPressed {
+                    Circle()
+                        .fill(Color.white.opacity(0.28))
+                        .frame(width: iconSize * 2.1, height: iconSize * 2.1)
+                }
+                Image(systemName: "arrowtriangle.right.fill")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(rightPressed ? Color.white : iconColor)
+            }
+            .scaleEffect(rightPressed ? 0.90 : 1.0)
+            .offset(x: offset)
         }
+        .scaleEffect(anyPressed ? 0.95 : 1.0)
+        .opacity(anyPressed ? activeOpacity : baseOpacity)
+        .animation(.linear(duration: 0.05), value: upPressed)
+        .animation(.linear(duration: 0.05), value: downPressed)
+        .animation(.linear(duration: 0.05), value: leftPressed)
+        .animation(.linear(duration: 0.05), value: rightPressed)
         .frame(width: hitSize, height: hitSize)
     }
 
     private func actionButton(
         _ label: String, color: Color, borderColor: Color,
-        visualSize: CGFloat, hitSize: CGFloat
+        visualSize: CGFloat, hitSize: CGFloat,
+        isPressed: Bool
     ) -> some View {
-        ZStack {
+        let baseOpacity = controllerOpacity
+        let activeOpacity = max(controllerOpacity, 0.88)
+
+        return ZStack {
             Circle()
-                .fill(color.opacity(0.4))
+                .fill(color.opacity(isPressed ? 0.78 : 0.4))
                 .frame(width: visualSize, height: visualSize)
-                .overlay(Circle().stroke(borderColor.opacity(0.8), lineWidth: 2))
+                .overlay(
+                    Circle()
+                        .fill(Color.white.opacity(isPressed ? 0.24 : 0.0))
+                        .frame(width: visualSize, height: visualSize)
+                )
+                .overlay(
+                    Circle()
+                        .stroke(isPressed ? Color.white : borderColor.opacity(0.8), lineWidth: isPressed ? 2.5 : 2)
+                )
             Text(label)
                 .font(.system(size: visualSize * 0.35, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
+        .scaleEffect(isPressed ? 0.92 : 1.0)
+        .opacity(isPressed ? activeOpacity : baseOpacity)
+        .animation(.linear(duration: 0.05), value: isPressed)
         .frame(width: hitSize, height: hitSize)
     }
 
     private func startButton(
         label: String,
         visualWidth: CGFloat, visualHeight: CGFloat,
-        hitWidth: CGFloat, hitHeight: CGFloat
+        hitWidth: CGFloat, hitHeight: CGFloat,
+        isPressed: Bool
     ) -> some View {
-        ZStack {
+        let baseOpacity = controllerOpacity
+        let activeOpacity = max(controllerOpacity, 0.88)
+
+        return ZStack {
             Capsule()
-                .fill(Color(white: 0.13).opacity(0.4))
+                .fill(Color(white: isPressed ? 0.28 : 0.13).opacity(isPressed ? 0.75 : 0.4))
                 .frame(width: visualWidth, height: visualHeight)
-                .overlay(Capsule().stroke(Color(white: 0.88).opacity(0.6), lineWidth: 1.5))
+                .overlay(
+                    Capsule()
+                        .fill(Color.white.opacity(isPressed ? 0.22 : 0.0))
+                        .frame(width: visualWidth, height: visualHeight)
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(isPressed ? Color.white : Color(white: 0.88).opacity(0.6), lineWidth: isPressed ? 2.0 : 1.5)
+                )
             Text(label)
                 .font(.system(size: visualHeight * 0.35, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(white: 0.93))
+                .foregroundStyle(isPressed ? Color.white : Color(white: 0.93))
         }
+        .scaleEffect(isPressed ? 0.92 : 1.0)
+        .opacity(isPressed ? activeOpacity : baseOpacity)
+        .animation(.linear(duration: 0.05), value: isPressed)
         .frame(width: hitWidth, height: hitHeight)
     }
 
     private func smallButton(
         label: String,
         visualWidth: CGFloat, visualHeight: CGFloat,
-        hitWidth: CGFloat, hitHeight: CGFloat
+        hitWidth: CGFloat, hitHeight: CGFloat,
+        isPressed: Bool
     ) -> some View {
-        ZStack {
+        let baseOpacity = controllerOpacity
+        let activeOpacity = max(controllerOpacity, 0.88)
+
+        return ZStack {
             Capsule()
-                .fill(Color(white: 0.10).opacity(0.35))
+                .fill(Color(white: isPressed ? 0.25 : 0.10).opacity(isPressed ? 0.75 : 0.35))
                 .frame(width: visualWidth, height: visualHeight)
-                .overlay(Capsule().stroke(Color(white: 0.75).opacity(0.5), lineWidth: 1))
+                .overlay(
+                    Capsule()
+                        .fill(Color.white.opacity(isPressed ? 0.22 : 0.0))
+                        .frame(width: visualWidth, height: visualHeight)
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(isPressed ? Color.white : Color(white: 0.75).opacity(0.5), lineWidth: isPressed ? 1.5 : 1)
+                )
             Text(label)
                 .font(.system(size: visualHeight * 0.30, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(white: 0.80))
+                .foregroundStyle(isPressed ? Color.white : Color(white: 0.80))
         }
+        .scaleEffect(isPressed ? 0.92 : 1.0)
+        .opacity(isPressed ? activeOpacity : baseOpacity)
+        .animation(.linear(duration: 0.05), value: isPressed)
         .frame(width: hitWidth, height: hitHeight)
     }
     
