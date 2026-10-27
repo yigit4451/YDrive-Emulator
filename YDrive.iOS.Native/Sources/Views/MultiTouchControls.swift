@@ -485,6 +485,8 @@ struct TouchControlSurface: UIViewRepresentable {
         override func didMoveToWindow() {
             super.didMoveToWindow()
             if window == nil {
+                Self.activeSurfaces.remove(self)
+                endedTouches.removeAllObjects()
                 releaseAll()
             } else {
                 hapticGenerator.prepare()

@@ -209,6 +209,13 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         retro_unload_game();
         gCoreGameLoaded = NO;
     }
+    // Standard libretro lifecycle: every session is init -> load -> run -> unload -> deinit.
+    // Never carry core-internal state (input, timing, audio, video) over to the next ROM.
+    if (gCoreGlobalInitialized) {
+        retro_deinit();
+        gCoreGlobalInitialized = NO;
+        os_log(gLog, "[CORE] retro_deinit() — stale core state cleared before new session");
+    }
 
     // ── Register C callbacks (always re-bind to ensure function pointers stay valid) ──
     gBridgeInstance = self;
@@ -390,6 +397,10 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         if (_isRunning && gCoreGameLoaded) {
             retro_unload_game();
             gCoreGameLoaded = NO;
+        }
+        if (gCoreGlobalInitialized) {
+            retro_deinit();
+            gCoreGlobalInitialized = NO;
         }
         atomic_store(&gInputBitmask, 0);
         gBridgeInstance = nil;
