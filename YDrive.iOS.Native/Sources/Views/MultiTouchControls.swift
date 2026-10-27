@@ -291,7 +291,9 @@ struct TouchControlSurface: UIViewRepresentable {
 
                 switch touch.phase {
                 case .began:
-                    guard !endedTouches.contains(touch) else { continue }
+                    // A fresh .began always starts a new sequence; never let a stale
+                    // "ended" marker (e.g. from a recycled UITouch) swallow the press.
+                    endedTouches.remove(touch)
                     let winPoint = touch.location(in: window)
                     let localPoint = convert(winPoint, from: window)
                     if isPointInAnyRegion(localPoint) {
@@ -419,7 +421,8 @@ struct TouchControlSurface: UIViewRepresentable {
         // MARK: Touch events (both DirectGamepadTouchRecognizer and UIResponder forward here)
 
         func handleTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-            for touch in touches where touch.phase == .began && !endedTouches.contains(touch) {
+            for touch in touches where touch.phase == .began {
+                endedTouches.remove(touch)
                 activeTouches.insert(touch)
             }
             recompute()
