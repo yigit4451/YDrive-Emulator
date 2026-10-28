@@ -70,6 +70,9 @@ __attribute__((swift_attr("@Sendable")))
 /// between `setButton:pressed:YES` and that poll.
 @property (nonatomic, copy, nullable) void (^onInputPolled)(unsigned buttonID, double latencyMs);
 
+/// TEMP diagnostics: single-line traces (button lifecycle summaries, slow retro_run calls).
+@property (nonatomic, copy, nullable) void (^onInputTrace)(NSString *message);
+
 /// Initialize the core. Returns YES on success.
 /// `romPath` must be the full filesystem path to the ROM file.
 - (BOOL)loadGameAtPath:(NSString *)romPath error:(NSError **)error;

@@ -206,6 +206,10 @@ final class LibretroEmulatorEngine: ObservableObject {
         bridge.onInputPolled = { @Sendable buttonID, latencyMs in
             InputLatencyProbe.log(String(format: "poll   id=%u press→poll=%.2fms", buttonID, latencyMs))
         }
+        bridge.onInputTrace = { @Sendable message in
+            InputLatencyProbe.log(message)
+        }
+        InputLatencyProbe.log("---- session start (build 9) ----")
 
         // Use the single shared serial emulation queue so previous session unload()
         // always finishes before the next session's loadGame() begins.

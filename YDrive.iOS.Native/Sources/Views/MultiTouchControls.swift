@@ -459,8 +459,14 @@ struct TouchControlSurface: UIViewRepresentable {
             let newlyPressed = next.subtracting(pressed)
             pressed = next
 
-            for id in released.sorted() { onButton?(id, false) }
-            for id in newlyPressed.sorted() { onButton?(id, true) }
+            for id in released.sorted() {
+                onButton?(id, false)
+                InputLatencyProbe.log(String(format: "slide-up id=%u", id))
+            }
+            for id in newlyPressed.sorted() {
+                onButton?(id, true)
+                InputLatencyProbe.log(String(format: "slide-down id=%u (via touchesMoved)", id))
+            }
 
             if !newlyPressed.isEmpty && hapticEnabled {
                 hapticGenerator.impactOccurred()

@@ -166,6 +166,31 @@ static void input_poll_callback(void) {
     }
 }
 
+// TEMP diagnostics: per-press lifecycle (all indexed by RetroPad id).
+static _Atomic uint64_t gFrameIndex;            // incremented right before every retro_run()
+static _Atomic uint64_t gRunStartNs;            // uptime at start of the current/last retro_run()
+static _Atomic uint64_t gPressStartNs[16];      // uptime of setButton(pressed) ; 0 = not held
+static _Atomic uint64_t gPressFrame[16];        // gFrameIndex at press
+static _Atomic uint64_t gFirstReadNs[16];       // first time the core's input_state read returned 1
+static _Atomic uint64_t gFirstReadFrame[16];    // gFrameIndex when that happened
+static _Atomic uint64_t gFirstReadRunStartNs[16];
+static _Atomic uint64_t gFramesSeen[16];        // distinct frames in which the core read the bit as 1
+static _Atomic uint64_t gLastSeenFrame[16];
+static _Atomic uint32_t gSlowRunLogged;
+
+static inline void note_core_read(unsigned i) {
+    if (atomic_load(&gPressStartNs[i]) == 0) return;
+    uint64_t frame = atomic_load(&gFrameIndex);
+    if (atomic_exchange(&gLastSeenFrame[i], frame) != frame) {
+        atomic_fetch_add(&gFramesSeen[i], 1);
+    }
+    if (atomic_load(&gFirstReadNs[i]) == 0) {
+        atomic_store(&gFirstReadFrame[i], frame);
+        atomic_store(&gFirstReadRunStartNs[i], atomic_load(&gRunStartNs));
+        atomic_store(&gFirstReadNs[i], clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
+    }
+}
+
 static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id) {
     if (port != 0) return 0; // Only player 1 for now
     unsigned baseDevice = device & RETRO_DEVICE_MASK;
@@ -174,10 +199,17 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         // microsecond of finger contact and never fires after touchUp.
         uint16_t mask = (uint16_t)atomic_load(&gInputBitmask);
         if (id == RETRO_DEVICE_ID_JOYPAD_MASK) {
+            for (unsigned i = 0; i < 16; i++) {
+                if (mask & (1u << i)) note_core_read(i);
+            }
             return (int16_t)mask;
         }
         if (id < 16) {
-            return (mask & (1u << id)) ? 1 : 0;
+            if (mask & (1u << id)) {
+                note_core_read(id);
+                return 1;
+            }
+            return 0;
         }
     }
     return 0;
@@ -332,7 +364,17 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     if (!_isRunning || !gCoreGameLoaded) return;
     if (gBridgeInstance != self) return;
+    // TEMP diagnostics: bracket retro_run() with uptime stamps.
+    uint64_t runStart = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+    atomic_store(&gRunStartNs, runStart);
+    uint64_t frame = atomic_fetch_add(&gFrameIndex, 1) + 1;
     retro_run();
+    double runMs = (double)(clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - runStart) / 1.0e6;
+    if (runMs > 14.0 && atomic_load(&gSlowRunLogged) < 40) {
+        atomic_fetch_add(&gSlowRunLogged, 1);
+        void (^trace)(NSString *) = self.onInputTrace;
+        if (trace) trace([NSString stringWithFormat:@"slowrun frame=%llu dur=%.2fms", frame, runMs]);
+    }
 #endif
 }
 
@@ -343,10 +385,38 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     if (pressed) {
         uint16_t prev = (uint16_t)atomic_fetch_or(&gInputBitmask, bit);
         if (!(prev & bit)) {
-            atomic_store(&gPressStampNs[buttonID], clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
+            uint64_t now = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+            atomic_store(&gPressStampNs[buttonID], now);
+            // TEMP diagnostics: reset lifecycle counters, then publish the press start last.
+            atomic_store(&gFirstReadNs[buttonID], 0);
+            atomic_store(&gFramesSeen[buttonID], 0);
+            atomic_store(&gLastSeenFrame[buttonID], 0);
+            atomic_store(&gPressFrame[buttonID], atomic_load(&gFrameIndex));
+            atomic_store(&gPressStartNs[buttonID], now);
         }
     } else {
-        atomic_fetch_and(&gInputBitmask, ~bit);
+        uint16_t prev = (uint16_t)atomic_fetch_and(&gInputBitmask, ~bit);
+        uint64_t start = atomic_exchange(&gPressStartNs[buttonID], 0);
+        void (^trace)(NSString *) = self.onInputTrace;
+        if ((prev & bit) && start != 0 && trace) {
+            uint64_t now        = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+            double   heldMs     = (double)(now - start) / 1.0e6;
+            uint64_t framesRun  = atomic_load(&gFrameIndex) - atomic_load(&gPressFrame[buttonID]);
+            uint64_t seen       = atomic_load(&gFramesSeen[buttonID]);
+            uint64_t firstRead  = atomic_load(&gFirstReadNs[buttonID]);
+            if (firstRead == 0) {
+                trace([NSString stringWithFormat:
+                    @"life   id=%u held=%.1fms CORE NEVER READ BIT WHILE HELD framesRun=%llu",
+                    buttonID, heldMs, framesRun]);
+            } else {
+                double readMs   = (double)(firstRead - start) / 1.0e6;
+                double intoRun  = (double)(firstRead - atomic_load(&gFirstReadRunStartNs[buttonID])) / 1.0e6;
+                uint64_t rdFrm  = atomic_load(&gFirstReadFrame[buttonID]) - atomic_load(&gPressFrame[buttonID]);
+                trace([NSString stringWithFormat:
+                    @"life   id=%u held=%.1fms firstCoreRead=+%.2fms (frame +%llu, %.2fms into retro_run) framesCoreSawBit=%llu framesRun=%llu expected~%.0f",
+                    buttonID, heldMs, readMs, rdFrm, intoRun, seen, framesRun, heldMs / 16.67]);
+            }
+        }
     }
 #endif
 }

@@ -11,7 +11,7 @@ import Foundation
 ///               (time iOS spent delivering the touch; a large value = system/gesture gate delay).
 /// - `press→poll`: time between `setButton(pressed: true)` and libretro's next input poll.
 enum InputLatencyProbe {
-    private static let maxLines = 600
+    private static let maxLines = 2000
     private static let queue = DispatchQueue(label: "com.yigit.ydrive.inputprobe", qos: .utility)
     nonisolated(unsafe) private static var lineCount = 0
     nonisolated(unsafe) private static var handle: FileHandle?
