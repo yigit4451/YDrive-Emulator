@@ -147,8 +147,23 @@ static size_t audio_batch_callback(const int16_t *data, size_t frames) {
 // ── Input State ───────────────────────────────────────────────────────────────
 static atomic_uint_fast16_t gInputBitmask = 0;
 
+// TEMP diagnostics: uptime (ns) at which each button's press was recorded, 0 = already reported.
+static _Atomic uint64_t gPressStampNs[16];
+
 static void input_poll_callback(void) {
     // Live atomic state is read directly in input_state_callback.
+    // TEMP diagnostics: report press->poll latency once per press.
+    void (^cb)(unsigned, double) = gBridgeInstance.onInputPolled;
+    if (!cb) return;
+    uint16_t mask = (uint16_t)atomic_load(&gInputBitmask);
+    for (unsigned i = 0; i < 16; i++) {
+        if (!(mask & (1u << i))) continue;
+        uint64_t stamp = atomic_exchange(&gPressStampNs[i], 0);
+        if (stamp != 0) {
+            uint64_t now = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+            cb(i, (double)(now - stamp) / 1.0e6);
+        }
+    }
 }
 
 static int16_t input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id) {
@@ -326,7 +341,10 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     if (buttonID >= 16) return;
     uint16_t bit = (uint16_t)(1u << buttonID);
     if (pressed) {
-        atomic_fetch_or(&gInputBitmask, bit);
+        uint16_t prev = (uint16_t)atomic_fetch_or(&gInputBitmask, bit);
+        if (!(prev & bit)) {
+            atomic_store(&gPressStampNs[buttonID], clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
+        }
     } else {
         atomic_fetch_and(&gInputBitmask, ~bit);
     }

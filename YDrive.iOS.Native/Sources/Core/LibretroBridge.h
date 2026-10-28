@@ -65,6 +65,11 @@ __attribute__((swift_attr("@Sendable")))
 /// Called on the emulation thread when a batch of audio samples is ready.
 @property (nonatomic, copy, nullable) YDriveAudioPCMCallback onAudioPCM;
 
+/// TEMP diagnostics: called on the emulation thread the first time libretro's
+/// per-frame input poll observes a freshly pressed button. `latencyMs` is the time
+/// between `setButton:pressed:YES` and that poll.
+@property (nonatomic, copy, nullable) void (^onInputPolled)(unsigned buttonID, double latencyMs);
+
 /// Initialize the core. Returns YES on success.
 /// `romPath` must be the full filesystem path to the ROM file.
 - (BOOL)loadGameAtPath:(NSString *)romPath error:(NSError **)error;

@@ -202,6 +202,11 @@ final class LibretroEmulatorEngine: ObservableObject {
             audioEngine?.pushAudio(data: data, frames: frames)
         }
 
+        // TEMP diagnostics: press -> libretro poll latency.
+        bridge.onInputPolled = { @Sendable buttonID, latencyMs in
+            InputLatencyProbe.log(String(format: "poll   id=%u press→poll=%.2fms", buttonID, latencyMs))
+        }
+
         // Use the single shared serial emulation queue so previous session unload()
         // always finishes before the next session's loadGame() begins.
         let queue = Self.sharedEmulationQueue

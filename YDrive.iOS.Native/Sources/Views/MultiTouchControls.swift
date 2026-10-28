@@ -301,8 +301,11 @@ struct TouchControlSurface: UIViewRepresentable {
 
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             var newlyMatched = Set<UInt32>()
+            // TEMP diagnostics: how long iOS took to deliver the oldest touch to us.
+            var deliveryMs = 0.0
 
             for touch in touches {
+                deliveryMs = max(deliveryMs, InputLatencyProbe.nowMs - touch.timestamp * 1000)
                 for gr in touch.gestureRecognizers ?? [] where gr !== shieldRecognizer {
                     gr.delaysTouchesBegan = false
                     gr.delaysTouchesEnded = false
@@ -328,6 +331,9 @@ struct TouchControlSurface: UIViewRepresentable {
                         print("DEBUG: B pressed = true")
                     }
                     onButton?(id, true)
+                    InputLatencyProbe.log(String(
+                        format: "down   id=%u hw→app=%.2fms fingersOnScreen=%d",
+                        id, deliveryMs, activeTouches.count))
                     triggeredHaptic = true
                 }
             }
@@ -431,6 +437,7 @@ struct TouchControlSurface: UIViewRepresentable {
                     print("DEBUG: B pressed = false")
                 }
                 onButton?(id, false)
+                InputLatencyProbe.log(String(format: "up     id=%u", id))
             }
         }
 
