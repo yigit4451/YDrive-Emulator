@@ -19,7 +19,6 @@
       "iconURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
       "tintColor": "#005FD9",
       "category": "games",
-      "minOSVersion": "26.0",
       "screenshots": [
         "https://yigit4451.github.io/YDrive-Emulator/screenshots/1-library.png",
         "https://yigit4451.github.io/YDrive-Emulator/screenshots/2-sonic1.png",
@@ -37,9 +36,9 @@
   ],
   "news": [
     {
-      "title": "YDrive 1.0.2 Güncellemesi",
+      "title": "YDrive 1.0.2 Update",
       "identifier": "ydrive-1.0.2-update",
-      "caption": "YDrive 1.0.2 sürümü yayınlandı!\n\n• Dokunmatik Girdi Düzeltmesi: Genesis kontrolcüsünde A butonunun basış anı yerine bırakılınca zıplamasına neden olan çekirdek I/O döngü evirme hatası giderildi.\n• Çift ROM Düzeltmesi: ROM Ekle (+) ile eklenen oyunların kütüphanede mükerrer/çift görünme sorunu çözüldü.\n• ROM Paylaşma: ROM kartı seçenekler menüsüne ve Hakkında penceresine seçilen oyunu .zip arşivi olarak dışa aktaran iOS paylaşım menüsü eklendi.\n• Arayüz İyileştirmesi: TheGamesDB veri yenileme butonu kart seçeneklerine taşındı ve Hakkında penceresi sadeleştirildi.",
+      "caption": "YDrive 1.0.2 is now available!\n\n• Touch Input Fix: Resolved an input timing issue where button presses were triggering on touch release instead of touch down.\n• Duplicate ROMs Fix: Resolved an issue where adding ROMs could cause duplicate entries in the game library.\n• ROM Sharing: Added a Share button to the ROM card context menu and Details view to export games as .zip archives via the native iOS share sheet.\n• UI Refinements: Moved the metadata refresh option to the ROM card context menu and streamlined the Details view toolbar.",
       "date": "2026-10-29T12:00:00Z",
       "tintColor": "#005FD9",
       "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
