@@ -3,3 +3,4 @@
 // This file is set as SWIFT_OBJC_BRIDGING_HEADER in project.yml.
 
 #import "LibretroBridge.h"
+#import <zlib.h>

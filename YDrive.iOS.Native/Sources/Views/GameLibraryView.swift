@@ -37,6 +37,7 @@ struct GameLibraryView: View {
     @State private var selectedCoverItem: PhotosPickerItem?
     @State private var coverTarget: GameItem?
     @State private var showingCoverPicker = false
+    @StateObject private var shareManager = RomShareManager.shared
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -156,6 +157,10 @@ struct GameLibraryView: View {
                 .sheet(item: $showingDetailsForGame) { game in
                     GameDetailView(initialGame: game, viewModel: viewModel)
                         .preferredColorScheme(colorScheme)
+                }
+                .sheet(item: $shareManager.shareItem) { item in
+                    ActivityViewController(activityItems: [item.url])
+                        .ignoresSafeArea()
                 }
                 .sheet(isPresented: $showingSettings) {
                     NavigationStack {
@@ -448,6 +453,12 @@ struct GameLibraryView: View {
             showingRenameAlert = true
         } label: {
             Label(NSLocalizedString("library.rename", comment: ""), systemImage: "pencil")
+        }
+
+        Button {
+            shareManager.share(game: game)
+        } label: {
+            Label(NSLocalizedString("share", comment: ""), systemImage: "square.and.arrow.up")
         }
 
         if game.coverImagePath != nil || game.resolveCoverImage() != nil {

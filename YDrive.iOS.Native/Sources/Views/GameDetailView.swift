@@ -16,6 +16,7 @@ struct GameDetailView: View {
     @State private var playingGame: GameItem?
     @State private var showingCoverPicker = false
     @State private var selectedCoverItem: PhotosPickerItem?
+    @ObservedObject private var shareManager = RomShareManager.shared
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -128,6 +129,14 @@ struct GameDetailView: View {
                 if !isPresentedFromEmulator {
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         Button {
+                            shareManager.share(game: game)
+                        } label: {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .accessibilityLabel(NSLocalizedString("share", comment: ""))
+                        .tint(.primary)
+
+                        Button {
                             renameText = game.title
                             showingRenameAlert = true
                         } label: {
@@ -199,6 +208,10 @@ struct GameDetailView: View {
         .fullScreenCover(item: $playingGame) { gameItem in
             EmulatorView(game: gameItem, viewModel: viewModel)
                 .preferredColorScheme(colorScheme)
+        }
+        .sheet(item: $shareManager.shareItem) { item in
+            ActivityViewController(activityItems: [item.url])
+                .ignoresSafeArea()
         }
         .preferredColorScheme(colorScheme)
     }

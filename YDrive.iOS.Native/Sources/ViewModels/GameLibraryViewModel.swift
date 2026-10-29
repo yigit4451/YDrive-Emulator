@@ -26,7 +26,10 @@ final class GameLibraryViewModel: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: saveKey),
            let decoded = try? JSONDecoder().decode([GameItem].self, from: data) {
             var updated = false
-            self.games = decoded.map { game in
+            var seenCanonical = Set<String>()
+            var unique: [GameItem] = []
+
+            for game in decoded {
                 var g = game
                 // If console was previously defaulted to SEGA Genesis, re-evaluate if it's actually 32X, Master System, etc.
                 if g.consoleName == "SEGA Genesis" {
@@ -37,8 +40,15 @@ final class GameLibraryViewModel: ObservableObject {
                         updated = true
                     }
                 }
-                return g
+                let canonical = URL(fileURLWithPath: g.fileName).resolvingSymlinksInPath().path
+                if !seenCanonical.contains(canonical) {
+                    seenCanonical.insert(canonical)
+                    unique.append(g)
+                } else {
+                    updated = true
+                }
             }
+            self.games = unique
             if updated {
                 saveLibrary()
             }
@@ -46,8 +56,12 @@ final class GameLibraryViewModel: ObservableObject {
     }
 
     var filteredGames: [GameItem] {
-        if searchText.isEmpty { return games }
-        return games.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+        var seen = Set<String>()
+        let source = searchText.isEmpty ? games : games.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+        return source.filter { game in
+            let can = URL(fileURLWithPath: game.fileName).resolvingSymlinksInPath().path
+            return seen.insert(can).inserted
+        }
     }
 
     static var documentsDirectory: URL {
@@ -82,21 +96,55 @@ final class GameLibraryViewModel: ObservableObject {
 
         let name = url.deletingPathExtension().lastPathComponent
         let romsDir = Self.romsDirectory
-        let gameFolder = romsDir.appendingPathComponent(name, isDirectory: true)
-        try? FileManager.default.createDirectory(at: gameFolder, withIntermediateDirectories: true)
+        let docs = Self.documentsDirectory
+        let canonicalURL = url.resolvingSymlinksInPath()
+        let canonicalRomsDir = romsDir.resolvingSymlinksInPath()
+        let canonicalDocs = docs.resolvingSymlinksInPath()
 
-        let dest = gameFolder.appendingPathComponent(url.lastPathComponent)
+        let dest: URL
+        let isAlreadyInRoms = canonicalURL.path.hasPrefix(canonicalRomsDir.path)
 
-        do {
-            if FileManager.default.fileExists(atPath: dest.path) {
-                try FileManager.default.removeItem(at: dest)
+        if isAlreadyInRoms {
+            // Already inside ROM's folder: do not create nested copies.
+            dest = url
+        } else {
+            let gameFolder = romsDir.appendingPathComponent(name, isDirectory: true)
+            try? FileManager.default.createDirectory(at: gameFolder, withIntermediateDirectories: true)
+            dest = gameFolder.appendingPathComponent(url.lastPathComponent)
+
+            // If the user selected a loose file from the root Documents directory (YDrive in Files app),
+            // move it into the game folder instead of leaving a duplicate in root.
+            let isInsideDocsRoot = canonicalURL.deletingLastPathComponent().path == canonicalDocs.path
+
+            do {
+                if FileManager.default.fileExists(atPath: dest.path) {
+                    try FileManager.default.removeItem(at: dest)
+                }
+                if isInsideDocsRoot {
+                    try FileManager.default.moveItem(at: url, to: dest)
+                } else {
+                    try FileManager.default.copyItem(at: url, to: dest)
+                }
+            } catch {
+                print("[ViewModel] ROM copy/move failed: \(error)")
             }
-            try FileManager.default.copyItem(at: url, to: dest)
-        } catch {
-            print("[ViewModel] ROM copy failed: \(error)")
+        }
+
+        let canonicalDest = dest.resolvingSymlinksInPath().path
+
+        // Check if game is already in library (by canonical path, or same title + filename)
+        if let existingIdx = games.firstIndex(where: {
+            URL(fileURLWithPath: $0.fileName).resolvingSymlinksInPath().path == canonicalDest ||
+            ($0.title.caseInsensitiveCompare(name) == .orderedSame &&
+             URL(fileURLWithPath: $0.fileName).lastPathComponent == dest.lastPathComponent)
+        }) {
+            games[existingIdx].fileName = dest.path
+            saveLibrary()
+            return
         }
 
         let console = Self.detectConsole(url: dest, title: name)
+        let gameFolder = dest.deletingLastPathComponent()
 
         var existingCover: String? = nil
         for coverName in ["cover.jpg", "cover.png", "\(name).jpg", "\(name).png"] {
@@ -183,13 +231,42 @@ final class GameLibraryViewModel: ObservableObject {
 
                 if !fm.fileExists(atPath: dest.path) {
                     try? fm.moveItem(at: file, to: dest)
+                } else {
+                    // Destination already exists in ROM's/ (e.g. from addRom).
+                    // Remove redundant loose copy in Documents/ root so it doesn't linger as duplicate.
+                    try? fm.removeItem(at: file)
                 }
 
-                if let idx = games.firstIndex(where: { $0.fileName == file.path }) {
+                let canonicalDest = dest.resolvingSymlinksInPath().path
+                let canonicalFile = file.resolvingSymlinksInPath().path
+                if let idx = games.firstIndex(where: {
+                    URL(fileURLWithPath: $0.fileName).resolvingSymlinksInPath().path == canonicalFile ||
+                    URL(fileURLWithPath: $0.fileName).resolvingSymlinksInPath().path == canonicalDest
+                }) {
                     games[idx].fileName = dest.path
                     updated = true
                 }
             }
+        }
+
+        // ── 2.5 Migration of files from Documents/Inbox/ (if iOS imported via AirDrop/Open In) ──
+        let inboxDir = docs.appendingPathComponent("Inbox", isDirectory: true)
+        if fm.fileExists(atPath: inboxDir.path),
+           let inboxFiles = try? fm.contentsOfDirectory(at: inboxDir, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) {
+            for file in inboxFiles {
+                let ext = file.pathExtension.lowercased()
+                guard supportedExtensions.contains(ext) else { continue }
+                let gameTitle = file.deletingPathExtension().lastPathComponent
+                let gameFolder = romsDir.appendingPathComponent(gameTitle, isDirectory: true)
+                try? fm.createDirectory(at: gameFolder, withIntermediateDirectories: true)
+                let dest = gameFolder.appendingPathComponent(file.lastPathComponent)
+                if !fm.fileExists(atPath: dest.path) {
+                    try? fm.moveItem(at: file, to: dest)
+                } else {
+                    try? fm.removeItem(at: file)
+                }
+            }
+            try? fm.removeItem(at: inboxDir)
         }
 
         // ── 3. Migration of loose ROM files directly in ROM's/ (not in subfolders) ──
@@ -268,7 +345,7 @@ final class GameLibraryViewModel: ObservableObject {
             }
         }
 
-        var existingPaths = Set(currentGames.map { $0.fileName })
+        var existingPaths = Set(currentGames.map { URL(fileURLWithPath: $0.fileName).resolvingSymlinksInPath().path })
 
         guard let enumerator = fm.enumerator(
             at: romsDir,
@@ -304,9 +381,19 @@ final class GameLibraryViewModel: ObservableObject {
                 primaryRom = roms[0]
             }
 
-            guard !existingPaths.contains(primaryRom.path) else { continue }
+            let canonicalPrimary = primaryRom.resolvingSymlinksInPath().path
+            guard !existingPaths.contains(canonicalPrimary) else { continue }
 
             let title = (folder.lastPathComponent != "ROM's") ? folder.lastPathComponent : primaryRom.deletingPathExtension().lastPathComponent
+            
+            // Also ensure we don't add duplicate by matching title & filename
+            if currentGames.contains(where: {
+                $0.title.caseInsensitiveCompare(title) == .orderedSame &&
+                URL(fileURLWithPath: $0.fileName).lastPathComponent == primaryRom.lastPathComponent
+            }) {
+                continue
+            }
+
             let console = Self.detectConsole(url: primaryRom, title: title)
 
             var coverPath: String? = nil
@@ -325,7 +412,7 @@ final class GameLibraryViewModel: ObservableObject {
                 coverImagePath: coverPath
             )
             currentGames.append(item)
-            existingPaths.insert(primaryRom.path)
+            existingPaths.insert(canonicalPrimary)
             updated = true
 
             if coverPath == nil {
@@ -334,6 +421,20 @@ final class GameLibraryViewModel: ObservableObject {
                 }
             }
         }
+
+        // Deduplicate currentGames by canonical path
+        var uniqueGames: [GameItem] = []
+        var seenCanonical = Set<String>()
+        for game in currentGames {
+            let can = URL(fileURLWithPath: game.fileName).resolvingSymlinksInPath().path
+            if !seenCanonical.contains(can) {
+                seenCanonical.insert(can)
+                uniqueGames.append(game)
+            } else {
+                updated = true
+            }
+        }
+        currentGames = uniqueGames
 
         if updated {
             self.games = currentGames
