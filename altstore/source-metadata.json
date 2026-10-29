@@ -14,7 +14,7 @@
     "bundleIdentifier": "com.yigit.ydrive",
     "developerName": "yigit4451",
     "subtitle": "Open-source SEGA console emulator for iOS.",
-    "localizedDescription": "Open-source SEGA console emulator developed for iOS.\n\nSupported Systems:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (requires BIOS files)\n• SEGA 32X\n• SEGA Master System\n\nFeatures:\n• PicoDrive (Libretro) emulation core\n• Metal-based rendering\n• Modern SwiftUI and Liquid Glass interface\n• On-screen touch controls and physical controller support\n• Save states and screenshots\n• Automatic cover art and game info via TheGamesDB\n\nYDrive does not contain any game ROMs or BIOS files; you must provide your own legally obtained copies.\n\nSource code: https://github.com/yigit4451/YDrive-Emulator",
+    "localizedDescription": "Open-source SEGA console emulator developed for iOS.\n\nSupported Systems:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (requires BIOS files)\n• SEGA 32X\n• SEGA Master System\n• SEGA Game Gear\n\nFeatures:\n• PicoDrive (Libretro) emulation core\n• Metal-based rendering\n• Modern SwiftUI and Liquid Glass interface\n• On-screen touch controls and physical controller support\n• Save states and screenshots\n• Automatic cover art and game info via TheGamesDB\n\nYDrive does not contain any game ROMs or BIOS files; you must provide your own legally obtained copies.\n\nSource code: https://github.com/yigit4451/YDrive-Emulator",
     "category": "games",
     "tintColor": "#005FD9",
     "screenshots": [
@@ -33,7 +33,7 @@
     {
       "title": "YDrive 1.0.2 Update",
       "identifier": "ydrive-1.0.2-update",
-      "caption": "YDrive 1.0.2 is now available!\n\n• Touch Input Fix: Resolved an input timing issue where button presses were triggering on touch release instead of touch down.\n• Duplicate ROMs Fix: Resolved an issue where adding ROMs could cause duplicate entries in the game library.\n• ROM Sharing: Added a Share button to the ROM card context menu and Details view to export games as .zip archives via the native iOS share sheet.\n• UI Refinements: Moved the metadata refresh option to the ROM card context menu and streamlined the Details view toolbar.",
+      "caption": "YDrive 1.0.2 is now available!\n\n• SEGA Game Gear Support: Full emulation support added for SEGA Game Gear titles.\n• Grid & List Layouts: Switch between card grid and compact list views directly in the home library.\n• ROM Sharing: Export and share selected games as .zip archives using the native iOS share sheet.\n• Touch Input Fix: Resolved an input timing issue where button presses were triggering on touch release instead of touch down.\n• Duplicate ROMs Fix: Resolved an issue where adding ROMs could cause duplicate entries in the game library.\n• UI Refinements: Streamlined the Details view and moved metadata refresh into the ROM context menu.",
       "date": "2026-10-29T12:00:00Z",
       "tintColor": "#005FD9",
       "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
