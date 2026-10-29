@@ -160,15 +160,6 @@ struct GameDetailView: View {
                         .tint(.red)
                         
                         Button {
-                            Task {
-                                await viewModel.fetchMetadata(for: game.id)
-                            }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        .tint(.blue)
-                        
-                        Button {
                             playingGame = game
                         } label: {
                             Image(systemName: "play.fill")

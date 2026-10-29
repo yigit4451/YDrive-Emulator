@@ -20,6 +20,7 @@
 "library.add_rom" = "Add ROM";
 "library.search" = "Search...";
 "library.refresh" = "Refresh Metadata";
+"library.refresh_data" = "Refresh Data";
 "library.game_info" = "Game Info";
 "library.rename" = "Rename";
 "library.delete" = "Delete";

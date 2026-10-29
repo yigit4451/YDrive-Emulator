@@ -20,6 +20,7 @@
 "library.add_rom" = "ROM Ekle";
 "library.search" = "Ara...";
 "library.refresh" = "Meta Veriyi Yenile";
+"library.refresh_data" = "Verileri Yenile";
 "library.game_info" = "Oyun Bilgileri";
 "library.rename" = "Yeniden Adlandır";
 "library.delete" = "Sil";

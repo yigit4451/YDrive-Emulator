@@ -448,6 +448,14 @@ struct GameLibraryView: View {
         }
 
         Button {
+            Task {
+                await viewModel.fetchMetadata(for: game.id)
+            }
+        } label: {
+            Label(NSLocalizedString("library.refresh_data", comment: ""), systemImage: "arrow.clockwise")
+        }
+
+        Button {
             renameTarget = game
             renameText = game.title
             showingRenameAlert = true
