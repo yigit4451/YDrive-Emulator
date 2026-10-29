@@ -97,6 +97,10 @@ __attribute__((swift_attr("@Sendable")))
 
 @end
 
+/// TEMP diagnostics: video presentation correlation (see LibretroBridge.m).
+FOUNDATION_EXPORT uint64_t YDriveCurrentFrameIndex(void);
+FOUNDATION_EXPORT void YDriveNotePresented(uint64_t producedFrame, uint64_t presentedUptimeNs);
+
 NS_ASSUME_NONNULL_END
 
 #endif /* LibretroBridge_h */

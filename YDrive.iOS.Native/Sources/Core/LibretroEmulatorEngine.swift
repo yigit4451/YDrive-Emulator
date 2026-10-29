@@ -25,6 +25,8 @@ struct EmulatorFrame: Sendable {
     /// Bytes per row (may be wider than width * bytesPerPixel due to padding)
     let pitch: Int
     let pixelFormat: YDrivePixelFormat
+    /// TEMP diagnostics: value of the bridge's retro_run counter when this frame was produced.
+    var producedFrame: UInt64 = 0
 }
 
 /// Consumer protocol for direct, zero-delay video frame delivery from the emulation queue to Metal
@@ -192,7 +194,8 @@ final class LibretroEmulatorEngine: ObservableObject {
                 width:       Int(frame.width),
                 height:      Int(frame.height),
                 pitch:       Int(frame.pitch),
-                pixelFormat: frame.pixelFormat
+                pixelFormat: frame.pixelFormat,
+                producedFrame: YDriveCurrentFrameIndex()
             )
 
             hub.handleFrame(ef)
@@ -209,7 +212,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         bridge.onInputTrace = { @Sendable message in
             InputLatencyProbe.log(message)
         }
-        InputLatencyProbe.log("---- session start (build 9) ----")
+        InputLatencyProbe.log("---- session start (build 10) ----")
 
         // Use the single shared serial emulation queue so previous session unload()
         // always finishes before the next session's loadGame() begins.

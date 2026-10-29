@@ -68,6 +68,9 @@ extern bool retro_load_game(const retro_game_info *game);
 extern void retro_unload_game(void);
 extern void retro_run(void);
 extern void retro_reset(void);
+// TEMP diagnostics: read-only access to emulated 68k work RAM (RETRO_MEMORY_SYSTEM_RAM = 2).
+extern void  *retro_get_memory_data(unsigned id);
+extern size_t retro_get_memory_size(unsigned id);
 extern size_t retro_serialize_size(void);
 extern bool retro_serialize(void *data, size_t size);
 extern bool retro_unserialize(const void *data, size_t size);
@@ -175,6 +178,7 @@ static _Atomic uint64_t gFirstReadNs[16];       // first time the core's input_s
 static _Atomic uint64_t gFirstReadFrame[16];    // gFrameIndex when that happened
 static _Atomic uint64_t gFirstReadRunStartNs[16];
 static _Atomic uint64_t gFramesSeen[16];        // distinct frames in which the core read the bit as 1
+static _Atomic uint64_t gFirstPresentedNs[16];  // first on-screen presentation of a frame run after the press
 static _Atomic uint64_t gLastSeenFrame[16];
 static _Atomic uint32_t gSlowRunLogged;
 
@@ -375,6 +379,53 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         void (^trace)(NSString *) = self.onInputTrace;
         if (trace) trace([NSString stringWithFormat:@"slowrun frame=%llu dur=%.2fms", frame, runMs]);
     }
+
+    // TEMP diagnostics (read-only): watch the GAME's own reaction in 68k work RAM while A/B/C
+    // (RetroPad ids 1/0/8) are held, plus 20 frames after release. Layout assumed (Sonic engine):
+    //   $FFF604/$FFF605 = game's joypad held/pressed copy, $FFD012 = player y-speed, $FFD00C = player y-pos.
+    // PicoDrive may keep RAM byte-swapped, so raw bytes are logged as stored and compared by value.
+    {
+        static BOOL     active = NO, released = NO;
+        static uint64_t startFrame = 0;
+        static int      tail = 0, events = 0;
+        static uint8_t  last[6];
+        static NSMutableString *buf = nil;
+        uint16_t m = (uint16_t)atomic_load(&gInputBitmask);
+        BOOL held = (m & 0x103) != 0;
+        void (^trace)(NSString *) = self.onInputTrace;
+        if (trace && (held || active)) {
+            if (!active) {
+                active = YES; released = NO; startFrame = frame; tail = 20; events = 0;
+                memset(last, 0xEE, sizeof(last));
+                buf = [NSMutableString string];
+            }
+            if (!held && !released) {
+                released = YES;
+                [buf appendFormat:@" |RELEASE@+%llu|", frame - startFrame];
+            } else if (held && released) {
+                released = NO; tail = 20;
+                [buf appendFormat:@" |REPRESS@+%llu|", frame - startFrame];
+            }
+            uint8_t *ram = (uint8_t *)retro_get_memory_data(2);
+            size_t   sz  = retro_get_memory_size(2);
+            if (ram && sz >= 0x10000) {
+                uint8_t cur[6] = { ram[0xF604], ram[0xF605], ram[0xD012], ram[0xD013], ram[0xD00C], ram[0xD00D] };
+                if (memcmp(cur, last, sizeof(cur)) != 0 && events < 60) {
+                    events++;
+                    memcpy(last, cur, sizeof(cur));
+                    [buf appendFormat:@" +%llu[pad %02x %02x|ySpd %02x %02x|yPos %02x %02x]",
+                        frame - startFrame, cur[0], cur[1], cur[2], cur[3], cur[4], cur[5]];
+                }
+            } else if (events == 0) {
+                events = 1;
+                [buf appendString:@" (system RAM unavailable)"];
+            }
+            if (released && --tail <= 0) {
+                trace([NSString stringWithFormat:@"ramtrace pressFrame=%llu changes:%@", startFrame, buf]);
+                active = NO; buf = nil;
+            }
+        }
+    }
 #endif
 }
 
@@ -389,6 +440,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
             atomic_store(&gPressStampNs[buttonID], now);
             // TEMP diagnostics: reset lifecycle counters, then publish the press start last.
             atomic_store(&gFirstReadNs[buttonID], 0);
+            atomic_store(&gFirstPresentedNs[buttonID], 0);
             atomic_store(&gFramesSeen[buttonID], 0);
             atomic_store(&gLastSeenFrame[buttonID], 0);
             atomic_store(&gPressFrame[buttonID], atomic_load(&gFrameIndex));
@@ -412,9 +464,12 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
                 double readMs   = (double)(firstRead - start) / 1.0e6;
                 double intoRun  = (double)(firstRead - atomic_load(&gFirstReadRunStartNs[buttonID])) / 1.0e6;
                 uint64_t rdFrm  = atomic_load(&gFirstReadFrame[buttonID]) - atomic_load(&gPressFrame[buttonID]);
+                uint64_t shown  = atomic_load(&gFirstPresentedNs[buttonID]);
+                NSString *shownStr = shown ? [NSString stringWithFormat:@"+%.1fms", (double)(shown - start) / 1.0e6]
+                                           : @"not-yet-presented";
                 trace([NSString stringWithFormat:
-                    @"life   id=%u held=%.1fms firstCoreRead=+%.2fms (frame +%llu, %.2fms into retro_run) framesCoreSawBit=%llu framesRun=%llu expected~%.0f",
-                    buttonID, heldMs, readMs, rdFrm, intoRun, seen, framesRun, heldMs / 16.67]);
+                    @"life   id=%u held=%.1fms firstCoreRead=+%.2fms (frame +%llu, %.2fms into retro_run) firstFramePresented=%@ framesCoreSawBit=%llu framesRun=%llu expected~%.0f",
+                    buttonID, heldMs, readMs, rdFrm, intoRun, shownStr, seen, framesRun, heldMs / 16.67]);
             }
         }
     }
@@ -505,3 +560,27 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 }
 
 @end
+
+// ── TEMP diagnostics: video presentation correlation ─────────────────────────
+uint64_t YDriveCurrentFrameIndex(void) {
+#if YDRIVE_CORE_AVAILABLE
+    return atomic_load(&gFrameIndex);
+#else
+    return 0;
+#endif
+}
+
+/// Called (from Metal's presented handler) when the frame produced by retro_run #producedFrame
+/// reached the display. Records, for every currently held button, the first presentation of a
+/// frame that was run at/after the press.
+void YDriveNotePresented(uint64_t producedFrame, uint64_t presentedUptimeNs) {
+#if YDRIVE_CORE_AVAILABLE
+    for (unsigned i = 0; i < 16; i++) {
+        if (atomic_load(&gPressStartNs[i]) == 0) continue;
+        if (atomic_load(&gFirstPresentedNs[i]) != 0) continue;
+        if (producedFrame > atomic_load(&gPressFrame[i])) {
+            atomic_store(&gFirstPresentedNs[i], presentedUptimeNs);
+        }
+    }
+#endif
+}
