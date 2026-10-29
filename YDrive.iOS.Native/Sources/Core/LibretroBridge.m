@@ -40,6 +40,12 @@ enum retro_pixel_format {
 #define RETRO_DEVICE_ID_JOYPAD_MASK             256
 #define RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY  9
 #define RETRO_ENVIRONMENT_SET_PIXEL_FORMAT      10
+#define RETRO_ENVIRONMENT_GET_VARIABLE          15
+
+typedef struct {
+    const char *key;
+    const char *value;
+} retro_variable;
 
 typedef struct {
     const char *path;
@@ -68,6 +74,7 @@ extern bool retro_load_game(const retro_game_info *game);
 extern void retro_unload_game(void);
 extern void retro_run(void);
 extern void retro_reset(void);
+extern void io_ports_reset(void);
 // TEMP diagnostics: read-only access to emulated 68k work RAM (RETRO_MEMORY_SYSTEM_RAM = 2).
 extern void  *retro_get_memory_data(unsigned id);
 extern size_t retro_get_memory_size(unsigned id);
@@ -113,6 +120,16 @@ static bool env_callback(unsigned cmd, void *data) {
         *dir = systemDir;
         os_log(gLog, "[CORE] GET_SYSTEM_DIRECTORY: %{public}s", systemDir);
         return true;
+    } else if (cmd == RETRO_ENVIRONMENT_GET_VARIABLE) {
+        retro_variable *var = (retro_variable *)data;
+        if (var && var->key) {
+            if (strcmp(var->key, "picodrive_input1") == 0 || strcmp(var->key, "picodrive_input2") == 0) {
+                var->value = "6 button pad";
+                os_log(gLog, "[CORE] GET_VARIABLE: %{public}s -> 6 button pad", var->key);
+                return true;
+            }
+        }
+        return false;
     }
     return false;
 }
@@ -345,6 +362,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     os_log(gLog, "[CORE] AV: %ux%u @ %.2f fps aspect=%.3f audio=%.0fHz",
            _videoWidth, _videoHeight, _targetFPS, _aspectRatio, _audioSampleRate);
 
+    io_ports_reset();
     retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
     retro_set_controller_port_device(1, RETRO_DEVICE_JOYPAD);
 
@@ -491,6 +509,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     atomic_store(&gInputBitmask, 0);
     if (_isRunning && gCoreGameLoaded && gBridgeInstance == self) {
         retro_reset();
+        io_ports_reset();
     }
 #endif
 }
