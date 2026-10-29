@@ -35,5 +35,16 @@
       }
     }
   ],
-  "news": []
+  "news": [
+    {
+      "title": "YDrive 1.0.2 Güncellemesi",
+      "identifier": "ydrive-1.0.2-update",
+      "caption": "YDrive 1.0.2 sürümü yayınlandı!\n\n• Dokunmatik Girdi Düzeltmesi: Genesis kontrolcüsünde A butonunun basış anı yerine bırakılınca zıplamasına neden olan çekirdek I/O döngü evirme hatası giderildi.\n• Çift ROM Düzeltmesi: ROM Ekle (+) ile eklenen oyunların kütüphanede mükerrer/çift görünme sorunu çözüldü.\n• ROM Paylaşma: ROM kartı seçenekler menüsüne ve Hakkında penceresine seçilen oyunu .zip arşivi olarak dışa aktaran iOS paylaşım menüsü eklendi.\n• Arayüz İyileştirmesi: TheGamesDB veri yenileme butonu kart seçeneklerine taşındı ve Hakkında penceresi sadeleştirildi.",
+      "date": "2026-10-29T12:00:00Z",
+      "tintColor": "#005FD9",
+      "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
+      "appID": "com.yigit.ydrive",
+      "url": "https://github.com/yigit4451/YDrive-Emulator/releases/tag/ios-v1.0.2"
+    }
+  ]
 }

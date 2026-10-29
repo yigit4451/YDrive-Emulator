@@ -226,7 +226,7 @@ def build_source(meta: dict, releases: list[dict], pages_url: str,
         "nsfw": bool(src_meta.get("nsfw", False)),
         "featuredApps": [bundle_id],
         "apps": [app],
-        "news": [],
+        "news": meta.get("news", []),
     }
 
 
