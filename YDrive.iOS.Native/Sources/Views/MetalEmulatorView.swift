@@ -396,11 +396,10 @@ final class MetalCoordinator: NSObject, MTKViewDelegate, VideoFrameConsumer, @un
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
         encoder.endEncoding()
 
-        // TEMP diagnostics: report when the frame we just drew actually reached the display.
+        // TEMP diagnostics: report when the GPU finishes rendering the frame we just drew.
         let produced = lastConsumedProducedFrame
-        commandBuffer.addPresentedHandler { drawable in
-            let t = drawable.presentedTime
-            let ns = t > 0 ? UInt64(t * 1_000_000_000) : clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
+        commandBuffer.addCompletedHandler { _ in
+            let ns = clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
             YDriveNotePresented(produced, ns)
         }
         commandBuffer.present(drawable)

@@ -178,7 +178,9 @@ static _Atomic uint64_t gFirstReadNs[16];       // first time the core's input_s
 static _Atomic uint64_t gFirstReadFrame[16];    // gFrameIndex when that happened
 static _Atomic uint64_t gFirstReadRunStartNs[16];
 static _Atomic uint64_t gFramesSeen[16];        // distinct frames in which the core read the bit as 1
-static _Atomic uint64_t gFirstPresentedNs[16];  // first on-screen presentation of a frame run after the press
+static _Atomic uint64_t gFirstPresentedNs[16];  // first GPU completion of a frame run after the press
+static _Atomic uint64_t gFramesPresented[16];   // distinct produced frames drawn by Metal while held
+static _Atomic uint64_t gLastPresentedFrame[16];
 static _Atomic uint64_t gLastSeenFrame[16];
 static _Atomic uint32_t gSlowRunLogged;
 
@@ -388,7 +390,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         static BOOL     active = NO, released = NO;
         static uint64_t startFrame = 0;
         static int      tail = 0, events = 0;
-        static uint8_t  last[6];
+        static uint8_t  last[8];
         static NSMutableString *buf = nil;
         uint16_t m = (uint16_t)atomic_load(&gInputBitmask);
         BOOL held = (m & 0x103) != 0;
@@ -409,12 +411,16 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
             uint8_t *ram = (uint8_t *)retro_get_memory_data(2);
             size_t   sz  = retro_get_memory_size(2);
             if (ram && sz >= 0x10000) {
-                uint8_t cur[6] = { ram[0xF604], ram[0xF605], ram[0xD012], ram[0xD013], ram[0xD00C], ram[0xD00D] };
+                uint8_t cur[8] = {
+                    ram[0xF604], ram[0xF605],
+                    ram[0xD012], ram[0xD013], ram[0xD00C], ram[0xD00D],
+                    ram[0xB012], ram[0xB013]
+                };
                 if (memcmp(cur, last, sizeof(cur)) != 0 && events < 60) {
                     events++;
                     memcpy(last, cur, sizeof(cur));
-                    [buf appendFormat:@" +%llu[pad %02x %02x|ySpd %02x %02x|yPos %02x %02x]",
-                        frame - startFrame, cur[0], cur[1], cur[2], cur[3], cur[4], cur[5]];
+                    [buf appendFormat:@" +%llu[pad %02x%02x|s1YSpd %02x%02x yPos %02x%02x|s2YSpd %02x%02x]",
+                        frame - startFrame, cur[0], cur[1], cur[2], cur[3], cur[4], cur[5], cur[6], cur[7]];
                 }
             } else if (events == 0) {
                 events = 1;
@@ -441,6 +447,8 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
             // TEMP diagnostics: reset lifecycle counters, then publish the press start last.
             atomic_store(&gFirstReadNs[buttonID], 0);
             atomic_store(&gFirstPresentedNs[buttonID], 0);
+            atomic_store(&gFramesPresented[buttonID], 0);
+            atomic_store(&gLastPresentedFrame[buttonID], 0);
             atomic_store(&gFramesSeen[buttonID], 0);
             atomic_store(&gLastSeenFrame[buttonID], 0);
             atomic_store(&gPressFrame[buttonID], atomic_load(&gFrameIndex));
@@ -465,11 +473,12 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
                 double intoRun  = (double)(firstRead - atomic_load(&gFirstReadRunStartNs[buttonID])) / 1.0e6;
                 uint64_t rdFrm  = atomic_load(&gFirstReadFrame[buttonID]) - atomic_load(&gPressFrame[buttonID]);
                 uint64_t shown  = atomic_load(&gFirstPresentedNs[buttonID]);
+                uint64_t drawn  = atomic_load(&gFramesPresented[buttonID]);
                 NSString *shownStr = shown ? [NSString stringWithFormat:@"+%.1fms", (double)(shown - start) / 1.0e6]
                                            : @"not-yet-presented";
                 trace([NSString stringWithFormat:
-                    @"life   id=%u held=%.1fms firstCoreRead=+%.2fms (frame +%llu, %.2fms into retro_run) firstFramePresented=%@ framesCoreSawBit=%llu framesRun=%llu expected~%.0f",
-                    buttonID, heldMs, readMs, rdFrm, intoRun, shownStr, seen, framesRun, heldMs / 16.67]);
+                    @"life   id=%u held=%.1fms firstCoreRead=+%.2fms (frame +%llu, %.2fms into retro_run) firstFramePresented=%@ framesPresented=%llu framesCoreSawBit=%llu framesRun=%llu expected~%.0f",
+                    buttonID, heldMs, readMs, rdFrm, intoRun, shownStr, drawn, seen, framesRun, heldMs / 16.67]);
             }
         }
     }
@@ -577,9 +586,13 @@ void YDriveNotePresented(uint64_t producedFrame, uint64_t presentedUptimeNs) {
 #if YDRIVE_CORE_AVAILABLE
     for (unsigned i = 0; i < 16; i++) {
         if (atomic_load(&gPressStartNs[i]) == 0) continue;
-        if (atomic_load(&gFirstPresentedNs[i]) != 0) continue;
         if (producedFrame > atomic_load(&gPressFrame[i])) {
-            atomic_store(&gFirstPresentedNs[i], presentedUptimeNs);
+            if (atomic_exchange(&gLastPresentedFrame[i], producedFrame) != producedFrame) {
+                atomic_fetch_add(&gFramesPresented[i], 1);
+            }
+            if (atomic_load(&gFirstPresentedNs[i]) == 0) {
+                atomic_store(&gFirstPresentedNs[i], presentedUptimeNs);
+            }
         }
     }
 #endif
