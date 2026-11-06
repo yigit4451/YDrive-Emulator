@@ -40,7 +40,7 @@ extern "C" {
 #define YD_SMS_CYCLES_PER_FRAME_PAL      (YD_SMS_CYCLES_PER_SCANLINE * YD_SMS_SCANLINES_PAL)  /* 71364 */
 
 /* SEGA Genesis / Mega Drive Clock & Frame Timing */
-#define YD_MD_CPU_CLOCK_NTSC             7670454u
+#define YD_MD_CPU_CLOCK_NTSC             7670453u
 #define YD_MD_CPU_CLOCK_PAL              7600489u
 #define YD_MD_CYCLES_PER_SCANLINE        488
 #define YD_MD_SCANLINES_NTSC_TOTAL       262

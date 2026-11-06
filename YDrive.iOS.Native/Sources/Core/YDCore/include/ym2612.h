@@ -96,8 +96,12 @@ typedef struct yd_ym2612 {
     uint8_t             ch3_mode;     /* Channel 3 Special Mode (R27 bits 7..6) */
 
     /* Timing & Audio Synthesis State */
-    uint32_t            clock_hz;     /* M68K Master Clock (7670454 NTSC / 7600489 PAL) */
+    uint32_t            clock_hz;     /* M68K Master Clock (7670453 NTSC / 7600489 PAL) */
     uint32_t            sample_rate;  /* Output PCM sample rate (e.g. 44100 Hz) */
+    uint32_t            step_lut[8];  /* Block 0..7 Q20 phase step LUT for 7.670453 MHz */
+    uint16_t            ch3_fnum[3];  /* Ch3 Special Mode F-Num (0xA8=Op3, 0xA9=Op1, 0xAA=Op2) */
+    uint8_t             ch3_block[3]; /* Ch3 Special Mode Block (0xAC=Op3, 0xAD=Op1, 0xAE=Op2) */
+    uint8_t             ch3_latch[3]; /* Ch3 Special Mode MSB latches (0xAC..0xAE) */
     uint64_t            phase_accum;  /* Fixed-point accumulator for M68K -> PCM rate */
     uint32_t            env_tick;     /* Envelope update divider */
 
