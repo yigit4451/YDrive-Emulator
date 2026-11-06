@@ -6,9 +6,10 @@ struct SettingsView: View {
     @AppStorage("appLanguage")         private var appLanguage        = "system"
 
     // Emulation & Audio
-    @AppStorage("audioEnabled")        private var audioEnabled        = true
-    @AppStorage("showFPS")             private var showFPS             = false
-    @AppStorage("videoFilter")         private var videoFilter         = "Off"
+    @AppStorage("audioEnabled")               private var audioEnabled        = true
+    @AppStorage("showFPS")                    private var showFPS             = false
+    @AppStorage("videoFilter")                private var videoFilter         = "Off"
+    @AppStorage(CoreSettings.selectedCoreKey) private var selectedCore: EmulationCoreType = .picodrive
 
     // Controller
     @AppStorage("hapticFeedback")      private var hapticFeedback      = true
@@ -20,7 +21,7 @@ struct SettingsView: View {
     @AppStorage("allRightShoulders")   private var allRightShoulders   = false
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.2"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.3"
 
         return "v\(version)"
     }
@@ -56,6 +57,17 @@ struct SettingsView: View {
                 Section(header: Label("settings.emulation", systemImage: "cpu.fill")) {
                     NavigationLink("settings.bios_files") {
                         BiosManagerView()
+                    }
+
+                    NavigationLink {
+                        ExperimentalSettingsView()
+                    } label: {
+                        HStack {
+                            Text("settings.experimental")
+                            Spacer()
+                            Text(selectedCore.shortBadgeTitle)
+                                .foregroundStyle(.secondary)
+                        }
                     }
 
                     Picker("settings.video_filter", selection: $videoFilter) {
@@ -133,7 +145,7 @@ struct SettingsView: View {
                     HStack {
                         Text("settings.core")
                         Spacer()
-                        Text("PicoDrive / Genesis Plus GX")
+                        Text(selectedCore == .ydCore ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive / Genesis Plus GX")
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.trailing)
                     }

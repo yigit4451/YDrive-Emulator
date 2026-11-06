@@ -9,8 +9,8 @@ options:
 settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.yigit.ydrive
-    MARKETING_VERSION: 1.0.2
-    CURRENT_PROJECT_VERSION: 13
+    MARKETING_VERSION: 1.0.3
+    CURRENT_PROJECT_VERSION: 14
     SWIFT_VERSION: "6.0"
     ENABLE_BITCODE: NO
     CODE_SIGNING_ALLOWED: NO
@@ -38,8 +38,9 @@ targets:
         SWIFT_OBJC_BRIDGING_HEADER: Sources/YDrive-Bridging-Header.h
         CLANG_ENABLE_OBJC_ARC: YES
         # When a libretro core .a is linked, set YDRIVE_CORE_AVAILABLE=1 here:
-        OTHER_CFLAGS: "-DYDRIVE_CORE_AVAILABLE=1"
+        OTHER_CFLAGS: "-DYDRIVE_CORE_AVAILABLE=1 -DYD_LIBRETRO_PREFIX_ONLY=1"
         OTHER_LDFLAGS: "-lpicodrive -lz"
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/Sources/Core/YDCore/include"
         LIBRARY_SEARCH_PATHS: "$(SRCROOT)/Sources/Core"
         KNOWN_REGIONS: "en tr"
         DEVELOPMENT_LANGUAGE: en
@@ -48,4 +49,3 @@ targets:
       - sdk: MetalKit.framework
       - sdk: GameController.framework
       - sdk: Photos.framework
-

@@ -1,15 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  LibretroBridge.m — Objective-C implementation of the libretro bridge
 //
-//  Two compilation modes:
-//
-//  1. YDRIVE_CORE_AVAILABLE = 0 (default, no binary linked)
-//     All methods are safe stubs. Build succeeds, app runs, emulator shows
-//     a "core not available" state. No linker errors.
-//
-//  2. YDRIVE_CORE_AVAILABLE = 1 (set in project.yml OTHER_CFLAGS when .a is linked)
-//     Real libretro symbols are resolved via extern "C". Full pipeline active.
-//
+//  Supports dynamic runtime switching between:
+//    1. PicoDrive (`retro_*` symbols from libpicodrive.a)
+//    2. YD-Core v1.2.0 (`yd_retro_*` symbols from YDCore pure C11 engine)
 // ─────────────────────────────────────────────────────────────────────────────
 
 #import "LibretroBridge.h"
@@ -66,6 +60,7 @@ typedef void (*retro_input_poll_t)(void);
 typedef int16_t (*retro_input_state_t)(unsigned port, unsigned device, unsigned index, unsigned id);
 typedef bool (*retro_environment_t)(unsigned cmd, void *data);
 
+// ── 1. PicoDrive Libretro Symbols (`retro_*`) ────────────────────────────────
 extern void retro_init(void);
 extern void retro_deinit(void);
 extern void retro_get_system_info(retro_system_info *info);
@@ -75,7 +70,6 @@ extern void retro_unload_game(void);
 extern void retro_run(void);
 extern void retro_reset(void);
 extern void io_ports_reset(void);
-// TEMP diagnostics: read-only access to emulated 68k work RAM (RETRO_MEMORY_SYSTEM_RAM = 2).
 extern void  *retro_get_memory_data(unsigned id);
 extern size_t retro_get_memory_size(unsigned id);
 extern size_t retro_serialize_size(void);
@@ -89,8 +83,82 @@ extern void retro_set_input_poll(retro_input_poll_t);
 extern void retro_set_input_state(retro_input_state_t);
 extern void retro_set_controller_port_device(unsigned port, unsigned device);
 
+// ── 2. YD-Core v1.2.0 Libretro Symbols (`yd_retro_*`) ────────────────────────
+extern void yd_retro_init(void);
+extern void yd_retro_deinit(void);
+extern void yd_retro_get_system_info(retro_system_info *info);
+extern void yd_retro_get_system_av_info(retro_system_av_info *info);
+extern bool yd_retro_load_game(const retro_game_info *game);
+extern void yd_retro_unload_game(void);
+extern void yd_retro_run(void);
+extern void yd_retro_reset(void);
+extern void  *yd_retro_get_memory_data(unsigned id);
+extern size_t yd_retro_get_memory_size(unsigned id);
+extern size_t yd_retro_serialize_size(void);
+extern bool yd_retro_serialize(void *data, size_t size);
+extern bool yd_retro_unserialize(const void *data, size_t size);
+extern void yd_retro_set_environment(retro_environment_t);
+extern void yd_retro_set_video_refresh(retro_video_refresh_t);
+extern void yd_retro_set_audio_sample(retro_audio_sample_t);
+extern void yd_retro_set_audio_sample_batch(retro_audio_sample_batch_t);
+extern void yd_retro_set_input_poll(retro_input_poll_t);
+extern void yd_retro_set_input_state(retro_input_state_t);
+extern void yd_retro_set_controller_port_device(unsigned port, unsigned device);
+
+// ── Dynamic Core Dispatch Table ──────────────────────────────────────────────
+typedef struct {
+    const char *name;
+    void   (*init)(void);
+    void   (*deinit)(void);
+    void   (*get_system_info)(retro_system_info *info);
+    void   (*get_system_av_info)(retro_system_av_info *info);
+    bool   (*load_game)(const retro_game_info *game);
+    void   (*unload_game)(void);
+    void   (*run)(void);
+    void   (*reset)(void);
+    void  *(*get_memory_data)(unsigned id);
+    size_t (*get_memory_size)(unsigned id);
+    size_t (*serialize_size)(void);
+    bool   (*serialize)(void *data, size_t size);
+    bool   (*unserialize)(const void *data, size_t size);
+    void   (*set_environment)(retro_environment_t);
+    void   (*set_video_refresh)(retro_video_refresh_t);
+    void   (*set_audio_sample)(retro_audio_sample_t);
+    void   (*set_audio_sample_batch)(retro_audio_sample_batch_t);
+    void   (*set_input_poll)(retro_input_poll_t);
+    void   (*set_input_state)(retro_input_state_t);
+    void   (*set_controller_port_device)(unsigned port, unsigned device);
+    bool   has_io_ports_reset;
+} YDriveCoreDispatchTable;
+
+static const YDriveCoreDispatchTable kPicoDriveTable = {
+    .name                       = "PicoDrive",
+    .init                       = retro_init,
+    .deinit                     = retro_deinit,
+    .get_system_info            = retro_get_system_info,
+    .get_system_av_info         = retro_get_system_av_info,
+    .load_game                  = retro_load_game,
+    .unload_game                = retro_unload_game,
+    .run                        = retro_run,
+    .reset                      = retro_reset,
+    .get_memory_data            = retro_get_memory_data,
+    .get_memory_size            = retro_get_memory_size,
+    .serialize_size             = retro_serialize_size,
+    .serialize                  = retro_serialize,
+    .unserialize                = retro_unserialize,
+    .set_environment            = retro_set_environment,
+    .set_video_refresh          = retro_set_video_refresh,
+    .set_audio_sample           = retro_set_audio_sample,
+    .set_audio_sample_batch     = retro_set_audio_sample_batch,
+    .set_input_poll             = retro_set_input_poll,
+    .set_input_state            = retro_set_input_state,
+    .set_controller_port_device = retro_set_controller_port_device,
+    .has_io_ports_reset         = true,
+};
+
 // ── Global bridge instance for C callbacks ───────────────────────────────────
 static __weak YDriveLibretroBridge *gBridgeInstance = nil;
+static const YDriveCoreDispatchTable *gActiveCore = &kPicoDriveTable;
 static YDrivePixelFormat gCurrentPixelFormat = YDrivePixelFormatRGB565;
 static BOOL gCoreGlobalInitialized = NO;
 static BOOL gCoreGameLoaded = NO;
@@ -122,10 +190,23 @@ static bool env_callback(unsigned cmd, void *data) {
         return true;
     } else if (cmd == RETRO_ENVIRONMENT_GET_VARIABLE) {
         retro_variable *var = (retro_variable *)data;
+        YDriveLibretroBridge *bridge = gBridgeInstance;
         if (var && var->key) {
             if (strcmp(var->key, "picodrive_input1") == 0 || strcmp(var->key, "picodrive_input2") == 0) {
                 var->value = "6 button pad";
                 os_log(gLog, "[CORE] GET_VARIABLE: %{public}s -> 6 button pad", var->key);
+                return true;
+            }
+            if (strcmp(var->key, "yd_fast_memory") == 0) {
+                var->value = (!bridge || bridge.fastMemoryEnabled) ? "enabled" : "disabled";
+                return true;
+            }
+            if (strcmp(var->key, "yd_audio_interpolation") == 0) {
+                var->value = (!bridge || bridge.audioInterpolationEnabled) ? "enabled" : "disabled";
+                return true;
+            }
+            if (strcmp(var->key, "yd_force_6button_pad") == 0) {
+                var->value = (bridge && bridge.forceSixButtonPad) ? "enabled" : "disabled";
                 return true;
             }
         }
@@ -257,58 +338,102 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _isRunning           = NO;
-        _videoWidth          = 320;
-        _videoHeight         = 224;
-        _aspectRatio         = 4.0f / 3.0f;
-        _targetFPS           = 60.0;
-        _audioSampleRate     = 44100.0;
-        _currentPixelFormat  = YDrivePixelFormatRGB565;
-        _coreInitialized     = NO;
+        _selectedCore              = YDriveEmulationCorePicoDrive;
+        _fastMemoryEnabled         = YES;
+        _audioInterpolationEnabled = YES;
+        _forceSixButtonPad         = NO;
+        _isRunning                 = NO;
+        _videoWidth                = 320;
+        _videoHeight               = 224;
+        _aspectRatio               = 4.0f / 3.0f;
+        _targetFPS                 = 60.0;
+        _audioSampleRate           = 44100.0;
+        _currentPixelFormat        = YDrivePixelFormatRGB565;
+        _coreInitialized           = NO;
     }
     return self;
 }
 
 - (BOOL)loadGameAtPath:(NSString *)romPath error:(NSError **)error {
-    os_log(gLog, "[CORE] loadGameAtPath: %{public}@", romPath.lastPathComponent);
+    os_log(gLog, "[CORE] loadGameAtPath: %{public}@ (selectedCore=%ld)",
+           romPath.lastPathComponent, (long)self.selectedCore);
 
 #if YDRIVE_CORE_AVAILABLE
-    // Ensure any previously loaded game in the global static core is cleanly unloaded first
-    if (gCoreGameLoaded) {
-        os_log(gLog, "[CORE] Unloading previous global game before loading new ROM");
-        retro_unload_game();
+    // Ensure any previously loaded game in the active global static core is cleanly unloaded first
+    if (gCoreGameLoaded && gActiveCore) {
+        os_log(gLog, "[CORE] Unloading previous global game on %{public}s before loading new ROM", gActiveCore->name);
+        gActiveCore->unload_game();
         gCoreGameLoaded = NO;
     }
     // Standard libretro lifecycle: every session is init -> load -> run -> unload -> deinit.
-    // Never carry core-internal state (input, timing, audio, video) over to the next ROM.
-    if (gCoreGlobalInitialized) {
-        retro_deinit();
+    if (gCoreGlobalInitialized && gActiveCore) {
+        gActiveCore->deinit();
         gCoreGlobalInitialized = NO;
-        os_log(gLog, "[CORE] retro_deinit() — stale core state cleared before new session");
+        os_log(gLog, "[CORE] %{public}s deinit() — stale core state cleared before new session", gActiveCore->name);
+    }
+
+    // ── Select dynamic core dispatch table (YD-Core v1.2.0 vs PicoDrive) ──────
+    static const YDriveCoreDispatchTable kYDCoreResolvedTable = {
+        .name                       = "YD-Core v1.2.0",
+        .init                       = yd_retro_init,
+        .deinit                     = yd_retro_deinit,
+        .get_system_info            = yd_retro_get_system_info,
+        .get_system_av_info         = yd_retro_get_system_av_info,
+        .load_game                  = yd_retro_load_game,
+        .unload_game                = yd_retro_unload_game,
+        .run                        = yd_retro_run,
+        .reset                      = yd_retro_reset,
+        .get_memory_data            = yd_retro_get_memory_data,
+        .get_memory_size            = yd_retro_get_memory_size,
+        .serialize_size             = yd_retro_serialize_size,
+        .serialize                  = yd_retro_serialize,
+        .unserialize                = yd_retro_unserialize,
+        .set_environment            = yd_retro_set_environment,
+        .set_video_refresh          = yd_retro_set_video_refresh,
+        .set_audio_sample           = yd_retro_set_audio_sample,
+        .set_audio_sample_batch     = yd_retro_set_audio_sample_batch,
+        .set_input_poll             = yd_retro_set_input_poll,
+        .set_input_state            = yd_retro_set_input_state,
+        .set_controller_port_device = yd_retro_set_controller_port_device,
+        .has_io_ports_reset         = false,
+    };
+
+    // Note: SEGA CD (.chd / .cue / .iso) or 32X (.32x) automatically fall back to PicoDrive
+    NSString *ext = romPath.pathExtension.lowercaseString;
+    BOOL isCDOr32X = ([ext isEqualToString:@"chd"] ||
+                      [ext isEqualToString:@"cue"] ||
+                      [ext isEqualToString:@"iso"] ||
+                      [ext isEqualToString:@"32x"]);
+
+    if (self.selectedCore == YDriveEmulationCoreYDCore && !isCDOr32X) {
+        gActiveCore = &kYDCoreResolvedTable;
+    } else {
+        gActiveCore = &kPicoDriveTable;
     }
 
     // ── Register C callbacks (always re-bind to ensure function pointers stay valid) ──
     gBridgeInstance = self;
+    gCurrentPixelFormat = YDrivePixelFormatRGB565;
     atomic_store(&gInputBitmask, 0);
 
-    retro_set_environment(env_callback);
-    retro_set_video_refresh(video_refresh_callback);
-    retro_set_audio_sample(audio_sample_callback);
-    retro_set_audio_sample_batch(audio_batch_callback);
-    retro_set_input_poll(input_poll_callback);
-    retro_set_input_state(input_state_callback);
+    gActiveCore->set_environment(env_callback);
+    gActiveCore->set_video_refresh(video_refresh_callback);
+    gActiveCore->set_audio_sample(audio_sample_callback);
+    gActiveCore->set_audio_sample_batch(audio_batch_callback);
+    gActiveCore->set_input_poll(input_poll_callback);
+    gActiveCore->set_input_state(input_state_callback);
 
     // ── Init ─────────────────────────────────────────────────────────────────
     if (!gCoreGlobalInitialized) {
-        retro_init();
+        gActiveCore->init();
         gCoreGlobalInitialized = YES;
-        os_log(gLog, "[CORE] retro_init() completed globally");
+        os_log(gLog, "[CORE] %{public}s init() completed globally", gActiveCore->name);
     }
     _coreInitialized = YES;
 
     // ── System info ──────────────────────────────────────────────────────────
     retro_system_info sysInfo = {0};
-    retro_get_system_info(&sysInfo);
+    gActiveCore->get_system_info(&sysInfo);
     os_log(gLog, "[CORE] Core: %{public}s v%{public}s needFullPath=%d",
            sysInfo.library_name, sysInfo.library_version, (int)sysInfo.need_fullpath);
 
@@ -335,9 +460,9 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         os_log(gLog, "[CORE] FullPath mode");
     }
 
-    BOOL loaded = retro_load_game(&gameInfo);
+    BOOL loaded = gActiveCore->load_game(&gameInfo);
     if (!loaded) {
-        os_log_error(gLog, "[CORE] retro_load_game returned false");
+        os_log_error(gLog, "[CORE] %{public}s load_game returned false", gActiveCore->name);
         if (error) {
             *error = [NSError errorWithDomain:@"YDriveBridgeError"
                                         code:2
@@ -346,11 +471,11 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
         return NO;
     }
     gCoreGameLoaded = YES;
-    os_log(gLog, "[CORE] retro_load_game SUCCESS");
+    os_log(gLog, "[CORE] %{public}s load_game SUCCESS", gActiveCore->name);
 
     // ── AV info ──────────────────────────────────────────────────────────────
     retro_system_av_info avInfo = {0};
-    retro_get_system_av_info(&avInfo);
+    gActiveCore->get_system_av_info(&avInfo);
     _videoWidth  = avInfo.geometry.base_width;
     _videoHeight = avInfo.geometry.base_height;
     _aspectRatio = (avInfo.geometry.aspect_ratio > 0.01f)
@@ -362,9 +487,11 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     os_log(gLog, "[CORE] AV: %ux%u @ %.2f fps aspect=%.3f audio=%.0fHz",
            _videoWidth, _videoHeight, _targetFPS, _aspectRatio, _audioSampleRate);
 
-    io_ports_reset();
-    retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
-    retro_set_controller_port_device(1, RETRO_DEVICE_JOYPAD);
+    if (gActiveCore->has_io_ports_reset) {
+        io_ports_reset();
+    }
+    gActiveCore->set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
+    gActiveCore->set_controller_port_device(1, RETRO_DEVICE_JOYPAD);
 
     _currentPixelFormat = gCurrentPixelFormat;
     _isRunning = YES;
@@ -386,13 +513,13 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 
 - (void)runFrame {
 #if YDRIVE_CORE_AVAILABLE
-    if (!_isRunning || !gCoreGameLoaded) return;
+    if (!_isRunning || !gCoreGameLoaded || !gActiveCore) return;
     if (gBridgeInstance != self) return;
     // TEMP diagnostics: bracket retro_run() with uptime stamps.
     uint64_t runStart = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
     atomic_store(&gRunStartNs, runStart);
     uint64_t frame = atomic_fetch_add(&gFrameIndex, 1) + 1;
-    retro_run();
+    gActiveCore->run();
     double runMs = (double)(clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - runStart) / 1.0e6;
     if (runMs > 14.0 && atomic_load(&gSlowRunLogged) < 40) {
         atomic_fetch_add(&gSlowRunLogged, 1);
@@ -401,9 +528,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     }
 
     // TEMP diagnostics (read-only): watch the GAME's own reaction in 68k work RAM while A/B/C
-    // (RetroPad ids 1/0/8) are held, plus 20 frames after release. Layout assumed (Sonic engine):
-    //   $FFF604/$FFF605 = game's joypad held/pressed copy, $FFD012 = player y-speed, $FFD00C = player y-pos.
-    // PicoDrive may keep RAM byte-swapped, so raw bytes are logged as stored and compared by value.
+    // (RetroPad ids 1/0/8) are held, plus 20 frames after release.
     {
         static BOOL     active = NO, released = NO;
         static uint64_t startFrame = 0;
@@ -426,8 +551,8 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
                 released = NO; tail = 20;
                 [buf appendFormat:@" |REPRESS@+%llu|", frame - startFrame];
             }
-            uint8_t *ram = (uint8_t *)retro_get_memory_data(2);
-            size_t   sz  = retro_get_memory_size(2);
+            uint8_t *ram = (uint8_t *)gActiveCore->get_memory_data(2);
+            size_t   sz  = gActiveCore->get_memory_size(2);
             if (ram && sz >= 0x10000) {
                 uint8_t cur[8] = {
                     ram[0xF604], ram[0xF605],
@@ -507,9 +632,11 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     os_log(gLog, "[CORE] reset called");
 #if YDRIVE_CORE_AVAILABLE
     atomic_store(&gInputBitmask, 0);
-    if (_isRunning && gCoreGameLoaded && gBridgeInstance == self) {
-        retro_reset();
-        io_ports_reset();
+    if (_isRunning && gCoreGameLoaded && gBridgeInstance == self && gActiveCore) {
+        gActiveCore->reset();
+        if (gActiveCore->has_io_ports_reset) {
+            io_ports_reset();
+        }
     }
 #endif
 }
@@ -517,19 +644,19 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (NSData * _Nullable)saveState {
     os_log(gLog, "[CORE] saveState called");
 #if YDRIVE_CORE_AVAILABLE
-    if (!_isRunning || !gCoreGameLoaded || gBridgeInstance != self) return nil;
+    if (!_isRunning || !gCoreGameLoaded || gBridgeInstance != self || !gActiveCore) return nil;
     
-    size_t size = retro_serialize_size();
+    size_t size = gActiveCore->serialize_size();
     if (size == 0) {
         os_log_error(gLog, "[CORE] Core does not support save states (size=0)");
         return nil;
     }
     
     NSMutableData *data = [NSMutableData dataWithLength:size];
-    if (retro_serialize(data.mutableBytes, size)) {
+    if (gActiveCore->serialize(data.mutableBytes, size)) {
         return data;
     } else {
-        os_log_error(gLog, "[CORE] retro_serialize failed");
+        os_log_error(gLog, "[CORE] serialize failed");
         return nil;
     }
 #else
@@ -540,18 +667,18 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 - (BOOL)loadState:(NSData *)data {
     os_log(gLog, "[CORE] loadState called");
 #if YDRIVE_CORE_AVAILABLE
-    if (!_isRunning || !gCoreGameLoaded || gBridgeInstance != self || !data || data.length == 0) return NO;
+    if (!_isRunning || !gCoreGameLoaded || gBridgeInstance != self || !gActiveCore || !data || data.length == 0) return NO;
     
-    size_t expectedSize = retro_serialize_size();
+    size_t expectedSize = gActiveCore->serialize_size();
     if (expectedSize == 0 || data.length != expectedSize) {
         os_log_error(gLog, "[CORE] State size mismatch: got %zu, expected %zu", data.length, expectedSize);
         return NO;
     }
     
-    if (retro_unserialize(data.bytes, data.length)) {
+    if (gActiveCore->unserialize(data.bytes, data.length)) {
         return YES;
     } else {
-        os_log_error(gLog, "[CORE] retro_unserialize failed");
+        os_log_error(gLog, "[CORE] unserialize failed");
         return NO;
     }
 #else
@@ -564,13 +691,13 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
 #if YDRIVE_CORE_AVAILABLE
     // Guard with gBridgeInstance == self so a deallocating old YDriveLibretroBridge
     // never unloads or clobbers a newly started session's global core!
-    if (gBridgeInstance == self) {
+    if (gBridgeInstance == self && gActiveCore) {
         if (_isRunning && gCoreGameLoaded) {
-            retro_unload_game();
+            gActiveCore->unload_game();
             gCoreGameLoaded = NO;
         }
         if (gCoreGlobalInitialized) {
-            retro_deinit();
+            gActiveCore->deinit();
             gCoreGlobalInitialized = NO;
         }
         atomic_store(&gInputBitmask, 0);

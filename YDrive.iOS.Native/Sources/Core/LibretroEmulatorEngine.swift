@@ -119,6 +119,7 @@ final class LibretroEmulatorEngine: ObservableObject {
     @Published private(set) var isPaused    = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var coreAvailable = false
+    @Published private(set) var activeCoreType: EmulationCoreType = .picodrive
 
     /// Latest rendered frame — queried for screenshots (thread-safe, not published to prevent 60fps view invalidations)
     var currentFrame: EmulatorFrame? {
@@ -174,7 +175,15 @@ final class LibretroEmulatorEngine: ObservableObject {
         let session = sessionID
         errorMessage = nil
 
-        log.info("[ENGINE] start() — ROM: \(romPath, privacy: .public)")
+        // Read persistent Experimental Settings (PicoDrive vs YD-Core v1.2.0)
+        let settings = CoreSettings.current()
+        self.activeCoreType              = settings.selectedCore
+        bridge.selectedCore              = (settings.selectedCore == .ydCore) ? .ydCore : .picoDrive
+        bridge.fastMemoryEnabled         = settings.fastMemory
+        bridge.audioInterpolationEnabled = settings.audioInterpolation
+        bridge.forceSixButtonPad         = settings.forceSixButton
+
+        log.info("[ENGINE] start() — ROM: \(romPath, privacy: .public), Core: \(settings.selectedCore.rawValue, privacy: .public)")
 
         // Wire up video callback before loadGame
         let hub = self.videoHub
@@ -212,7 +221,7 @@ final class LibretroEmulatorEngine: ObservableObject {
         bridge.onInputTrace = { @Sendable message in
             InputLatencyProbe.log(message)
         }
-        InputLatencyProbe.log("---- session start (build 13) ----")
+        InputLatencyProbe.log("---- session start (v1.0.3 / \(settings.selectedCore.rawValue)) ----")
 
         // Use the single shared serial emulation queue so previous session unload()
         // always finishes before the next session's loadGame() begins.
@@ -352,13 +361,14 @@ final class LibretroEmulatorEngine: ObservableObject {
     }
     
     private func saveStateURL(for gameFileName: String, slot: Int) -> URL {
+        let suffix = (activeCoreType == .ydCore) ? "_ydcore.state" : ".state"
         let gameURL = URL(fileURLWithPath: gameFileName)
         let gameDir = gameURL.deletingLastPathComponent()
         if gameDir.path.contains("ROM's") && gameDir.lastPathComponent != "ROM's" {
-            return gameDir.appendingPathComponent("slot\(slot).state")
+            return gameDir.appendingPathComponent("slot\(slot)\(suffix)")
         }
         let safeName = gameFileName.replacingOccurrences(of: "/", with: "_")
-        return getSavesDirectory(for: gameFileName).appendingPathComponent("\(safeName)_slot\(slot).state")
+        return getSavesDirectory(for: gameFileName).appendingPathComponent("\(safeName)_slot\(slot)\(suffix)")
     }
     
     func hasSaveState(for gameFileName: String, slot: Int) -> Bool {
@@ -366,7 +376,8 @@ final class LibretroEmulatorEngine: ObservableObject {
         if FileManager.default.fileExists(atPath: url.path) {
             return true
         }
-        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+        if activeCoreType == .picodrive,
+           let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
             if FileManager.default.fileExists(atPath: legacyURL.path) {
                 return true
@@ -380,7 +391,8 @@ final class LibretroEmulatorEngine: ObservableObject {
         if let attr = try? FileManager.default.attributesOfItem(atPath: url.path) {
             return attr[.modificationDate] as? Date
         }
-        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+        if activeCoreType == .picodrive,
+           let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
             let attr = try? FileManager.default.attributesOfItem(atPath: legacyURL.path)
             return attr?[.modificationDate] as? Date
@@ -413,7 +425,7 @@ final class LibretroEmulatorEngine: ObservableObject {
     func loadState(for gameFileName: String, slot: Int) async -> Bool {
         log.info("[ENGINE] Requesting load state for slot \(slot)")
         var url = saveStateURL(for: gameFileName, slot: slot)
-        if !FileManager.default.fileExists(atPath: url.path) {
+        if !FileManager.default.fileExists(atPath: url.path) && activeCoreType == .picodrive {
             if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
                 if FileManager.default.fileExists(atPath: legacyURL.path) {

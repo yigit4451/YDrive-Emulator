@@ -152,3 +152,21 @@
 "Developer" = "Developer";
 "Release Year" = "Release Year";
 "File" = "File";
+
+// Experimental Settings (v1.0.3)
+"settings.experimental" = "Experimental Settings";
+"Deneysel Ayarlar" = "Experimental Settings";
+"Emülasyon Çekirdeği" = "Emulation Core";
+"Aktif Çekirdek" = "Active Core";
+"PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (Default / Stable)";
+"YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (Experimental / Native Engine)";
+"YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core is a standalone SEGA core built from scratch in pure C. You can switch back to the default engine at any time.";
+"YD-Core Gelişmiş Ayarlar" = "YD-Core Advanced Settings";
+"Doğrudan Bellek Erişimi (DMA)" = "Direct Memory Access (DMA)";
+"Ses Enterpolasyonu (44.1 kHz)" = "Audio Interpolation (44.1 kHz)";
+"6-Buton Kontrolcü Zorla" = "Force 6-Button Controller";
+"Motor Mimarisi" = "Engine Architecture";
+"İşlemci Çekirdekleri" = "CPU Cores";
+"Ses Sentezleyici" = "Audio Synthesizer";
+"Durum Kaydı (Save State)" = "Save State Format";
+"YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";

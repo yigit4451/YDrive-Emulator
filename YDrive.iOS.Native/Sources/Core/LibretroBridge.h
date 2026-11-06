@@ -16,6 +16,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// ── Target Emulation Core (PicoDrive vs YD-Core v1.2.0) ──────────────────────
+typedef NS_ENUM(NSInteger, YDriveEmulationCore) {
+    YDriveEmulationCorePicoDrive NS_SWIFT_NAME(picoDrive) = 0,
+    YDriveEmulationCoreYDCore    NS_SWIFT_NAME(ydCore)    = 1,
+};
+
 // ── Pixel format mirroring libretro RETRO_PIXEL_FORMAT_* constants ────────────
 typedef NS_ENUM(NSInteger, YDrivePixelFormat) {
     YDrivePixelFormatTRGB1555 NS_SWIFT_NAME(trgb1555) = 0,
@@ -44,6 +50,14 @@ typedef void (^YDriveAudioPCMCallback)(const int16_t * _Nonnull data, size_t fra
 // ─────────────────────────────────────────────────────────────────────────────
 __attribute__((swift_attr("@Sendable")))
 @interface YDriveLibretroBridge : NSObject
+
+/// Active emulation core to dispatch when `loadGameAtPath:error:` is called.
+@property (nonatomic, assign) YDriveEmulationCore selectedCore;
+
+/// YD-Core Experimental Settings (forwarded via RETRO_ENVIRONMENT_GET_VARIABLE).
+@property (nonatomic, assign) BOOL fastMemoryEnabled;
+@property (nonatomic, assign) BOOL audioInterpolationEnabled;
+@property (nonatomic, assign) BOOL forceSixButtonPad;
 
 /// YES when the core should skip frame execution. Thread-safe atomic property.
 @property (atomic, assign) BOOL isPaused;
