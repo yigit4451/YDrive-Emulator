@@ -14,8 +14,8 @@ static bool    ym_lut_initialized = false;
 /* Peak operator output amplitude. The YM2612 operator output is a 13-bit signed
  * value (~+/-8191) which is exactly the same full-scale used by the 8-bit PCM DAC
  * ((dac - 0x80) << 6 = +/-8192). Using the same scale keeps FM carriers in
- * proportion to the DAC drums and doubles the phase-modulation depth to the
- * hardware value (mod = out >> 1, feedback = (p1 + p2) >> (10 - fb)). */
+ * proportion to the DAC drums while phase-modulation into the 10-bit sine LUT
+ * uses hardware-calibrated shifts (mod = out >> 2, feedback = (p1 + p2) >> (11 - fb)). */
 #define YD_YM2612_OP_PEAK 8191
 
 /* Initialize 1024-entry sine lookup table in [-8191, +8191] using Bhaskara I's
@@ -582,10 +582,11 @@ static inline int32_t clamp_ch14(int32_t v) {
 }
 
 static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
-    /* Operator 1 (Slot 1, +0x00) with Self-Feedback: (prev1 + prev2) >> (10 - fb) */
+    /* Operator 1 (Slot 1, +0x00) with Self-Feedback: (prev1 + prev2) >> (11 - fb)
+     * Calibrated for 13-bit operator peak (8191) modulating a 10-bit (1024-entry) sine LUT. */
     int32_t fb_mod = 0;
     if (ch->fb > 0u) {
-        fb_mod = (ch->op1_out[0] + ch->op1_out[1]) >> (10u - (ch->fb & 7u));
+        fb_mod = (ch->op1_out[0] + ch->op1_out[1]) >> (11u - (ch->fb & 7u));
     }
     int32_t out1   = eval_fm_operator(&ch->ops[0], fb_mod);
     ch->op1_out[1] = ch->op1_out[0];
@@ -594,48 +595,49 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
     int32_t out2 = 0, out3 = 0, out4 = 0, final_out = 0;
 
     /* 8 Standard YM2612 FM Algorithms
-     * ops[0] = Op1 (+0x00), ops[1] = Op2 (+0x08), ops[2] = Op3 (+0x04), ops[3] = Op4 (+0x0C) */
+     * ops[0] = Op1 (+0x00), ops[1] = Op2 (+0x08), ops[2] = Op3 (+0x04), ops[3] = Op4 (+0x0C)
+     * Phase modulation shift is >> 2 so +/-8191 maps to +/-2047 (+/-4pi) in the 1024-entry LUT. */
     switch (ch->alg & 7u) {
         case 0: /* Op1 -> Op2 -> Op3 -> Op4 (Carrier: Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
-            out3      = eval_fm_operator(&ch->ops[2], out2 >> 1);
-            final_out = eval_fm_operator(&ch->ops[3], out3 >> 1);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out3      = eval_fm_operator(&ch->ops[2], out2 >> 2);
+            final_out = eval_fm_operator(&ch->ops[3], out3 >> 2);
             break;
 
         case 1: /* (Op1 + Op2) -> Op3 -> Op4 (Carrier: Op4) */
             out2      = eval_fm_operator(&ch->ops[1], 0);
-            out3      = eval_fm_operator(&ch->ops[2], (out1 + out2) >> 1);
-            final_out = eval_fm_operator(&ch->ops[3], out3 >> 1);
+            out3      = eval_fm_operator(&ch->ops[2], (out1 + out2) >> 2);
+            final_out = eval_fm_operator(&ch->ops[3], out3 >> 2);
             break;
 
         case 2: /* (Op1 + (Op2 -> Op3)) -> Op4 (Carrier: Op4) */
             out2      = eval_fm_operator(&ch->ops[1], 0);
-            out3      = eval_fm_operator(&ch->ops[2], out2 >> 1);
-            final_out = eval_fm_operator(&ch->ops[3], (out1 + out3) >> 1);
+            out3      = eval_fm_operator(&ch->ops[2], out2 >> 2);
+            final_out = eval_fm_operator(&ch->ops[3], (out1 + out3) >> 2);
             break;
 
         case 3: /* ((Op1 -> Op2) + Op3) -> Op4 (Carrier: Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
             out3      = eval_fm_operator(&ch->ops[2], 0);
-            final_out = eval_fm_operator(&ch->ops[3], (out2 + out3) >> 1);
+            final_out = eval_fm_operator(&ch->ops[3], (out2 + out3) >> 2);
             break;
 
         case 4: /* (Op1 -> Op2) + (Op3 -> Op4) (Carriers: Op2 + Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
             out3      = eval_fm_operator(&ch->ops[2], 0);
-            out4      = eval_fm_operator(&ch->ops[3], out3 >> 1);
+            out4      = eval_fm_operator(&ch->ops[3], out3 >> 2);
             final_out = clamp_ch14(out2 + out4);
             break;
 
         case 5: /* Op1 -> (Op2 + Op3 + Op4) (Carriers: Op2 + Op3 + Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
-            out3      = eval_fm_operator(&ch->ops[2], out1 >> 1);
-            out4      = eval_fm_operator(&ch->ops[3], out1 >> 1);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out3      = eval_fm_operator(&ch->ops[2], out1 >> 2);
+            out4      = eval_fm_operator(&ch->ops[3], out1 >> 2);
             final_out = clamp_ch14(out2 + out3 + out4);
             break;
 
         case 6: /* (Op1 -> Op2) + Op3 + Op4 (Carriers: Op2 + Op3 + Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
             out3      = eval_fm_operator(&ch->ops[2], 0);
             out4      = eval_fm_operator(&ch->ops[3], 0);
             final_out = clamp_ch14(out2 + out3 + out4);
@@ -665,17 +667,13 @@ static void yd_ym2612_generate_one_sample(yd_ym2612_t *ym) {
         return;
     }
 
-    /* The YM2612 envelope generator is clocked once every 3 FM samples, i.e. every
-     * 3 * 144 = 432 master clocks (~17.76 kHz). Convert to the output sample rate
-     * with a fractional accumulator so ADSR times match the hardware. */
-    ym->eg_accum += (uint64_t)ym->clock_hz;
-    uint64_t eg_period = 432ULL * (uint64_t)ym->sample_rate;
-    while (ym->eg_accum >= eg_period) {
-        ym->eg_accum -= eg_period;
-        ym->env_tick++;
+    /* Advance ADSR envelopes at ~1/3 of internal FM rate (every 2 output samples) */
+    ym->env_tick++;
+    if ((ym->env_tick & 1u) == 0u) {
+        uint32_t eg_cnt = ym->env_tick >> 1;
         for (uint32_t c = 0; c < YD_YM2612_NUM_CHANNELS; c++) {
             for (uint32_t o = 0; o < YD_YM2612_NUM_OPERATORS; o++) {
-                yd_ym2612_step_op_envelope(&ym->channels[c], &ym->channels[c].ops[o], ym->env_tick);
+                yd_ym2612_step_op_envelope(&ym->channels[c], &ym->channels[c].ops[o], eg_cnt);
             }
         }
     }

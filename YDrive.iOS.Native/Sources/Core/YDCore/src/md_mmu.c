@@ -143,7 +143,6 @@ void yd_md_mmu_reset(yd_md_mmu_t *mmu) {
     memset(mmu->work_ram, 0, sizeof(mmu->work_ram));
     memset(mmu->z80_ram, 0, sizeof(mmu->z80_ram));
     memset(mmu->ym2612_regs, 0, sizeof(mmu->ym2612_regs));
-    mmu->ym2612_regs[1] = 0x2Au; /* Default Z80 Port 0 latch to YM2612 DAC register (0x2A) */
     memset(mmu->io_raw, 0, sizeof(mmu->io_raw));
     memset(mmu->tmss_reg, 0, sizeof(mmu->tmss_reg));
 
@@ -325,7 +324,7 @@ uint8_t yd_md_mmu_read8(void *ctx, uint32_t addr) {
 
     /* 0xA00000 - 0xA0FFFF: Z80 Address Space Window */
     if (addr >= 0xA00000u && addr <= 0xA0FFFFu) {
-        uint16_t zaddr = (uint16_t)(addr & 0xFFFFu);
+        uint16_t zaddr = (uint16_t)(addr & 0x7FFFu);
         if (zaddr < 0x4000u) {
             return mmu->z80_ram[zaddr & 0x1FFFu];
         }
@@ -334,9 +333,6 @@ uint8_t yd_md_mmu_read8(void *ctx, uint32_t addr) {
                 return mmu->sound.ym_read(mmu->sound.ctx, (uint8_t)(zaddr & 3u));
             }
             return 0x00u;
-        }
-        if (zaddr >= 0x8000u) {
-            return yd_md_z80_read_mem(mmu, zaddr);
         }
         return 0xFFu;
     }
@@ -436,16 +432,13 @@ void yd_md_mmu_write8(void *ctx, uint32_t addr, uint8_t val) {
 
     /* 0xA00000 - 0xA0FFFF: Z80 Address Space Window */
     if (addr >= 0xA00000u && addr <= 0xA0FFFFu) {
-        uint16_t zaddr = (uint16_t)(addr & 0xFFFFu);
+        uint16_t zaddr = (uint16_t)(addr & 0x7FFFu);
         if (zaddr < 0x4000u) {
             mmu->z80_ram[zaddr & 0x1FFFu] = val;
         } else if (zaddr >= 0x4000u && zaddr <= 0x5FFFu) {
             uint8_t port = (uint8_t)(zaddr & 3u);
             if ((port & 1u) == 0u) {
                 mmu->ym2612_regs[port] = val;
-                if (port == 0u && val == 0x2Au) {
-                    mmu->ym2612_regs[1] = 0x2Au;
-                }
                 if (mmu->sound.ym_write) {
                     mmu->sound.ym_write(mmu->sound.ctx, port, val);
                 }
