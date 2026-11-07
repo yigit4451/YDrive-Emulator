@@ -50,14 +50,23 @@ static void yd_md_vdp_sync_irq(yd_md_vdp_t *vdp) {
     bool ie0_vblank = (vdp->regs[1] & 0x20u) != 0u;
     bool ie1_hblank = (vdp->regs[0] & 0x10u) != 0u;
 
+    if (!ie0_vblank && vdp->m68k_cpu->int_level == 6u) {
+        vdp->m68k_cpu->int_level = 0u;
+    }
+    if (!ie1_hblank && vdp->m68k_cpu->int_level == 4u) {
+        vdp->m68k_cpu->int_level = 0u;
+    }
+
     if (vdp->v_int_pending && ie0_vblank) {
         if (vdp->m68k_cpu->int_level < 6u) {
             m68k_set_irq(vdp->m68k_cpu, 6u);
         }
+        vdp->v_int_pending = false;
     } else if (vdp->h_int_pending && ie1_hblank) {
         if (vdp->m68k_cpu->int_level < 4u) {
             m68k_set_irq(vdp->m68k_cpu, 4u);
         }
+        vdp->h_int_pending = false;
     }
 }
 
@@ -301,10 +310,11 @@ uint16_t yd_md_vdp_read_status(yd_md_vdp_t *vdp) {
     vdp->pending_second_word = false;
     uint16_t ret = vdp->status;
 
-    /* Reading the status register clears VIP, SOVR, and SCOL flags */
+    /* Reading the status register clears VIP, SOVR, SCOL, and pending V-Int latch */
     vdp->status &= (uint16_t)(0xFFFFu ^ (YD_MD_VDP_STATUS_VIP |
                                          YD_MD_VDP_STATUS_SOVR |
                                          YD_MD_VDP_STATUS_SCOL));
+    vdp->v_int_pending = false;
     return ret;
 }
 
@@ -316,6 +326,11 @@ void yd_md_vdp_write_control(yd_md_vdp_t *vdp, uint16_t val) {
             vdp->regs[reg_idx] = (uint8_t)(val & 0xFFu);
             if (reg_idx == 1u || reg_idx == 12u) {
                 yd_md_vdp_update_geometry(vdp);
+            }
+            if (reg_idx == 10u &&
+                (vdp->current_scanline == 0u || vdp->current_scanline >= vdp->active_height ||
+                 (vdp->status & YD_MD_VDP_STATUS_VBLK) != 0u)) {
+                vdp->h_int_counter = vdp->regs[10];
             }
             if (reg_idx == 0u || reg_idx == 1u) {
                 yd_md_vdp_sync_irq(vdp);
@@ -440,10 +455,8 @@ static uint16_t yd_md_vdp_get_hscroll(const yd_md_vdp_t *vdp, uint16_t scanline,
         case 1: /* First 8 lines */
             offset += (uint32_t)(scanline & 7u) * 4u;
             break;
-        case 2: /* Per 8-pixel cell row */
-            offset += (uint32_t)(scanline & ~7u) * 4u;
-            break;
-        case 3: /* Per scanline */
+        case 2: /* Line Scroll (R11 low 2 bits == 10: Plane A +0, Plane B +2 at scanline * 4) */
+        case 3: /* 1-Pixel Line Scroll (R11 low 2 bits == 11: Plane A +0, Plane B +2 at scanline * 4) */
             offset += (uint32_t)scanline * 4u;
             break;
     }
@@ -702,40 +715,40 @@ void yd_md_vdp_step_scanline(yd_md_vdp_t *vdp, uint16_t scanline) {
 
     vdp->current_scanline = scanline;
     vdp->v_counter        = (scanline <= 0xEAu) ? (uint8_t)scanline : (uint8_t)(scanline - 6u);
+    vdp->h_int_pending    = false;
 
     if (scanline < vdp->active_height) {
         vdp->status &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_VBLK);
         if (scanline == 0u) {
             vdp->v_int_pending = false;
         }
-    }
 
-    /* H-Interrupt Counter (R10): reloaded outside active display, decremented on 0..active_height */
-    if (scanline == 0u) {
-        vdp->h_int_counter = vdp->regs[10];
-    }
-    if (scanline <= vdp->active_height) {
+        /* H-Interrupt Counter (R10): decremented on active lines 0..active_height-1 */
         if (vdp->h_int_counter == 0u) {
             vdp->h_int_counter = vdp->regs[10];
-            vdp->h_int_pending = true;
             if ((vdp->regs[0] & 0x10u) != 0u && vdp->m68k_cpu) {
                 if (vdp->m68k_cpu->int_level < 4u) {
                     m68k_set_irq(vdp->m68k_cpu, 4u);
                 }
+            } else {
+                vdp->h_int_pending = true;
             }
         } else {
             vdp->h_int_counter--;
         }
     } else {
+        /* Outside active display (V-Blank): continually reload R10 into H-Int counter */
         vdp->h_int_counter = vdp->regs[10];
     }
 
     /* V-Blank starts at scanline == active_height (line 224 in V28, line 240 in V30) */
     if (scanline == vdp->active_height) {
-        vdp->status       |= (uint16_t)(YD_MD_VDP_STATUS_VBLK | YD_MD_VDP_STATUS_VIP);
-        vdp->v_int_pending = true;
+        vdp->status |= (uint16_t)(YD_MD_VDP_STATUS_VBLK | YD_MD_VDP_STATUS_VIP);
         if ((vdp->regs[1] & 0x20u) != 0u && vdp->m68k_cpu) {
             m68k_set_irq(vdp->m68k_cpu, 6u);
+            vdp->v_int_pending = false;
+        } else {
+            vdp->v_int_pending = true;
         }
     }
 }

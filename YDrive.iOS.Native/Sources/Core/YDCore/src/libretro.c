@@ -252,6 +252,8 @@ RETRO_API void RETRO_CALLCONV yd_retro_reset(void) {
     if (g_core) {
         yd_core_reset(g_core);
     }
+    g_prev_audio_l = 0;
+    g_prev_audio_r = 0;
 }
 
 RETRO_API bool RETRO_CALLCONV yd_retro_load_game(const struct retro_game_info *game) {

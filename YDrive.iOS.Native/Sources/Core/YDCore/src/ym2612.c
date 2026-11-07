@@ -189,9 +189,12 @@ void yd_ym2612_reset(yd_ym2612_t *ym) {
         ym->channels[c].pan_l = true;
         ym->channels[c].pan_r = true;
         for (uint32_t o = 0; o < YD_YM2612_NUM_OPERATORS; o++) {
-            ym->channels[c].ops[o].eg_state  = YD_YM_EG_OFF;
-            ym->channels[c].ops[o].env_level = 0x3FF;
-            ym->channels[c].ops[o].tl        = 127u;
+            ym->channels[c].ops[o].phase      = 0u;
+            ym->channels[c].ops[o].phase_step = 0u;
+            ym->channels[c].ops[o].eg_state   = YD_YM_EG_OFF;
+            ym->channels[c].ops[o].env_level  = 0x3FF;
+            ym->channels[c].ops[o].tl         = 127u;
+            ym->channels[c].ops[o].key_on     = false;
         }
     }
 }
@@ -661,15 +664,21 @@ static void yd_ym2612_generate_one_sample(yd_ym2612_t *ym) {
 
     for (uint32_t c = 0; c < YD_YM2612_NUM_CHANNELS; c++) {
         yd_ym2612_channel_t *ch = &ym->channels[c];
-        int32_t ch_out = 0;
 
-        /* Channel 6 (index 5) outputs 8-bit PCM DAC when Register 0x2B bit 7 is set */
+        /* Channel 6 (index 5) outputs 8-bit PCM DAC when Register 0x2B bit 7 is set,
+         * completely bypassing FM operator synthesis for Channel 6. */
         if (c == 5u && ym->dac_enabled) {
-            ch_out = ((int32_t)ym->dac_data - 128) * 32;
-        } else {
-            ch_out = synth_fm_channel(ch);
+            int16_t dac_val = (int16_t)(((int16_t)ym->dac_data - 0x80) << 6);
+            if (ch->pan_l) {
+                mix_l += dac_val;
+            }
+            if (ch->pan_r) {
+                mix_r += dac_val;
+            }
+            continue;
         }
 
+        int32_t ch_out = synth_fm_channel(ch);
         if (ch->pan_l) {
             mix_l += ch_out;
         }

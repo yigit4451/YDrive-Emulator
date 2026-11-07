@@ -146,13 +146,13 @@ void yd_md_mmu_reset(yd_md_mmu_t *mmu) {
     memset(mmu->io_raw, 0, sizeof(mmu->io_raw));
     memset(mmu->tmss_reg, 0, sizeof(mmu->tmss_reg));
 
-    /* Default controller TH lines high (0x40) */
+    /* Default controller TH lines high (0x40); io_ctrl cleared to 0x00 for cold-boot detection */
     mmu->io_data[0]        = 0x40u;
     mmu->io_data[1]        = 0x40u;
     mmu->io_data[2]        = 0x40u;
-    mmu->io_ctrl[0]        = 0x40u;
-    mmu->io_ctrl[1]        = 0x40u;
-    mmu->io_ctrl[2]        = 0x40u;
+    mmu->io_ctrl[0]        = 0x00u;
+    mmu->io_ctrl[1]        = 0x00u;
+    mmu->io_ctrl[2]        = 0x00u;
     mmu->pad_state[0]      = 0x0000u;
     mmu->pad_state[1]      = 0x0000u;
     mmu->pad_th_counter[0] = 0u;
@@ -160,7 +160,8 @@ void yd_md_mmu_reset(yd_md_mmu_t *mmu) {
     mmu->pad_timeout[0]    = 0u;
     mmu->pad_timeout[1]    = 0u;
 
-    mmu->z80_busreq    = false;
+    /* Power-on hardware defaults: Z80 BUSREQ asserted (1), Z80 RESET asserted (0 -> held in reset) */
+    mmu->z80_busreq    = true;
     mmu->z80_reset     = false;
     mmu->z80_bank_addr = 0u;
 
@@ -327,7 +328,7 @@ uint8_t yd_md_mmu_read8(void *ctx, uint32_t addr) {
         if (zaddr < 0x4000u) {
             return mmu->z80_ram[zaddr & 0x1FFFu];
         }
-        if (zaddr >= 0x4000u && zaddr <= 0x4003u) {
+        if (zaddr >= 0x4000u && zaddr <= 0x5FFFu) {
             if (mmu->sound.ym_read) {
                 return mmu->sound.ym_read(mmu->sound.ctx, (uint8_t)(zaddr & 3u));
             }
@@ -434,12 +435,12 @@ void yd_md_mmu_write8(void *ctx, uint32_t addr, uint8_t val) {
         uint16_t zaddr = (uint16_t)(addr & 0x7FFFu);
         if (zaddr < 0x4000u) {
             mmu->z80_ram[zaddr & 0x1FFFu] = val;
-        } else if (zaddr >= 0x4000u && zaddr <= 0x4003u) {
+        } else if (zaddr >= 0x4000u && zaddr <= 0x5FFFu) {
             mmu->ym2612_regs[zaddr & 3u] = val;
             if (mmu->sound.ym_write) {
                 mmu->sound.ym_write(mmu->sound.ctx, (uint8_t)(zaddr & 3u), val);
             }
-        } else if (zaddr >= 0x6000u && zaddr <= 0x60FFu) {
+        } else if (zaddr >= 0x6000u && zaddr <= 0x6FFFu) {
             mmu->z80_bank_addr = ((mmu->z80_bank_addr >> 1) | ((uint32_t)(val & 1u) << 23)) & 0xFF8000u;
         } else if (zaddr == 0x7F11u && mmu->sound.psg_write) {
             mmu->sound.psg_write(mmu->sound.ctx, val);
@@ -708,7 +709,7 @@ void yd_md_z80_write_mem(void *ctx, uint16_t addr, uint8_t val) {
         }
         return;
     }
-    if (addr >= 0x6000u && addr <= 0x60FFu) {
+    if (addr >= 0x6000u && addr <= 0x6FFFu) {
         mmu->z80_bank_addr = ((mmu->z80_bank_addr >> 1) | ((uint32_t)(val & 1u) << 23)) & 0xFF8000u;
         return;
     }

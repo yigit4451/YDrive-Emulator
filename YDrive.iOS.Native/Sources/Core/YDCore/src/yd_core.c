@@ -368,6 +368,10 @@ void yd_core_reset(yd_core_t *core) {
 
     if (core->system == YD_SYSTEM_MD) {
         yd_md_mmu_reset(&core->md_mmu);
+        memset(core->md_mmu.z80_ram, 0, 0x2000u);
+        core->md_mmu.z80_bank_addr = 0u;
+        core->md_mmu.z80_busreq    = true;
+        core->md_mmu.z80_reset     = false;
         yd_md_vdp_reset(&core->md_vdp);
         yd_ym2612_reset(&core->ym2612);
         yd_psg_reset(&core->psg);
@@ -419,30 +423,76 @@ int yd_core_run_frame(yd_core_t *core) {
         int frame_executed = 0;
 
         for (uint16_t line = 0; line < total_lines; line++) {
-            if (line < core->md_vdp.active_height) {
-                yd_md_vdp_render_scanline(&core->md_vdp, line);
+            yd_md_mmu_step_pad_timeout(&core->md_mmu);
+
+            if (line >= core->md_vdp.active_height) {
+                yd_md_vdp_step_scanline(&core->md_vdp, line);
+            } else {
+                core->md_vdp.current_scanline = line;
+                core->md_vdp.v_counter        = (line <= 0xEAu) ? (uint8_t)line : (uint8_t)(line - 6u);
+                core->md_vdp.status          &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_VBLK);
+                if (line == 0u) {
+                    core->md_vdp.v_int_pending = false;
+                }
             }
 
-            yd_md_mmu_step_pad_timeout(&core->md_mmu);
-            yd_md_vdp_step_scanline(&core->md_vdp, line);
             z80_set_int_line(&core->cpu, (line == core->md_vdp.active_height));
 
-            int line_target = YD_MD_CYCLES_PER_SCANLINE - core->cycle_deficit;
-            int line_exec   = 0;
+            int  line_target    = YD_MD_CYCLES_PER_SCANLINE - core->cycle_deficit;
+            int  hblank_trigger = (line_target * 400) / YD_MD_CYCLES_PER_SCANLINE;
+            int  line_exec      = 0;
+            int  z80_line_exec  = 0;
+            bool hblank_entered = false;
+
+            core->md_vdp.status &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_HBLK);
 
             while (line_exec < line_target) {
+                if (!hblank_entered && line_exec >= hblank_trigger) {
+                    hblank_entered = true;
+                    core->md_vdp.status |= YD_MD_VDP_STATUS_HBLK;
+                    if (line < core->md_vdp.active_height) {
+                        yd_md_vdp_render_scanline(&core->md_vdp, line);
+                        yd_md_vdp_step_scanline(&core->md_vdp, line);
+                    }
+                }
+
                 core->md_vdp.h_counter = (uint8_t)(((uint32_t)line_exec * 171u) / YD_MD_CYCLES_PER_SCANLINE);
                 int step_cyc = m68k_step(&core->md_cpu);
                 line_exec   += step_cyc;
+
+                /* Interleave Genesis Z80 sound co-processor in lockstep with M68K instructions */
+                int z80_target = (line_exec * YD_SMS_CYCLES_PER_SCANLINE) / YD_MD_CYCLES_PER_SCANLINE;
+                if (z80_target > YD_SMS_CYCLES_PER_SCANLINE) {
+                    z80_target = YD_SMS_CYCLES_PER_SCANLINE;
+                }
+                while (z80_line_exec < z80_target) {
+                    if (!core->md_mmu.z80_busreq && core->md_mmu.z80_reset) {
+                        bool prev_iff1 = core->cpu.iff1;
+                        int  zcyc      = z80_step(&core->cpu);
+                        if (core->cpu.int_line && prev_iff1 && !core->cpu.iff1) {
+                            z80_set_int_line(&core->cpu, false);
+                        }
+                        z80_line_exec += zcyc;
+                    } else {
+                        z80_line_exec = z80_target;
+                    }
+                }
+
+                /* Step YM2612 FM/DAC immediately per instruction so 0x2A PCM writes have zero lag */
+                yd_ym2612_step_cycles(&core->ym2612, step_cyc);
             }
 
-            /* Run Genesis Z80 sound co-processor when BUSREQ is released and RESET is deasserted */
-            if (!core->md_mmu.z80_busreq && core->md_mmu.z80_reset) {
-                z80_run(&core->cpu, YD_SMS_CYCLES_PER_SCANLINE);
+            if (!hblank_entered) {
+                core->md_vdp.status |= YD_MD_VDP_STATUS_HBLK;
+                if (line < core->md_vdp.active_height) {
+                    yd_md_vdp_render_scanline(&core->md_vdp, line);
+                    yd_md_vdp_step_scanline(&core->md_vdp, line);
+                }
             }
+            core->md_vdp.status &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_HBLK);
+            z80_set_int_line(&core->cpu, false);
 
-            /* Step YM2612 FM/DAC and SN76489 PSG for this scanline */
-            yd_ym2612_step_cycles(&core->ym2612, line_exec);
+            /* Step SN76489 PSG for this scanline */
             yd_psg_step_cycles(&core->psg, YD_SMS_CYCLES_PER_SCANLINE);
 
             core->cycle_deficit = line_exec - line_target;
