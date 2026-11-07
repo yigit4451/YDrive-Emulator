@@ -460,11 +460,12 @@ int yd_core_run_frame(yd_core_t *core) {
                 int step_cyc = m68k_step(&core->md_cpu);
                 line_exec   += step_cyc;
 
-                /* Interleave Genesis Z80 sound co-processor in lockstep with M68K instructions */
+                /* Interleave Genesis Z80 sound co-processor & SN76489 PSG in lockstep with M68K */
                 int z80_target = (line_exec * YD_SMS_CYCLES_PER_SCANLINE) / YD_MD_CYCLES_PER_SCANLINE;
                 if (z80_target > YD_SMS_CYCLES_PER_SCANLINE) {
                     z80_target = YD_SMS_CYCLES_PER_SCANLINE;
                 }
+                int z80_prev = z80_line_exec;
                 while (z80_line_exec < z80_target) {
                     if (!core->md_mmu.z80_busreq && core->md_mmu.z80_reset) {
                         bool prev_iff1 = core->cpu.iff1;
@@ -476,6 +477,9 @@ int yd_core_run_frame(yd_core_t *core) {
                     } else {
                         z80_line_exec = z80_target;
                     }
+                }
+                if (z80_line_exec > z80_prev) {
+                    yd_psg_step_cycles(&core->psg, z80_line_exec - z80_prev);
                 }
 
                 /* Step YM2612 FM/DAC immediately per instruction so 0x2A PCM writes have zero lag */
@@ -492,8 +496,9 @@ int yd_core_run_frame(yd_core_t *core) {
             core->md_vdp.status &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_HBLK);
             z80_set_int_line(&core->cpu, false);
 
-            /* Step SN76489 PSG for this scanline */
-            yd_psg_step_cycles(&core->psg, YD_SMS_CYCLES_PER_SCANLINE);
+            if (z80_line_exec < YD_SMS_CYCLES_PER_SCANLINE) {
+                yd_psg_step_cycles(&core->psg, YD_SMS_CYCLES_PER_SCANLINE - z80_line_exec);
+            }
 
             core->cycle_deficit = line_exec - line_target;
             frame_executed     += line_exec;

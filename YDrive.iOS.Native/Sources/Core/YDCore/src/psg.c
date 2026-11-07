@@ -2,13 +2,13 @@
 #include <string.h>
 
 /* ==========================================================================
- * SN76489 2dB-per-step Logarithmic Volume Table (Max = 6000 per channel)
+ * SN76489 Logarithmic Volume Table (15 Attenuation Steps + Silence, Balanced for YM2612 Mix)
  * ========================================================================== */
 static const int16_t psg_vol_table[16] = {
-    6000, 4766, 3786, 3007,
-    2389, 1897, 1507, 1197,
-     951,  755,  600,  476,
-     378,  300,  238,    0
+    5600, 4560, 3710, 3020,
+    2460, 2000, 1630, 1325,
+    1080,  880,  715,  580,
+     472,  384,  312,    0
 };
 
 /* ==========================================================================
@@ -50,10 +50,10 @@ static void yd_psg_tick_internal(yd_psg_t *psg) {
 
         /* Shift 16-bit SEGA LFSR on positive polarity edge */
         if (psg->noise_polarity > 0) {
-            uint16_t lfsr = psg->lfsr;
+            uint16_t lfsr = (psg->lfsr != 0u) ? psg->lfsr : 0x8000u;
             uint16_t fb   = (psg->noise_reg & 0x04u)
-                            ? ((lfsr & 1u) ^ ((lfsr >> 3) & 1u)) /* White noise (taps 0, 3) */
-                            : (lfsr & 1u);                        /* Periodic noise (tap 0)  */
+                            ? ((lfsr & 1u) ^ ((lfsr >> 3) & 1u)) /* White noise (SEGA taps 0, 3) */
+                            : (lfsr & 1u);                        /* Periodic noise (tap 0, 1/16 duty) */
             psg->lfsr     = (uint16_t)((lfsr >> 1) | (fb << 15));
         }
     }
@@ -170,7 +170,8 @@ void yd_psg_write(yd_psg_t *psg, uint8_t val) {
             psg->tone_reg[chan] = (psg->tone_reg[chan] & 0x03F0u) | data;
         } else {
             psg->noise_reg = data & 0x07u;
-            psg->lfsr      = 0x8000u; /* Writing to noise control resets LFSR */
+            /* Seed LFSR: 0xACE1 for immediate white-noise spectrum, 0x8000 for 16-step periodic */
+            psg->lfsr      = (psg->noise_reg & 0x04u) ? 0xACE1u : 0x8000u;
         }
     } else {
         /* Data Byte: 0 0 [d5 d4 d3 d2 d1 d0] */
@@ -182,7 +183,7 @@ void yd_psg_write(yd_psg_t *psg, uint8_t val) {
                                 | ((uint16_t)(val & 0x3Fu) << 4);
         } else {
             psg->noise_reg = val & 0x07u;
-            psg->lfsr      = 0x8000u;
+            psg->lfsr      = (psg->noise_reg & 0x04u) ? 0xACE1u : 0x8000u;
         }
     }
 }

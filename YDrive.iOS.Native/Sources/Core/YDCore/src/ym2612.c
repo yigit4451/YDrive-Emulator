@@ -219,10 +219,17 @@ void yd_ym2612_set_clock(yd_ym2612_t *ym, uint32_t clock_hz, uint32_t sample_rat
  * Register Write Decoder & Key-On / Key-Off Engine
  * ========================================================================== */
 
-static void yd_ym2612_key_on(const yd_ym2612_channel_t *ch, yd_ym2612_op_t *op) {
+static void yd_ym2612_key_on(yd_ym2612_channel_t *ch, yd_ym2612_op_t *op, bool is_op1) {
     if (!op->key_on) {
-        op->key_on   = true;
-        op->phase    = 0u;
+        op->key_on = true;
+        op->phase  = 0u;
+        if (is_op1) {
+            ch->op1_out[0] = 0;
+            ch->op1_out[1] = 0;
+        }
+        if (op->eg_state == YD_YM_EG_OFF || op->eg_state == YD_YM_EG_RELEASE) {
+            op->env_level = 0x3FF;
+        }
         uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
         uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
         if (rate >= 62u) {
@@ -235,19 +242,20 @@ static void yd_ym2612_key_on(const yd_ym2612_channel_t *ch, yd_ym2612_op_t *op) 
 }
 
 static void yd_ym2612_key_off(yd_ym2612_op_t *op) {
-    if (op->key_on) {
-        op->key_on = false;
-        if (op->eg_state != YD_YM_EG_OFF) {
-            op->eg_state = YD_YM_EG_RELEASE;
-        }
+    op->key_on = false;
+    if (op->eg_state != YD_YM_EG_OFF) {
+        op->eg_state = YD_YM_EG_RELEASE;
     }
 }
 
 static void yd_ym2612_write_reg(yd_ym2612_t *ym, uint8_t bank, uint8_t reg, uint8_t val) {
     ym->regs[bank & 1u][reg] = val;
 
-    /* 1. Global Registers (Bank 0, 0x22 .. 0x2B) */
-    if (bank == 0u && reg < 0x30u) {
+    /* 1. Global Registers (0x22 .. 0x2B) */
+    if (reg < 0x30u) {
+        if (bank != 0u && reg != 0x28u) {
+            return;
+        }
         switch (reg) {
             case 0x22: /* LFO */
                 ym->lfo_enabled = (val & 0x08u) != 0u;
@@ -293,7 +301,7 @@ static void yd_ym2612_write_reg(yd_ym2612_t *ym, uint8_t bank, uint8_t reg, uint
                 yd_ym2612_channel_t *ch = &ym->channels[ch_idx];
                 for (uint8_t o = 0; o < 4u; o++) {
                     if ((val & (1u << (4u + o))) != 0u) {
-                        yd_ym2612_key_on(ch, &ch->ops[o]);
+                        yd_ym2612_key_on(ch, &ch->ops[o], (o == 0u));
                     } else {
                         yd_ym2612_key_off(&ch->ops[o]);
                     }

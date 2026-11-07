@@ -436,13 +436,21 @@ void yd_md_mmu_write8(void *ctx, uint32_t addr, uint8_t val) {
         if (zaddr < 0x4000u) {
             mmu->z80_ram[zaddr & 0x1FFFu] = val;
         } else if (zaddr >= 0x4000u && zaddr <= 0x5FFFu) {
-            mmu->ym2612_regs[zaddr & 3u] = val;
-            if (mmu->sound.ym_write) {
-                mmu->sound.ym_write(mmu->sound.ctx, (uint8_t)(zaddr & 3u), val);
+            uint8_t port = (uint8_t)(zaddr & 3u);
+            if ((port & 1u) == 0u) {
+                mmu->ym2612_regs[port] = val;
+                if (mmu->sound.ym_write) {
+                    mmu->sound.ym_write(mmu->sound.ctx, port, val);
+                }
+            } else {
+                if (mmu->sound.ym_write) {
+                    mmu->sound.ym_write(mmu->sound.ctx, (uint8_t)(port - 1u), mmu->ym2612_regs[port - 1u]);
+                    mmu->sound.ym_write(mmu->sound.ctx, port, val);
+                }
             }
         } else if (zaddr >= 0x6000u && zaddr <= 0x6FFFu) {
             mmu->z80_bank_addr = ((mmu->z80_bank_addr >> 1) | ((uint32_t)(val & 1u) << 23)) & 0xFF8000u;
-        } else if (zaddr == 0x7F11u && mmu->sound.psg_write) {
+        } else if ((zaddr == 0x7F11u || zaddr == 0x7F13u || zaddr == 0x7F15u || zaddr == 0x7F17u) && mmu->sound.psg_write) {
             mmu->sound.psg_write(mmu->sound.ctx, val);
         }
         return;
@@ -703,9 +711,17 @@ void yd_md_z80_write_mem(void *ctx, uint16_t addr, uint8_t val) {
         return;
     }
     if (addr < 0x6000u) {
-        mmu->ym2612_regs[addr & 3u] = val;
-        if (mmu->sound.ym_write) {
-            mmu->sound.ym_write(mmu->sound.ctx, (uint8_t)(addr & 3u), val);
+        uint8_t port = (uint8_t)(addr & 3u);
+        if ((port & 1u) == 0u) {
+            mmu->ym2612_regs[port | 1u] = val;
+            if (mmu->sound.ym_write) {
+                mmu->sound.ym_write(mmu->sound.ctx, port, val);
+            }
+        } else {
+            if (mmu->sound.ym_write) {
+                mmu->sound.ym_write(mmu->sound.ctx, (uint8_t)(port - 1u), mmu->ym2612_regs[port]);
+                mmu->sound.ym_write(mmu->sound.ctx, port, val);
+            }
         }
         return;
     }
