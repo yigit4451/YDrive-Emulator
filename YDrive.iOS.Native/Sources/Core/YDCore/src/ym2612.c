@@ -765,8 +765,8 @@ void yd_ym2612_mix_into(const yd_ym2612_t *ym, int16_t *dst_pcm, uint32_t num_st
         int16_t psg_out_l = dst_pcm[i * 2u + 0u];
         int16_t psg_out_r = dst_pcm[i * 2u + 1u];
 
-        int32_t mixed_l = (int32_t)ym_left  + ((int32_t)psg_out_l * 3 / 4);
-        int32_t mixed_r = (int32_t)ym_right + ((int32_t)psg_out_r * 3 / 4);
+        int32_t mixed_l = (int32_t)ym_left  + ((int32_t)psg_out_l * 3 / 2);
+        int32_t mixed_r = (int32_t)ym_right + ((int32_t)psg_out_r * 3 / 2);
 
         if (mixed_l > 32767)       mixed_l = 32767;
         else if (mixed_l < -32768) mixed_l = -32768;
