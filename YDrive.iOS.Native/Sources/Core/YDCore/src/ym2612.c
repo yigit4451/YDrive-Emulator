@@ -11,7 +11,14 @@
 static int16_t ym_sin_lut[1024];
 static bool    ym_lut_initialized = false;
 
-/* Initialize 1024-entry sine lookup table in [-4096, +4096] using Bhaskara I's
+/* Peak operator output amplitude. The YM2612 operator output is a 13-bit signed
+ * value (~+/-8191) which is exactly the same full-scale used by the 8-bit PCM DAC
+ * ((dac - 0x80) << 6 = +/-8192). Using the same scale keeps FM carriers in
+ * proportion to the DAC drums and doubles the phase-modulation depth to the
+ * hardware value (mod = out >> 1, feedback = (p1 + p2) >> (10 - fb)). */
+#define YD_YM2612_OP_PEAK 8191
+
+/* Initialize 1024-entry sine lookup table in [-8191, +8191] using Bhaskara I's
  * rational approximation so no <math.h> / libm link is required. */
 static void yd_ym2612_init_lut(void) {
     if (ym_lut_initialized) {
@@ -21,7 +28,7 @@ static void yd_ym2612_init_lut(void) {
         /* Map i in [0..511] to [0..180] in fixed point (x100) */
         int64_t x     = ((int64_t)i * 18000) / 512;
         int64_t p     = x * (18000 - x);
-        int64_t numer = 4 * p * 4096;
+        int64_t numer = 4 * p * YD_YM2612_OP_PEAK;
         int64_t denom = 405000000LL - p;
         int16_t val   = (denom != 0) ? (int16_t)(numer / denom) : 0;
         ym_sin_lut[i]       = val;
@@ -460,7 +467,9 @@ static uint8_t ym_get_eg_increment(uint8_t rate, uint32_t env_cnt) {
             return 0u;
         }
         uint8_t step = (uint8_t)((env_cnt >> div_shift) & 7u);
-        uint8_t row  = (rate < 8u) ? sub : (uint8_t)(4u + sub);
+        /* Rates 4..47 always use the "R+0..R+3" patterns (rows 4..7); the
+         * rate>>2 divider alone selects the speed. */
+        uint8_t row  = (uint8_t)(4u + sub);
         return ym_eg_inc_tab[row][step];
     } else {
         uint8_t step = (uint8_t)(env_cnt & 7u);
@@ -557,7 +566,12 @@ static inline int32_t eval_fm_operator(yd_ym2612_op_t *op, int32_t phase_mod) {
 
     uint32_t phase_idx = ((op->phase >> 10) + (uint32_t)phase_mod) & 0x3FFu;
     int32_t  raw_sin   = ym_sin_lut[phase_idx];
-    int32_t  total_att = op->env_level + ((int32_t)op->tl << 3);
+    /* Envelope (10-bit, 0.09375 dB/step) + Total Level (7-bit, 0.75 dB/step = 8 EG steps),
+     * saturated at the 10-bit maximum attenuation (silence). */
+    int32_t total_att = op->env_level + ((int32_t)op->tl << 3);
+    if (total_att > 0x3FF) {
+        total_att = 0x3FF;
+    }
     return ym_apply_attenuation(raw_sin, total_att);
 }
 
@@ -635,7 +649,9 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
             break;
     }
 
-    return final_out;
+    /* Every channel output (single or multi-carrier sum) is saturated to the 14-bit
+     * channel range only; no additional attenuation before the stereo mixer. */
+    return clamp_ch14(final_out);
 }
 
 static inline int16_t clamp_pcm16(int32_t v) {
@@ -649,13 +665,17 @@ static void yd_ym2612_generate_one_sample(yd_ym2612_t *ym) {
         return;
     }
 
-    /* Advance ADSR envelopes at ~1/3 of internal FM rate (every 2 output samples) */
-    ym->env_tick++;
-    if ((ym->env_tick & 1u) == 0u) {
-        uint32_t eg_cnt = ym->env_tick >> 1;
+    /* The YM2612 envelope generator is clocked once every 3 FM samples, i.e. every
+     * 3 * 144 = 432 master clocks (~17.76 kHz). Convert to the output sample rate
+     * with a fractional accumulator so ADSR times match the hardware. */
+    ym->eg_accum += (uint64_t)ym->clock_hz;
+    uint64_t eg_period = 432ULL * (uint64_t)ym->sample_rate;
+    while (ym->eg_accum >= eg_period) {
+        ym->eg_accum -= eg_period;
+        ym->env_tick++;
         for (uint32_t c = 0; c < YD_YM2612_NUM_CHANNELS; c++) {
             for (uint32_t o = 0; o < YD_YM2612_NUM_OPERATORS; o++) {
-                yd_ym2612_step_op_envelope(&ym->channels[c], &ym->channels[c].ops[o], eg_cnt);
+                yd_ym2612_step_op_envelope(&ym->channels[c], &ym->channels[c].ops[o], ym->env_tick);
             }
         }
     }

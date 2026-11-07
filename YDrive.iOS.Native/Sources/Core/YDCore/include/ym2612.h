@@ -103,7 +103,8 @@ typedef struct yd_ym2612 {
     uint8_t             ch3_block[3]; /* Ch3 Special Mode Block (0xAC=Op3, 0xAD=Op1, 0xAE=Op2) */
     uint8_t             ch3_latch[3]; /* Ch3 Special Mode MSB latches (0xAC..0xAE) */
     uint64_t            phase_accum;  /* Fixed-point accumulator for M68K -> PCM rate */
-    uint32_t            env_tick;     /* Envelope update divider */
+    uint32_t            env_tick;     /* Envelope generator counter (1 tick = 3 FM samples) */
+    uint64_t            eg_accum;     /* Fixed-point accumulator for master clock -> EG tick */
 
     /* Output Stereo PCM Buffer (Interleaved L, R) */
     int16_t             sample_buffer[YD_YM2612_MAX_SAMPLES * 2u];
