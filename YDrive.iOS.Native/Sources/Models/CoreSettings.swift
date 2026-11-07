@@ -31,11 +31,13 @@ enum EmulationCoreType: String, CaseIterable, Identifiable, Sendable {
 
 /// Persistent `@AppStorage` keys and snapshot model for emulation core configuration.
 struct CoreSettings: Sendable {
+    static let enableExperimentalKey = "enableExperimentalCore"
     static let selectedCoreKey       = "selected_emulation_core"
     static let fastMemoryKey         = "yd_fast_memory"
     static let audioInterpolationKey = "yd_audio_interpolation"
     static let forceSixButtonKey     = "yd_force_6button_pad"
 
+    let enableExperimentalCore: Bool
     let selectedCore: EmulationCoreType
     let fastMemory: Bool
     let audioInterpolation: Bool
@@ -44,15 +46,18 @@ struct CoreSettings: Sendable {
     /// Reads the current persistent core settings from `UserDefaults.standard`.
     static func current() -> CoreSettings {
         let defaults = UserDefaults.standard
+        let expEnabled = defaults.object(forKey: enableExperimentalKey) as? Bool ?? false
         let rawCore = defaults.string(forKey: selectedCoreKey) ?? EmulationCoreType.picodrive.rawValue
-        let core = EmulationCoreType(rawValue: rawCore) ?? .picodrive
+        let storedCore = EmulationCoreType(rawValue: rawCore) ?? .picodrive
+        let activeCore: EmulationCoreType = expEnabled ? storedCore : .picodrive
 
         let fastMem = defaults.object(forKey: fastMemoryKey) as? Bool ?? true
         let audioInterp = defaults.object(forKey: audioInterpolationKey) as? Bool ?? true
         let force6Btn = defaults.object(forKey: forceSixButtonKey) as? Bool ?? false
 
         return CoreSettings(
-            selectedCore: core,
+            enableExperimentalCore: expEnabled,
+            selectedCore: activeCore,
             fastMemory: fastMem,
             audioInterpolation: audioInterp,
             forceSixButton: force6Btn

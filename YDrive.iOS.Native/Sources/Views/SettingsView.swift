@@ -6,9 +6,10 @@ struct SettingsView: View {
     @AppStorage("appLanguage")         private var appLanguage        = "system"
 
     // Emulation & Audio
-    @AppStorage("audioEnabled")               private var audioEnabled        = true
-    @AppStorage("showFPS")                    private var showFPS             = false
-    @AppStorage("videoFilter")                private var videoFilter         = "Off"
+    @AppStorage("audioEnabled")               private var audioEnabled           = true
+    @AppStorage("showFPS")                    private var showFPS                = false
+    @AppStorage("videoFilter")                private var videoFilter            = "Off"
+    @AppStorage("enableExperimentalCore")     private var enableExperimentalCore = false
     @AppStorage(CoreSettings.selectedCoreKey) private var selectedCore: EmulationCoreType = .picodrive
 
     // Controller
@@ -59,17 +60,6 @@ struct SettingsView: View {
                         BiosManagerView()
                     }
 
-                    NavigationLink {
-                        ExperimentalSettingsView()
-                    } label: {
-                        HStack {
-                            Text("settings.experimental")
-                            Spacer()
-                            Text(selectedCore.shortBadgeTitle)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
                     Picker("settings.video_filter", selection: $videoFilter) {
                         Text("Off").tag("Off")
                         Text("CRT").tag("CRT")
@@ -82,6 +72,22 @@ struct SettingsView: View {
 
                     Toggle("settings.show_fps", isOn: $showFPS)
                         .tint(.blue)
+                }
+                .listRowBackground(Color.clear.background(.ultraThinMaterial))
+
+                // ── DENEYSEL (EXPERIMENTAL) ───────────────────────────────────
+                Section(
+                    header: Label("Experimental", systemImage: "flask.fill"),
+                    footer: Text("Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir.")
+                ) {
+                    NavigationLink(destination: ExperimentalSettingsView()) {
+                        HStack {
+                            Text("settings.experimental")
+                            Spacer()
+                            Text("YD-Core v1.2.0")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
@@ -145,7 +151,7 @@ struct SettingsView: View {
                     HStack {
                         Text("settings.core")
                         Spacer()
-                        Text(selectedCore == .ydCore ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive / Genesis Plus GX")
+                        Text((enableExperimentalCore && selectedCore == .ydCore) ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive / Genesis Plus GX")
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.trailing)
                     }

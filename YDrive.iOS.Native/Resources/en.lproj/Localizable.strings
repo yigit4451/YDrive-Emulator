@@ -154,6 +154,13 @@
 "File" = "File";
 
 // Experimental Settings (v1.0.3)
+"Experimental" = "Experimental";
+"Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir." = "Experimental features are under active development and may cause instability.";
+"Deneysel Çekirdek (YD-Core)" = "Experimental Core (YD-Core)";
+"Deneysel çekirdek etkinleştirildiğinde YD-Core v1.2.0 motoru ve gelişmiş donanım seçenekleri açılır." = "Enabling the experimental core unlocks the YD-Core v1.2.0 engine and advanced hardware options.";
+"Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "Experimental settings are still in development and may contain bugs. Do you still want to enable experimental settings?";
+"Vazgeç" = "Cancel";
+"Aç" = "Enable";
 "settings.experimental" = "Experimental Settings";
 "Deneysel Ayarlar" = "Experimental Settings";
 "Emülasyon Çekirdeği" = "Emulation Core";
