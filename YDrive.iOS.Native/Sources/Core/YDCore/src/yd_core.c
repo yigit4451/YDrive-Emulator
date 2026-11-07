@@ -404,6 +404,33 @@ int yd_core_step(yd_core_t *core) {
     return cyc;
 }
 
+static void yd_core_mix_audio(yd_core_t *core) {
+    uint32_t count = core->psg.sample_count;
+    if (core->ym2612.sample_count < count) {
+        count = core->ym2612.sample_count;
+        core->psg.sample_count = count;
+    }
+
+    for (uint32_t i = 0; i < count; i++) {
+        int16_t ym_left   = core->ym2612.sample_buffer[i * 2u + 0u];
+        int16_t ym_right  = core->ym2612.sample_buffer[i * 2u + 1u];
+        int16_t psg_out_l = core->psg.sample_buffer[i * 2u + 0u];
+        int16_t psg_out_r = core->psg.sample_buffer[i * 2u + 1u];
+
+        int32_t mixed_l = (int32_t)ym_left  + ((int32_t)psg_out_l * 3 / 4);
+        int32_t mixed_r = (int32_t)ym_right + ((int32_t)psg_out_r * 3 / 4);
+
+        if (mixed_l > 32767)       mixed_l = 32767;
+        else if (mixed_l < -32768) mixed_l = -32768;
+
+        if (mixed_r > 32767)       mixed_r = 32767;
+        else if (mixed_r < -32768) mixed_r = -32768;
+
+        core->psg.sample_buffer[i * 2u + 0u] = (int16_t)mixed_l;
+        core->psg.sample_buffer[i * 2u + 1u] = (int16_t)mixed_r;
+    }
+}
+
 int yd_core_run_frame(yd_core_t *core) {
     if (!core) {
         return 0;
@@ -421,6 +448,7 @@ int yd_core_run_frame(yd_core_t *core) {
                                ? YD_MD_SCANLINES_PAL_TOTAL
                                : YD_MD_SCANLINES_NTSC_TOTAL;
         int frame_executed = 0;
+        int z80_deficit    = 0;
 
         for (uint16_t line = 0; line < total_lines; line++) {
             yd_md_mmu_step_pad_timeout(&core->md_mmu);
@@ -441,7 +469,8 @@ int yd_core_run_frame(yd_core_t *core) {
             int  line_target    = YD_MD_CYCLES_PER_SCANLINE - core->cycle_deficit;
             int  hblank_trigger = (line_target * 400) / YD_MD_CYCLES_PER_SCANLINE;
             int  line_exec      = 0;
-            int  z80_line_exec  = 0;
+            int  z80_line_exec  = z80_deficit;
+            int  psg_line_exec  = 0;
             bool hblank_entered = false;
 
             core->md_vdp.status &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_HBLK);
@@ -465,7 +494,6 @@ int yd_core_run_frame(yd_core_t *core) {
                 if (z80_target > YD_SMS_CYCLES_PER_SCANLINE) {
                     z80_target = YD_SMS_CYCLES_PER_SCANLINE;
                 }
-                int z80_prev = z80_line_exec;
                 while (z80_line_exec < z80_target) {
                     if (!core->md_mmu.z80_busreq && core->md_mmu.z80_reset) {
                         bool prev_iff1 = core->cpu.iff1;
@@ -478,8 +506,10 @@ int yd_core_run_frame(yd_core_t *core) {
                         z80_line_exec = z80_target;
                     }
                 }
-                if (z80_line_exec > z80_prev) {
-                    yd_psg_step_cycles(&core->psg, z80_line_exec - z80_prev);
+                int psg_slice = z80_target - psg_line_exec;
+                if (psg_slice > 0) {
+                    yd_psg_step_cycles(&core->psg, psg_slice);
+                    psg_line_exec += psg_slice;
                 }
 
                 /* Step YM2612 FM/DAC immediately per instruction so 0x2A PCM writes have zero lag */
@@ -496,16 +526,19 @@ int yd_core_run_frame(yd_core_t *core) {
             core->md_vdp.status &= (uint16_t)(0xFFFFu ^ YD_MD_VDP_STATUS_HBLK);
             z80_set_int_line(&core->cpu, false);
 
-            if (z80_line_exec < YD_SMS_CYCLES_PER_SCANLINE) {
-                yd_psg_step_cycles(&core->psg, YD_SMS_CYCLES_PER_SCANLINE - z80_line_exec);
+            if (psg_line_exec < YD_SMS_CYCLES_PER_SCANLINE) {
+                yd_psg_step_cycles(&core->psg, YD_SMS_CYCLES_PER_SCANLINE - psg_line_exec);
             }
+            z80_deficit = (z80_line_exec > YD_SMS_CYCLES_PER_SCANLINE)
+                          ? (z80_line_exec - YD_SMS_CYCLES_PER_SCANLINE)
+                          : 0;
 
             core->cycle_deficit = line_exec - line_target;
             frame_executed     += line_exec;
         }
 
-        /* Mix YM2612 stereo PCM output into the frame's master stereo audio buffer */
-        yd_ym2612_mix_into(&core->ym2612, core->psg.sample_buffer, core->psg.sample_count);
+        /* Mix YM2612 and SN76489 PSG stereo PCM outputs with headroom & 16-bit clamping */
+        yd_core_mix_audio(core);
 
         core->frame_count++;
         return frame_executed;

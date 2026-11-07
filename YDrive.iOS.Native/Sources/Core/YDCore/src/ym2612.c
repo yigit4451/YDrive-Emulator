@@ -220,32 +220,25 @@ void yd_ym2612_set_clock(yd_ym2612_t *ym, uint32_t clock_hz, uint32_t sample_rat
  * ========================================================================== */
 
 static void yd_ym2612_key_on(yd_ym2612_channel_t *ch, yd_ym2612_op_t *op, bool is_op1) {
-    if (!op->key_on) {
-        op->key_on = true;
-        op->phase  = 0u;
-        if (is_op1) {
-            ch->op1_out[0] = 0;
-            ch->op1_out[1] = 0;
-        }
-        if (op->eg_state == YD_YM_EG_OFF || op->eg_state == YD_YM_EG_RELEASE) {
-            op->env_level = 0x3FF;
-        }
-        uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
-        uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
-        if (rate >= 62u) {
-            op->env_level = 0;
-            op->eg_state  = YD_YM_EG_DECAY;
-        } else {
-            op->eg_state  = YD_YM_EG_ATTACK;
-        }
+    op->key_on = true;
+    op->phase  = 0u;
+    if (is_op1) {
+        ch->op1_out[0] = 0;
+        ch->op1_out[1] = 0;
+    }
+    uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
+    uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
+    if (rate >= 62u) {
+        op->env_level = 0;
+        op->eg_state  = YD_YM_EG_DECAY;
+    } else {
+        op->eg_state  = YD_YM_EG_ATTACK;
     }
 }
 
 static void yd_ym2612_key_off(yd_ym2612_op_t *op) {
-    op->key_on = false;
-    if (op->eg_state != YD_YM_EG_OFF) {
-        op->eg_state = YD_YM_EG_RELEASE;
-    }
+    op->key_on   = false;
+    op->eg_state = YD_YM_EG_RELEASE;
 }
 
 static void yd_ym2612_write_reg(yd_ym2612_t *ym, uint8_t bank, uint8_t reg, uint8_t val) {
@@ -558,7 +551,7 @@ static void yd_ym2612_step_op_envelope(const yd_ym2612_channel_t *ch,
 static inline int32_t eval_fm_operator(yd_ym2612_op_t *op, int32_t phase_mod) {
     /* 20-bit phase accumulator wrap */
     op->phase = (op->phase + op->phase_step) & YD_YM2612_PHASE_MASK;
-    if (op->eg_state == YD_YM_EG_OFF) {
+    if (op->eg_state == YD_YM_EG_OFF || op->env_level >= 0x3FF) {
         return 0;
     }
 
@@ -746,8 +739,22 @@ void yd_ym2612_mix_into(const yd_ym2612_t *ym, int16_t *dst_pcm, uint32_t num_st
         return;
     }
     uint32_t count = (num_stereo_samples < ym->sample_count) ? num_stereo_samples : ym->sample_count;
-    for (uint32_t i = 0; i < count * 2u; i++) {
-        int32_t mixed = (int32_t)dst_pcm[i] + (int32_t)ym->sample_buffer[i];
-        dst_pcm[i]    = clamp_pcm16(mixed);
+    for (uint32_t i = 0; i < count; i++) {
+        int16_t ym_left   = ym->sample_buffer[i * 2u + 0u];
+        int16_t ym_right  = ym->sample_buffer[i * 2u + 1u];
+        int16_t psg_out_l = dst_pcm[i * 2u + 0u];
+        int16_t psg_out_r = dst_pcm[i * 2u + 1u];
+
+        int32_t mixed_l = (int32_t)ym_left  + ((int32_t)psg_out_l * 3 / 4);
+        int32_t mixed_r = (int32_t)ym_right + ((int32_t)psg_out_r * 3 / 4);
+
+        if (mixed_l > 32767)       mixed_l = 32767;
+        else if (mixed_l < -32768) mixed_l = -32768;
+
+        if (mixed_r > 32767)       mixed_r = 32767;
+        else if (mixed_r < -32768) mixed_r = -32768;
+
+        dst_pcm[i * 2u + 0u] = (int16_t)mixed_l;
+        dst_pcm[i * 2u + 1u] = (int16_t)mixed_r;
     }
 }
