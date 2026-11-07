@@ -62,6 +62,7 @@ typedef struct yd_ym2612_channel {
     uint8_t          alg;         /* 3-bit FM Algorithm (0..7)                */
     uint8_t          fb;          /* 3-bit Operator 1 Feedback Level (0..7)   */
     int32_t          op1_out[2];  /* Previous 2 outputs of Operator 1 for FB  */
+    int32_t          mem_out;     /* 1-sample delayed operator latch (MEM)    */
 
     bool             pan_l;       /* Left Stereo Output Enable (Bit 7 of 0xB4)*/
     bool             pan_r;       /* Right Stereo Output Enable(Bit 6 of 0xB4)*/
@@ -103,7 +104,8 @@ typedef struct yd_ym2612 {
     uint8_t             ch3_block[3]; /* Ch3 Special Mode Block (0xAC=Op3, 0xAD=Op1, 0xAE=Op2) */
     uint8_t             ch3_latch[3]; /* Ch3 Special Mode MSB latches (0xAC..0xAE) */
     uint64_t            phase_accum;  /* Fixed-point accumulator for M68K -> PCM rate */
-    uint32_t            env_tick;     /* Envelope generator counter (1 tick = 2 PCM samples) */
+    uint32_t            eg_accum;     /* Fixed-point accumulator for master/432 EG clock */
+    uint32_t            env_tick;     /* Envelope generator counter (17,755.68 Hz) */
 
     /* Output Stereo PCM Buffer (Interleaved L, R) */
     int16_t             sample_buffer[YD_YM2612_MAX_SAMPLES * 2u];

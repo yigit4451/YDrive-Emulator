@@ -226,26 +226,26 @@ void yd_ym2612_set_clock(yd_ym2612_t *ym, uint32_t clock_hz, uint32_t sample_rat
  * Register Write Decoder & Key-On / Key-Off Engine
  * ========================================================================== */
 
-static void yd_ym2612_key_on(yd_ym2612_channel_t *ch, yd_ym2612_op_t *op, bool is_op1) {
-    op->key_on = true;
-    op->phase  = 0u;
-    if (is_op1) {
-        ch->op1_out[0] = 0;
-        ch->op1_out[1] = 0;
-    }
-    uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
-    uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
-    if (rate >= 62u) {
-        op->env_level = 0;
-        op->eg_state  = YD_YM_EG_DECAY;
-    } else {
-        op->eg_state  = YD_YM_EG_ATTACK;
+static void yd_ym2612_key_on(yd_ym2612_channel_t *ch, yd_ym2612_op_t *op) {
+    if (!op->key_on) {
+        op->key_on = true;
+        op->phase  = 0u;
+        uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
+        uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
+        if (rate >= 62u) {
+            op->env_level = 0;
+            op->eg_state  = YD_YM_EG_DECAY;
+        } else {
+            op->eg_state  = YD_YM_EG_ATTACK;
+        }
     }
 }
 
 static void yd_ym2612_key_off(yd_ym2612_op_t *op) {
-    op->key_on   = false;
-    op->eg_state = YD_YM_EG_RELEASE;
+    if (op->key_on) {
+        op->key_on   = false;
+        op->eg_state = YD_YM_EG_RELEASE;
+    }
 }
 
 static void yd_ym2612_write_reg(yd_ym2612_t *ym, uint8_t bank, uint8_t reg, uint8_t val) {
@@ -301,7 +301,7 @@ static void yd_ym2612_write_reg(yd_ym2612_t *ym, uint8_t bank, uint8_t reg, uint
                 yd_ym2612_channel_t *ch = &ym->channels[ch_idx];
                 for (uint8_t o = 0; o < 4u; o++) {
                     if ((val & (1u << (4u + o))) != 0u) {
-                        yd_ym2612_key_on(ch, &ch->ops[o], (o == 0u));
+                        yd_ym2612_key_on(ch, &ch->ops[o]);
                     } else {
                         yd_ym2612_key_off(&ch->ops[o]);
                     }
@@ -493,7 +493,7 @@ static void yd_ym2612_step_op_envelope(const yd_ym2612_channel_t *ch,
 
         case YD_YM_EG_ATTACK: {
             uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
-            if (rate >= 62u) {
+            if (rate >= 62u || op->env_level <= 0) {
                 op->env_level = 0;
                 op->eg_state  = YD_YM_EG_DECAY;
                 break;
@@ -513,8 +513,7 @@ static void yd_ym2612_step_op_envelope(const yd_ym2612_channel_t *ch,
         case YD_YM_EG_DECAY: {
             int32_t sl = (op->d1l == 15u) ? 0x3E0 : ((int32_t)op->d1l << 5);
             if (op->env_level >= sl) {
-                op->env_level = sl;
-                op->eg_state  = YD_YM_EG_SUSTAIN;
+                op->eg_state = YD_YM_EG_SUSTAIN;
                 break;
             }
             uint8_t rate = ym_calc_effective_rate(op->d1r, op->ks, kc);
@@ -522,8 +521,7 @@ static void yd_ym2612_step_op_envelope(const yd_ym2612_channel_t *ch,
             if (inc > 0u) {
                 op->env_level += (int32_t)inc;
                 if (op->env_level >= sl) {
-                    op->env_level = sl;
-                    op->eg_state  = YD_YM_EG_SUSTAIN;
+                    op->eg_state = YD_YM_EG_SUSTAIN;
                 }
             }
             break;
@@ -582,8 +580,11 @@ static inline int32_t clamp_ch14(int32_t v) {
 }
 
 static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
-    /* Operator 1 (Slot 1, +0x00) with Self-Feedback: (prev1 + prev2) >> (11 - fb)
-     * Calibrated for 13-bit operator peak (8191) modulating a 10-bit (1024-entry) sine LUT. */
+    /* Load 1-sample delayed intermediate modulator latch (MEM) before slot evaluation */
+    int32_t mem = ch->mem_out;
+
+    /* Operator 1 (Slot 1, +0x00) with Self-Feedback: (prev1 + prev2) >> (SIN_BITS + 1 - fb)
+     * where SIN_BITS = 10 -> shift = (11 - fb) for 14-bit signed operator outputs. */
     int32_t fb_mod = 0;
     if (ch->fb > 0u) {
         fb_mod = (ch->op1_out[0] + ch->op1_out[1]) >> (11u - (ch->fb & 7u));
@@ -594,32 +595,35 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
 
     int32_t out2 = 0, out3 = 0, out4 = 0, final_out = 0;
 
-    /* 8 Standard YM2612 FM Algorithms
-     * ops[0] = Op1 (+0x00), ops[1] = Op2 (+0x08), ops[2] = Op3 (+0x04), ops[3] = Op4 (+0x0C)
-     * Phase modulation shift is >> 2 so +/-8191 maps to +/-2047 (+/-4pi) in the 1024-entry LUT. */
+    /* 8 Standard YM2612 FM Algorithms with hardware 1-sample MEM delay register:
+     * ops[0] = Op1 (+0x00), ops[1] = Op2 (+0x08), ops[2] = Op3 (+0x04), ops[3] = Op4 (+0x0C) */
     switch (ch->alg & 7u) {
-        case 0: /* Op1 -> Op2 -> Op3 -> Op4 (Carrier: Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
-            out3      = eval_fm_operator(&ch->ops[2], out2 >> 2);
-            final_out = eval_fm_operator(&ch->ops[3], out3 >> 2);
+        case 0: /* Op1 -> Op2 -> [MEM] -> Op3 -> Op4 (Carrier: Op4) */
+            out2        = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            ch->mem_out = out2;
+            final_out   = eval_fm_operator(&ch->ops[3], out3 >> 2);
             break;
 
-        case 1: /* (Op1 + Op2) -> Op3 -> Op4 (Carrier: Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], 0);
-            out3      = eval_fm_operator(&ch->ops[2], (out1 + out2) >> 2);
-            final_out = eval_fm_operator(&ch->ops[3], out3 >> 2);
+        case 1: /* (Op1 + Op2) -> [MEM] -> Op3 -> Op4 (Carrier: Op4) */
+            out2        = eval_fm_operator(&ch->ops[1], 0);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            ch->mem_out = out1 + out2;
+            final_out   = eval_fm_operator(&ch->ops[3], out3 >> 2);
             break;
 
-        case 2: /* (Op1 + (Op2 -> Op3)) -> Op4 (Carrier: Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], 0);
-            out3      = eval_fm_operator(&ch->ops[2], out2 >> 2);
-            final_out = eval_fm_operator(&ch->ops[3], (out1 + out3) >> 2);
+        case 2: /* (Op1 + (Op2 -> [MEM] -> Op3)) -> Op4 (Carrier: Op4) */
+            out2        = eval_fm_operator(&ch->ops[1], 0);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            ch->mem_out = out2;
+            final_out   = eval_fm_operator(&ch->ops[3], (out1 + out3) >> 2);
             break;
 
-        case 3: /* ((Op1 -> Op2) + Op3) -> Op4 (Carrier: Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
-            out3      = eval_fm_operator(&ch->ops[2], 0);
-            final_out = eval_fm_operator(&ch->ops[3], (out2 + out3) >> 2);
+        case 3: /* ((Op1 -> Op2 -> [MEM]) + Op3) -> Op4 (Carrier: Op4) */
+            out2        = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out3        = eval_fm_operator(&ch->ops[2], 0);
+            ch->mem_out = out2;
+            final_out   = eval_fm_operator(&ch->ops[3], (mem + out3) >> 2);
             break;
 
         case 4: /* (Op1 -> Op2) + (Op3 -> Op4) (Carriers: Op2 + Op4) */
@@ -629,11 +633,12 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
             final_out = clamp_ch14(out2 + out4);
             break;
 
-        case 5: /* Op1 -> (Op2 + Op3 + Op4) (Carriers: Op2 + Op3 + Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
-            out3      = eval_fm_operator(&ch->ops[2], out1 >> 2);
-            out4      = eval_fm_operator(&ch->ops[3], out1 >> 2);
-            final_out = clamp_ch14(out2 + out3 + out4);
+        case 5: /* Op1 -> (Op2 + [MEM]->Op3 + Op4) (Carriers: Op2 + Op3 + Op4) */
+            out2        = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            ch->mem_out = out1;
+            out4        = eval_fm_operator(&ch->ops[3], out1 >> 2);
+            final_out   = clamp_ch14(out2 + out3 + out4);
             break;
 
         case 6: /* (Op1 -> Op2) + Op3 + Op4 (Carriers: Op2 + Op3 + Op4) */
@@ -667,13 +672,15 @@ static void yd_ym2612_generate_one_sample(yd_ym2612_t *ym) {
         return;
     }
 
-    /* Advance ADSR envelopes at ~1/3 of internal FM rate (every 2 output samples) */
-    ym->env_tick++;
-    if ((ym->env_tick & 1u) == 0u) {
-        uint32_t eg_cnt = ym->env_tick >> 1;
+    /* Advance ADSR envelopes at exact hardware rate: clock_hz / 432 (~17,755.68 Hz NTSC) */
+    uint32_t eg_denom = 432u * ym->sample_rate;
+    ym->eg_accum += ym->clock_hz;
+    if (ym->eg_accum >= eg_denom) {
+        ym->eg_accum -= eg_denom;
+        ym->env_tick++;
         for (uint32_t c = 0; c < YD_YM2612_NUM_CHANNELS; c++) {
             for (uint32_t o = 0; o < YD_YM2612_NUM_OPERATORS; o++) {
-                yd_ym2612_step_op_envelope(&ym->channels[c], &ym->channels[c].ops[o], eg_cnt);
+                yd_ym2612_step_op_envelope(&ym->channels[c], &ym->channels[c].ops[o], ym->env_tick);
             }
         }
     }
@@ -763,8 +770,8 @@ void yd_ym2612_mix_into(const yd_ym2612_t *ym, int16_t *dst_pcm, uint32_t num_st
         int16_t psg_out_l = dst_pcm[i * 2u + 0u];
         int16_t psg_out_r = dst_pcm[i * 2u + 1u];
 
-        int32_t mixed_l = (int32_t)ym_left  + ((int32_t)psg_out_l * 3 / 2);
-        int32_t mixed_r = (int32_t)ym_right + ((int32_t)psg_out_r * 3 / 2);
+        int32_t mixed_l = (int32_t)ym_left  + (((int32_t)psg_out_l * 3) / 4);
+        int32_t mixed_r = (int32_t)ym_right + (((int32_t)psg_out_r * 3) / 4);
 
         if (mixed_l > 32767)       mixed_l = 32767;
         else if (mixed_l < -32768) mixed_l = -32768;

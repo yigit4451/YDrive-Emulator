@@ -417,10 +417,11 @@ static void yd_core_mix_audio(yd_core_t *core) {
         int16_t psg_out_l = core->psg.sample_buffer[i * 2u + 0u];
         int16_t psg_out_r = core->psg.sample_buffer[i * 2u + 1u];
 
-        /* YM2612 operators / DAC run at 13-bit full scale (+/-8191), so the PSG (peak 5600
-         * per channel) is raised by 3/2 to keep SFX and high jingle leads audible over FM. */
-        int32_t mixed_l = (int32_t)ym_left  + ((int32_t)psg_out_l * 3 / 2);
-        int32_t mixed_r = (int32_t)ym_right + ((int32_t)psg_out_r * 3 / 2);
+        /* YM2612 operators / DAC run at 13-bit full scale (+/-8191); scaling PSG (base peak 5600)
+         * by 3/4 yields 4200 per channel (-5.8 dB vs FM), matching the Genesis Plus GX (2800 * 150%)
+         * and Model 1 hardware analog mixer reference. */
+        int32_t mixed_l = (int32_t)ym_left  + (((int32_t)psg_out_l * 3) / 4);
+        int32_t mixed_r = (int32_t)ym_right + (((int32_t)psg_out_r * 3) / 4);
 
         if (mixed_l > 32767)       mixed_l = 32767;
         else if (mixed_l < -32768) mixed_l = -32768;

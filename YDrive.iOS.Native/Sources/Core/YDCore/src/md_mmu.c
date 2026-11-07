@@ -143,6 +143,7 @@ void yd_md_mmu_reset(yd_md_mmu_t *mmu) {
     memset(mmu->work_ram, 0, sizeof(mmu->work_ram));
     memset(mmu->z80_ram, 0, sizeof(mmu->z80_ram));
     memset(mmu->ym2612_regs, 0, sizeof(mmu->ym2612_regs));
+    mmu->ym2612_regs[1] = 0x2Au; /* Default Z80 Port 0 latch to 0x2A (DAC Data) */
     memset(mmu->io_raw, 0, sizeof(mmu->io_raw));
     memset(mmu->tmss_reg, 0, sizeof(mmu->tmss_reg));
 
@@ -439,6 +440,9 @@ void yd_md_mmu_write8(void *ctx, uint32_t addr, uint8_t val) {
             uint8_t port = (uint8_t)(zaddr & 3u);
             if ((port & 1u) == 0u) {
                 mmu->ym2612_regs[port] = val;
+                if (port == 0u && val == 0x2Au) {
+                    mmu->ym2612_regs[1] = 0x2Au;
+                }
                 if (mmu->sound.ym_write) {
                     mmu->sound.ym_write(mmu->sound.ctx, port, val);
                 }
