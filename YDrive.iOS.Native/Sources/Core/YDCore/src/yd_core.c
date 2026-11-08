@@ -412,8 +412,8 @@ static void yd_core_mix_audio(yd_core_t *core) {
     }
 
     for (uint32_t i = 0; i < count; i++) {
-        int16_t ym_left   = core->ym2612.sample_buffer[i * 2u + 0u];
-        int16_t ym_right  = core->ym2612.sample_buffer[i * 2u + 1u];
+        int32_t ym_left   = core->ym2612.sample_buffer[i * 2u + 0u];
+        int32_t ym_right  = core->ym2612.sample_buffer[i * 2u + 1u];
         int16_t psg_out_l = core->psg.sample_buffer[i * 2u + 0u];
         int16_t psg_out_r = core->psg.sample_buffer[i * 2u + 1u];
 

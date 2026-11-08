@@ -52,7 +52,7 @@ struct CoreSettings: Sendable {
         let activeCore: EmulationCoreType = expEnabled ? storedCore : .picodrive
 
         let fastMem = defaults.object(forKey: fastMemoryKey) as? Bool ?? true
-        let audioInterp = defaults.object(forKey: audioInterpolationKey) as? Bool ?? true
+        let audioInterp = defaults.object(forKey: audioInterpolationKey) as? Bool ?? false
         let force6Btn = defaults.object(forKey: forceSixButtonKey) as? Bool ?? false
 
         return CoreSettings(

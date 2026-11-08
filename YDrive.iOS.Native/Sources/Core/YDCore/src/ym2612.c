@@ -665,12 +665,6 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
     return clamp_ch14(final_out);
 }
 
-static inline int16_t clamp_pcm16(int32_t v) {
-    if (v > 32767)  return 32767;
-    if (v < -32768) return -32768;
-    return (int16_t)v;
-}
-
 static void yd_ym2612_generate_one_sample(yd_ym2612_t *ym) {
     if (ym->sample_count >= YD_YM2612_MAX_SAMPLES) {
         return;
@@ -718,8 +712,8 @@ static void yd_ym2612_generate_one_sample(yd_ym2612_t *ym) {
     }
 
     uint32_t idx = ym->sample_count * 2u;
-    ym->sample_buffer[idx + 0u] = clamp_pcm16(mix_l);
-    ym->sample_buffer[idx + 1u] = clamp_pcm16(mix_r);
+    ym->sample_buffer[idx + 0u] = mix_l;
+    ym->sample_buffer[idx + 1u] = mix_r;
     ym->sample_count++;
 }
 
@@ -769,8 +763,8 @@ void yd_ym2612_mix_into(const yd_ym2612_t *ym, int16_t *dst_pcm, uint32_t num_st
     }
     uint32_t count = (num_stereo_samples < ym->sample_count) ? num_stereo_samples : ym->sample_count;
     for (uint32_t i = 0; i < count; i++) {
-        int16_t ym_left   = ym->sample_buffer[i * 2u + 0u];
-        int16_t ym_right  = ym->sample_buffer[i * 2u + 1u];
+        int32_t ym_left   = ym->sample_buffer[i * 2u + 0u];
+        int32_t ym_right  = ym->sample_buffer[i * 2u + 1u];
         int16_t psg_out_l = dst_pcm[i * 2u + 0u];
         int16_t psg_out_r = dst_pcm[i * 2u + 1u];
 

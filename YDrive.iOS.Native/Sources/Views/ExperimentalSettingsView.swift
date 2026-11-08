@@ -4,7 +4,7 @@ struct ExperimentalSettingsView: View {
     @AppStorage("enableExperimentalCore")           private var enableExperimentalCore: Bool = false
     @AppStorage(CoreSettings.selectedCoreKey)       private var selectedCore: EmulationCoreType = .picodrive
     @AppStorage(CoreSettings.fastMemoryKey)         private var fastMemory: Bool = true
-    @AppStorage(CoreSettings.audioInterpolationKey) private var audioInterpolation: Bool = true
+    @AppStorage(CoreSettings.audioInterpolationKey) private var audioInterpolation: Bool = false
     @AppStorage(CoreSettings.forceSixButtonKey)     private var forceSixButton: Bool = false
 
     @State private var showConfirmationAlert: Bool = false

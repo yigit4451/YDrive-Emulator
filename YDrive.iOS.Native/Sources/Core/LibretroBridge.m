@@ -202,7 +202,7 @@ static bool env_callback(unsigned cmd, void *data) {
                 return true;
             }
             if (strcmp(var->key, "yd_audio_interpolation") == 0) {
-                var->value = (!bridge || bridge.audioInterpolationEnabled) ? "enabled" : "disabled";
+                var->value = (bridge && bridge.audioInterpolationEnabled) ? "enabled" : "disabled";
                 return true;
             }
             if (strcmp(var->key, "yd_force_6button_pad") == 0) {
@@ -340,7 +340,7 @@ static int16_t input_state_callback(unsigned port, unsigned device, unsigned ind
     if (self) {
         _selectedCore              = YDriveEmulationCorePicoDrive;
         _fastMemoryEnabled         = YES;
-        _audioInterpolationEnabled = YES;
+        _audioInterpolationEnabled = NO;
         _forceSixButtonPad         = NO;
         _isRunning                 = NO;
         _videoWidth                = 320;

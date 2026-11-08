@@ -108,7 +108,9 @@ typedef struct yd_ym2612 {
     uint32_t            env_tick;     /* Envelope generator counter (17,755.68 Hz) */
 
     /* Output Stereo PCM Buffer (Interleaved L, R) */
-    int16_t             sample_buffer[YD_YM2612_MAX_SAMPLES * 2u];
+    /* 32-bit headroom: the 6-channel FM sum is NOT clamped here so it can be summed with the
+     * PSG in an int32 accumulator and saturated to 16-bit exactly once in the final mixer. */
+    int32_t             sample_buffer[YD_YM2612_MAX_SAMPLES * 2u];
     uint32_t            sample_count;
 } yd_ym2612_t;
 
@@ -149,7 +151,7 @@ void yd_ym2612_begin_frame(yd_ym2612_t *ym);
 
 /**
  * Advance the YM2612 synthesizer by `m68k_cycles` clocks, updating timers and
- * generating 16-bit signed stereo PCM samples into `sample_buffer`.
+ * generating unclamped 32-bit stereo samples into `sample_buffer`.
  */
 void yd_ym2612_step_cycles(yd_ym2612_t *ym, int m68k_cycles);
 

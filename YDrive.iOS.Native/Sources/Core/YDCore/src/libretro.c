@@ -17,7 +17,7 @@ static retro_input_state_t        g_input_state_cb      = NULL;
 
 /* Experimental Core Options */
 static bool    g_opt_fast_memory         = true;
-static bool    g_opt_audio_interpolation = true;
+static bool    g_opt_audio_interpolation = false; /* Raw unfiltered PCM by default */
 static bool    g_opt_force_6button       = false;
 static int16_t g_prev_audio_l            = 0;
 static int16_t g_prev_audio_r            = 0;
@@ -67,9 +67,9 @@ static void yd_retro_update_variables(void) {
     var.key   = "yd_audio_interpolation";
     var.value = NULL;
     if (g_environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-        g_opt_audio_interpolation = (strcmp(var.value, "disabled") != 0 &&
-                                     strcmp(var.value, "false") != 0 &&
-                                     strcmp(var.value, "0") != 0);
+        g_opt_audio_interpolation = (strcmp(var.value, "enabled") == 0 ||
+                                     strcmp(var.value, "true") == 0 ||
+                                     strcmp(var.value, "1") == 0);
     }
 
     var.key   = "yd_force_6button_pad";
