@@ -15,7 +15,7 @@ static bool    ym_lut_initialized = false;
  * value (~+/-8191) which is exactly the same full-scale used by the 8-bit PCM DAC
  * ((dac - 0x80) << 6 = +/-8192). Using the same scale keeps FM carriers in
  * proportion to the DAC drums while phase-modulation into the 10-bit sine LUT
- * uses hardware-calibrated shifts (mod = out >> 2, feedback = (p1 + p2) >> (11 - fb)). */
+ * uses hardware-calibrated shifts (mod = out >> 1, feedback = (p1 + p2) >> (10 - fb)). */
 #define YD_YM2612_OP_PEAK 8191
 
 /* Initialize 1024-entry sine lookup table in [-8191, +8191] using Bhaskara I's
@@ -603,50 +603,50 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
      * ops[0] = Op1 (+0x00), ops[1] = Op2 (+0x08), ops[2] = Op3 (+0x04), ops[3] = Op4 (+0x0C) */
     switch (ch->alg & 7u) {
         case 0: /* Op1 -> Op2 -> [MEM] -> Op3 -> Op4 (Carrier: Op4) */
-            out2        = eval_fm_operator(&ch->ops[1], out1 >> 2);
-            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            out2        = eval_fm_operator(&ch->ops[1], out1 >> 1);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 1);
             ch->mem_out = out2;
-            final_out   = eval_fm_operator(&ch->ops[3], out3 >> 2);
+            final_out   = eval_fm_operator(&ch->ops[3], out3 >> 1);
             break;
 
         case 1: /* (Op1 + Op2) -> [MEM] -> Op3 -> Op4 (Carrier: Op4) */
             out2        = eval_fm_operator(&ch->ops[1], 0);
-            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 1);
             ch->mem_out = out1 + out2;
-            final_out   = eval_fm_operator(&ch->ops[3], out3 >> 2);
+            final_out   = eval_fm_operator(&ch->ops[3], out3 >> 1);
             break;
 
         case 2: /* (Op1 + (Op2 -> [MEM] -> Op3)) -> Op4 (Carrier: Op4) */
             out2        = eval_fm_operator(&ch->ops[1], 0);
-            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 1);
             ch->mem_out = out2;
-            final_out   = eval_fm_operator(&ch->ops[3], (out1 + out3) >> 2);
+            final_out   = eval_fm_operator(&ch->ops[3], (out1 + out3) >> 1);
             break;
 
         case 3: /* ((Op1 -> Op2 -> [MEM]) + Op3) -> Op4 (Carrier: Op4) */
-            out2        = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out2        = eval_fm_operator(&ch->ops[1], out1 >> 1);
             out3        = eval_fm_operator(&ch->ops[2], 0);
             ch->mem_out = out2;
-            final_out   = eval_fm_operator(&ch->ops[3], (mem + out3) >> 2);
+            final_out   = eval_fm_operator(&ch->ops[3], (mem + out3) >> 1);
             break;
 
         case 4: /* (Op1 -> Op2) + (Op3 -> Op4) (Carriers: Op2 + Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
             out3      = eval_fm_operator(&ch->ops[2], 0);
-            out4      = eval_fm_operator(&ch->ops[3], out3 >> 2);
+            out4      = eval_fm_operator(&ch->ops[3], out3 >> 1);
             final_out = clamp_ch14(out2 + out4);
             break;
 
         case 5: /* Op1 -> (Op2 + [MEM]->Op3 + Op4) (Carriers: Op2 + Op3 + Op4) */
-            out2        = eval_fm_operator(&ch->ops[1], out1 >> 2);
-            out3        = eval_fm_operator(&ch->ops[2], mem >> 2);
+            out2        = eval_fm_operator(&ch->ops[1], out1 >> 1);
+            out3        = eval_fm_operator(&ch->ops[2], mem >> 1);
             ch->mem_out = out1;
-            out4        = eval_fm_operator(&ch->ops[3], out1 >> 2);
+            out4        = eval_fm_operator(&ch->ops[3], out1 >> 1);
             final_out   = clamp_ch14(out2 + out3 + out4);
             break;
 
         case 6: /* (Op1 -> Op2) + Op3 + Op4 (Carriers: Op2 + Op3 + Op4) */
-            out2      = eval_fm_operator(&ch->ops[1], out1 >> 2);
+            out2      = eval_fm_operator(&ch->ops[1], out1 >> 1);
             out3      = eval_fm_operator(&ch->ops[2], 0);
             out4      = eval_fm_operator(&ch->ops[3], 0);
             final_out = clamp_ch14(out2 + out3 + out4);
