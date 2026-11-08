@@ -227,17 +227,20 @@ void yd_ym2612_set_clock(yd_ym2612_t *ym, uint32_t clock_hz, uint32_t sample_rat
  * ========================================================================== */
 
 static void yd_ym2612_key_on(yd_ym2612_channel_t *ch, yd_ym2612_op_t *op) {
+    /* Legato: phase is reset only on a real Key-Off -> Key-On edge. A Key-On written to an
+     * operator that is already sounding keeps its running phase (no tearing / collapse) and
+     * only re-enters ATTACK from the current envelope level. */
     if (!op->key_on) {
         op->key_on = true;
         op->phase  = 0u;
-        uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
-        uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
-        if (rate >= 62u) {
-            op->env_level = 0;
-            op->eg_state  = YD_YM_EG_DECAY;
-        } else {
-            op->eg_state  = YD_YM_EG_ATTACK;
-        }
+    }
+    uint8_t kc   = ym_calc_key_code(ch->f_num, ch->block);
+    uint8_t rate = ym_calc_effective_rate(op->ar, op->ks, kc);
+    if (rate >= 62u) {
+        op->env_level = 0;
+        op->eg_state  = YD_YM_EG_DECAY;
+    } else {
+        op->eg_state  = YD_YM_EG_ATTACK;
     }
 }
 
@@ -583,11 +586,12 @@ static int32_t synth_fm_channel(yd_ym2612_channel_t *ch) {
     /* Load 1-sample delayed intermediate modulator latch (MEM) before slot evaluation */
     int32_t mem = ch->mem_out;
 
-    /* Operator 1 (Slot 1, +0x00) with Self-Feedback: (prev1 + prev2) >> (SIN_BITS + 1 - fb)
-     * where SIN_BITS = 10 -> shift = (11 - fb) for 14-bit signed operator outputs. */
+    /* Operator 1 (Slot 1, +0x00) with Self-Feedback at the original hardware ratio:
+     * (prev1 + prev2) >> (SIN_BITS - fb) with SIN_BITS = 10 (shift 9..3 for fb 1..7).
+     * The sum is added to the 10-bit phase index and wrapped with 0x3FF in eval_fm_operator. */
     int32_t fb_mod = 0;
     if (ch->fb > 0u) {
-        fb_mod = (ch->op1_out[0] + ch->op1_out[1]) >> (11u - (ch->fb & 7u));
+        fb_mod = (ch->op1_out[0] + ch->op1_out[1]) >> (10u - (ch->fb & 7u));
     }
     int32_t out1   = eval_fm_operator(&ch->ops[0], fb_mod);
     ch->op1_out[1] = ch->op1_out[0];
