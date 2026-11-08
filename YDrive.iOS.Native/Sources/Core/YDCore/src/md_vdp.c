@@ -677,31 +677,31 @@ void yd_md_vdp_render_scanline(yd_md_vdp_t *vdp, uint16_t scanline) {
     memset(spr_prio, 0, sizeof(spr_prio));
     render_sprites_line(vdp, scanline, spr_color, spr_prio);
 
-    /* 2. Low-priority Plane B */
-    render_scroll_plane_line(vdp, scanline, true, false, line_out);
-
-    /* 3. Low-priority Plane A / Window */
-    render_scroll_plane_line(vdp, scanline, false, false, line_out);
-
-    /* 4. Low-priority Sprites */
+    /* 2. Low-priority Sprites */
     for (uint16_t x = 0; x < vdp->active_width; x++) {
         if (spr_color[x] != 0u && spr_prio[x] == 0u) {
             line_out[x] = vdp->palette_lut[spr_color[x] & 0x3Fu];
         }
     }
 
-    /* 5. High-priority Plane B */
-    render_scroll_plane_line(vdp, scanline, true, true, line_out);
+    /* 3. Low-priority Plane B */
+    render_scroll_plane_line(vdp, scanline, true, false, line_out);
 
-    /* 6. High-priority Plane A / Window */
-    render_scroll_plane_line(vdp, scanline, false, true, line_out);
+    /* 4. Low-priority Plane A / Window */
+    render_scroll_plane_line(vdp, scanline, false, false, line_out);
 
-    /* 7. High-priority Sprites */
+    /* 5. High-priority Sprites */
     for (uint16_t x = 0; x < vdp->active_width; x++) {
         if (spr_color[x] != 0u && spr_prio[x] != 0u) {
             line_out[x] = vdp->palette_lut[spr_color[x] & 0x3Fu];
         }
     }
+
+    /* 6. High-priority Plane B */
+    render_scroll_plane_line(vdp, scanline, true, true, line_out);
+
+    /* 7. High-priority Plane A / Window */
+    render_scroll_plane_line(vdp, scanline, false, true, line_out);
 }
 
 /* ==========================================================================
