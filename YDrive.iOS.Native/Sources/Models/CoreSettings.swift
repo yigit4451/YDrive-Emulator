@@ -44,9 +44,9 @@ enum EmulationCoreType: String, CaseIterable, Identifiable, Sendable {
     var displayName: String {
         switch self {
         case .picodrive:
-            return LocalizationHelper.string("core.picodrive.title", default: "PicoDrive (Default / Stable)")
+            return LocalizationHelper.string("core.picodrive.title", default: "PicoDrive (Stable)")
         case .ydCore:
-            return LocalizationHelper.string("core.ydcore.title", default: "YD-Core v1.2.0 (Experimental / Native Engine)")
+            return LocalizationHelper.string("core.ydcore.title", default: "YD-Core (Experimental)")
         }
     }
 

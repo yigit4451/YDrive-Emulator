@@ -102,11 +102,11 @@
 "settings.version" = "Versiyon";
 "settings.platform" = "Platform";
 "settings.core" = "Çekirdek";
-"settings.core.value" = "PicoDrive & Genesis Plus GX";
+"settings.core.value" = "PicoDrive";
 "settings.github" = "GitHub Deposu";
 "settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
 "settings.thanks" = "Teşekkürler & Lisanslar";
-"settings.thanks.text" = "PicoDrive © notaz. Genesis Plus GX © ekeeke.\nTüm ROM ve BIOS dosyaları ilgili sahiplerine aittir.";
+"settings.thanks.text" = "PicoDrive © notaz.\nTüm ROM ve BIOS dosyaları ilgili sahiplerine aittir.";
 
 // BIOS
 "bios.title" = "BIOS Dosyaları";
@@ -146,7 +146,7 @@
 "Off" = "Kapalı";
 "CRT" = "CRT";
 "Simple CRT" = "Basit CRT";
-"PicoDrive / Genesis Plus GX" = "PicoDrive / Genesis Plus GX";
+"PicoDrive / Genesis Plus GX" = "PicoDrive";
 "GitHub" = "GitHub";
 
 "Developer" = "Geliştirici";
@@ -176,8 +176,8 @@
 "Aktif Çekirdek" = "Aktif Çekirdek";
 "PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (Varsayılan / Kararlı)";
 "YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (Deneysel / Yerel Motor)";
-"core.picodrive.title" = "PicoDrive (Varsayılan / Kararlı)";
-"core.ydcore.title" = "YD-Core v1.2.0 (Deneysel / Yerel Motor)";
+"core.picodrive.title" = "PicoDrive (Stable)";
+"core.ydcore.title" = "YD-Core (Experimental)";
 "YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz.";
 "YD-Core Gelişmiş Ayarlar" = "YD-Core Gelişmiş Ayarlar";
 "Doğrudan Bellek Erişimi (DMA)" = "Doğrudan Bellek Erişimi (DMA)";

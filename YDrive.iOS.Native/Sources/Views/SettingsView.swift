@@ -194,7 +194,7 @@ struct SettingsView: View {
                     HStack {
                         Text("settings.core")
                         Spacer()
-                        Text((enableExperimentalCore && selectedCore == .ydCore) ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive / Genesis Plus GX")
+                        Text((enableExperimentalCore && selectedCore == .ydCore) ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive")
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.trailing)
                     }
