@@ -28,6 +28,7 @@ struct EmulatorView: View {
     @AppStorage("m30MappingEnabled")   private var m30MappingEnabled   = false
     @AppStorage("allRightShoulders")   private var allRightShoulders   = false
     @AppStorage("appTheme")            private var appTheme            = "system"
+    @AppStorage("appLanguage")         private var appLanguage         = "system"
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -192,7 +193,7 @@ struct EmulatorView: View {
                                     showingExitConfirmation = true
                                 } label: {
                                     Label {
-                                        Text("Oyundan Çık")
+                                        Text(LocalizationHelper.string("emulator.exit", default: "Exit Game"))
                                             .font(.body.weight(.bold))
                                             .foregroundStyle(.red)
                                     } icon: {
@@ -262,38 +263,36 @@ struct EmulatorView: View {
         } message: {
             Text(NSLocalizedString("emulator.bios_message", comment: ""))
         }
-        .confirmationDialog(
-            "Oyundan çıkmak istiyor musunuz?",
-            isPresented: $showingExitConfirmation,
-            titleVisibility: .visible
+        .alert(
+            LocalizationHelper.string("emulator.exit_confirm_title", default: "Do you want to quit the game?"),
+            isPresented: $showingExitConfirmation
         ) {
-            Button("Kaydet ve Çık") {
+            Button(LocalizationHelper.string("emulator.save_and_exit", default: "Save and Quit")) {
                 Task {
                     _ = await engine.saveState(for: game.fileName, slot: 0)
                     engine.stop()
                     dismiss()
                 }
             }
-            Button("Kaydetmeden Çık", role: .destructive) {
+            Button(LocalizationHelper.string("emulator.quit_without_saving", default: "Quit Without Saving"), role: .destructive) {
                 engine.stop()
                 dismiss()
             }
-            Button("İptal", role: .cancel) {
+            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) {
                 engine.setPaused(false)
             }
         } message: {
-            Text("Kaydedilmemiş ilerlemeniz kaybolabilir.")
+            Text(LocalizationHelper.string("emulator.exit_confirm_message", default: "Unsaved progress may be lost."))
         }
-        .confirmationDialog(
-            "Oyunu yeniden başlatmak istiyor musunuz?",
-            isPresented: $showingRestartConfirmation,
-            titleVisibility: .visible
+        .alert(
+            LocalizationHelper.string("emulator.restart_confirm_title", default: "Do you want to restart the game?"),
+            isPresented: $showingRestartConfirmation
         ) {
-            Button("Yeniden Başlat", role: .destructive) {
+            Button(LocalizationHelper.string("emulator.reset", default: "Restart"), role: .destructive) {
                 engine.reset()
                 engine.setPaused(false)
             }
-            Button("İptal", role: .cancel) {
+            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) {
                 engine.setPaused(false)
             }
         }

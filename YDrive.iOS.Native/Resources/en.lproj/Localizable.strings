@@ -161,12 +161,23 @@
 "Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "Experimental settings are still in development and may contain bugs. Do you still want to enable experimental settings?";
 "Vazgeç" = "Cancel";
 "Aç" = "Enable";
-"settings.experimental" = "Experimental Settings";
+"settings.experimental" = "Experimental";
+"settings.experimental_footer" = "Experimental features are under active development and may cause instability.";
+"settings.experimental_core" = "Experimental Core (YD-Core)";
+"settings.emulation_core" = "Emulation Core";
+"settings.dma" = "Direct Memory Access (DMA)";
+"settings.audio_interpolation" = "Audio Interpolation (44.1 kHz)";
+"settings.force_6button" = "Force 6-Button Controller";
+"settings.experimental_alert_title" = "Experimental Features";
+"settings.experimental_alert_message" = "Experimental features are under active development and may cause instability. Do you still want to enable them?";
+"settings.enable" = "Enable";
 "Deneysel Ayarlar" = "Experimental Settings";
 "Emülasyon Çekirdeği" = "Emulation Core";
 "Aktif Çekirdek" = "Active Core";
 "PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (Default / Stable)";
 "YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (Experimental / Native Engine)";
+"core.picodrive.title" = "PicoDrive (Default / Stable)";
+"core.ydcore.title" = "YD-Core v1.2.0 (Experimental / Native Engine)";
 "YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core is a standalone SEGA core built from scratch in pure C. You can switch back to the default engine at any time.";
 "YD-Core Gelişmiş Ayarlar" = "YD-Core Advanced Settings";
 "Doğrudan Bellek Erişimi (DMA)" = "Direct Memory Access (DMA)";
@@ -177,3 +188,21 @@
 "Ses Sentezleyici" = "Audio Synthesizer";
 "Durum Kaydı (Save State)" = "Save State Format";
 "YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";
+
+// Save Manager & Share (v1.0.3)
+"saves.no_preview" = "No Preview";
+"saves.load" = "Load";
+"saves.overwrite" = "Overwrite";
+"saves.new" = "New Save State";
+"share.preparing" = "Preparing...";
+"Hazırlanıyor..." = "Preparing...";
+
+// Emulator Alerts (v1.0.3)
+"emulator.exit_confirm_title" = "Do you want to quit the game?";
+"emulator.exit_confirm_message" = "Unsaved progress may be lost.";
+"emulator.save_and_exit" = "Save and Quit";
+"emulator.quit_without_saving" = "Quit Without Saving";
+"emulator.restart_confirm_title" = "Do you want to restart the game?";
+
+// Library Deletion (v1.0.3)
+"library.delete_confirm_named" = "Are you sure you want to delete \"%@\"?";

@@ -13,6 +13,7 @@ struct SaveManagerView: View {
     let gameFileName: String
     @Binding var isPresented: Bool
     @AppStorage("appTheme") private var appTheme = "system"
+    @AppStorage("appLanguage") private var appLanguage = "system"
     
     @State private var savedSlots: [SaveSlotItem] = []
     @State private var selectedSlotForAction: SaveSlotItem?
@@ -86,7 +87,7 @@ struct SaveManagerView: View {
             }
             .scrollContentBackground(.hidden)
         }
-        .navigationTitle(NSLocalizedString("emulator.saves", comment: "Saves"))
+        .navigationTitle(LocalizationHelper.string("emulator.saves", default: "Saves"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(isLightMode ? .light : .dark, for: .navigationBar)
         .toolbar {
@@ -109,7 +110,7 @@ struct SaveManagerView: View {
                     }
                     .tint(isLightMode ? .black : .blue)
                     .disabled(isSaving)
-                    .accessibilityLabel(NSLocalizedString("saves.new", comment: "New Save State"))
+                    .accessibilityLabel(LocalizationHelper.string("saves.new", default: "New Save State"))
                 }
             }
 
@@ -127,7 +128,7 @@ struct SaveManagerView: View {
                     }
                 }
                 .tint(isLightMode ? .black : .white)
-                .accessibilityLabel(NSLocalizedString("close", comment: "Close"))
+                .accessibilityLabel(LocalizationHelper.string("close", default: "Close"))
             }
         }
         .preferredColorScheme(colorScheme)
@@ -140,35 +141,35 @@ struct SaveManagerView: View {
             }
         }
         .confirmationDialog(
-            selectedSlotForAction.map { "Slot \($0.slot + 1)" } ?? "Save State",
+            selectedSlotForAction.map { "Slot \($0.slot + 1)" } ?? LocalizationHelper.string("saves.title", default: "Saves"),
             isPresented: $showingActionSheet,
             titleVisibility: .visible,
             presenting: selectedSlotForAction
         ) { item in
-            Button("Yükle") {
+            Button(LocalizationHelper.string("saves.load", default: "Load")) {
                 loadState(slot: item.slot)
             }
-            Button("Üzerine Yaz") {
+            Button(LocalizationHelper.string("saves.overwrite", default: "Overwrite")) {
                 overwriteSave(slot: item.slot)
             }
-            Button("Paylaş") {
+            Button(LocalizationHelper.string("share", default: "Share")) {
                 shareManager.shareSaveState(gameFileName: gameFileName, slot: item.slot)
             }
-            Button("Sil", role: .destructive) {
+            Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
                 slotToDelete = item.slot
                 showingDeleteAlert = true
             }
-            Button("İptal", role: .cancel) { }
+            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
         }
-        .alert(NSLocalizedString("confirm_delete", comment: "Delete?"), isPresented: $showingDeleteAlert) {
-            Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
-            Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
+        .alert(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete this?"), isPresented: $showingDeleteAlert) {
+            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
+            Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
                 if let slot = slotToDelete {
                     deleteSave(slot: slot)
                 }
             }
         } message: {
-            Text(NSLocalizedString("confirm_delete", comment: "Are you sure you want to delete this?"))
+            Text(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete this?"))
         }
         .sheet(item: $shareManager.shareItem) { item in
             ActivityViewController(activityItems: [item.url])
@@ -198,7 +199,7 @@ struct SaveManagerView: View {
                         Image(systemName: "photo")
                             .font(.system(size: 26, weight: .light))
                             .foregroundStyle(.tertiary)
-                        Text("Önizleme Yok")
+                        Text(LocalizationHelper.string("saves.no_preview", default: "No Preview"))
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
                     }
@@ -256,26 +257,26 @@ struct SaveManagerView: View {
             Button {
                 loadState(slot: item.slot)
             } label: {
-                Label("Yükle", systemImage: "play.fill")
+                Label(LocalizationHelper.string("saves.load", default: "Load"), systemImage: "play.fill")
             }
 
             Button {
                 overwriteSave(slot: item.slot)
             } label: {
-                Label("Üzerine Yaz", systemImage: "arrow.triangle.2.circlepath")
+                Label(LocalizationHelper.string("saves.overwrite", default: "Overwrite"), systemImage: "arrow.triangle.2.circlepath")
             }
 
             Button {
                 shareManager.shareSaveState(gameFileName: gameFileName, slot: item.slot)
             } label: {
-                Label("Paylaş", systemImage: "square.and.arrow.up")
+                Label(LocalizationHelper.string("share", default: "Share"), systemImage: "square.and.arrow.up")
             }
 
             Button(role: .destructive) {
                 slotToDelete = item.slot
                 showingDeleteAlert = true
             } label: {
-                Label("Sil", systemImage: "trash")
+                Label(LocalizationHelper.string("delete", default: "Delete"), systemImage: "trash")
             }
         }
     }
@@ -295,11 +296,11 @@ struct SaveManagerView: View {
             .padding(.top, 14)
 
             VStack(spacing: 6) {
-                Text(NSLocalizedString("saves.empty.title", comment: "No saves yet"))
+                Text(LocalizationHelper.string("saves.empty.title", default: "No Saves Yet"))
                     .font(.title3.weight(.bold))
                     .foregroundStyle(.primary)
 
-                Text(NSLocalizedString("saves.empty.subtitle", comment: "Save your gameplay state at any time to resume later."))
+                Text(LocalizationHelper.string("saves.empty.subtitle", default: "Save your gameplay state at any time to resume later."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -316,7 +317,7 @@ struct SaveManagerView: View {
                         Image(systemName: "plus.circle.fill")
                             .font(.headline)
                     }
-                    Text(NSLocalizedString("saves.create_now", comment: "Create Save State"))
+                    Text(LocalizationHelper.string("saves.create_now", default: "Create Save State"))
                         .font(.headline)
                 }
                 .frame(maxWidth: .infinity)

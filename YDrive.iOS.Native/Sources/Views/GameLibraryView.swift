@@ -22,6 +22,7 @@ struct GameLibraryView: View {
     @ObservedObject private var quickActionManager = QuickActionManager.shared
 
     @AppStorage("appTheme") private var appTheme = "system"
+    @AppStorage("appLanguage") private var appLanguage = "system"
     @AppStorage("libraryViewMode") private var viewMode = "grid" // "grid" or "list"
     @AppStorage("lastPlayedFileName") private var lastPlayedFileName = ""
 
@@ -140,9 +141,9 @@ struct GameLibraryView: View {
                     }
                     Button("Cancel", role: .cancel) {}
                 }
-                .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
-                    Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
-                    Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
+                .alert(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete?"), isPresented: $showingDeleteAlert) {
+                    Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
+                    Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
                         if let game = gameToDelete {
                             viewModel.deleteGame(game)
                             quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
@@ -150,9 +151,9 @@ struct GameLibraryView: View {
                     }
                 } message: {
                     if let game = gameToDelete {
-                        Text("Bu ROM'u silmek istediğinize emin misiniz? \"\(game.title)\"")
+                        Text(LocalizationHelper.format("library.delete_confirm_named", game.title))
                     } else {
-                        Text("Bu ROM'u silmek istediğinize emin misiniz?")
+                        Text(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete this?"))
                     }
                 }
                 .overlay {

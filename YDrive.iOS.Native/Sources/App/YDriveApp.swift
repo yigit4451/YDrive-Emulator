@@ -66,6 +66,7 @@ struct YDriveApp: App {
             ContentView()
                 .preferredColorScheme(colorScheme)
                 .environment(\.locale, locale)
+                .id(appLanguage)
         }
     }
 }

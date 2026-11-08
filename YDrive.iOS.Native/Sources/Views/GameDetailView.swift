@@ -8,6 +8,7 @@ struct GameDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     @AppStorage("appTheme") private var appTheme = "system"
+    @AppStorage("appLanguage") private var appLanguage = "system"
     
     @State private var showingGame = false
     @State private var showingRenameAlert = false
@@ -189,14 +190,14 @@ struct GameDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
-        .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
-            Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
-            Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
+        .alert(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete?"), isPresented: $showingDeleteAlert) {
+            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
+            Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
                 viewModel.deleteGame(game)
                 dismiss()
             }
         } message: {
-            Text("Bu ROM'u silmek istediğinize emin misiniz? \"\(game.title)\"")
+            Text(LocalizationHelper.format("library.delete_confirm_named", game.title))
         }
         .fullScreenCover(item: $playingGame) { gameItem in
             EmulatorView(game: gameItem, viewModel: viewModel)

@@ -1,6 +1,38 @@
 import Foundation
 import SwiftUI
 
+/// Dynamic bundle-based localization helper honoring in-app `@AppStorage("appLanguage")`.
+enum LocalizationHelper {
+    static var activeBundle: Bundle {
+        let lang = UserDefaults.standard.string(forKey: "appLanguage") ?? "system"
+        let langCode: String? = {
+            switch lang {
+            case "tr": return "tr"
+            case "en": return "en"
+            default:
+                let preferred = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "en"
+                return (preferred == "tr") ? "tr" : "en"
+            }
+        }()
+
+        if let code = langCode,
+           let path = Bundle.main.path(forResource: code, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return bundle
+        }
+        return Bundle.main
+    }
+
+    static func string(_ key: String, default defaultValue: String? = nil) -> String {
+        return activeBundle.localizedString(forKey: key, value: defaultValue ?? key, table: nil)
+    }
+
+    static func format(_ key: String, _ arguments: CVarArg...) -> String {
+        let formatStr = string(key)
+        return String(format: formatStr, arguments: arguments)
+    }
+}
+
 /// Emulation core selection supported by YDrive iOS.
 enum EmulationCoreType: String, CaseIterable, Identifiable, Sendable {
     case picodrive = "picodrive"
@@ -12,9 +44,9 @@ enum EmulationCoreType: String, CaseIterable, Identifiable, Sendable {
     var displayName: String {
         switch self {
         case .picodrive:
-            return NSLocalizedString("PicoDrive (Varsayılan / Kararlı)", comment: "Default stable PicoDrive core")
+            return LocalizationHelper.string("core.picodrive.title", default: "PicoDrive (Default / Stable)")
         case .ydCore:
-            return NSLocalizedString("YD-Core v1.2.0 (Deneysel / Yerel Motor)", comment: "Experimental native YD-Core v1.2.0")
+            return LocalizationHelper.string("core.ydcore.title", default: "YD-Core v1.2.0 (Experimental / Native Engine)")
         }
     }
 

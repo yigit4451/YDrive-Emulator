@@ -161,12 +161,23 @@
 "Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?";
 "Vazgeç" = "Vazgeç";
 "Aç" = "Aç";
-"settings.experimental" = "Deneysel Ayarlar";
+"settings.experimental" = "Deneysel";
+"settings.experimental_footer" = "Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir.";
+"settings.experimental_core" = "Deneysel Çekirdek (YD-Core)";
+"settings.emulation_core" = "Emülasyon Çekirdeği";
+"settings.dma" = "Doğrudan Bellek Erişimi (DMA)";
+"settings.audio_interpolation" = "Ses Enterpolasyonu (44.1 kHz)";
+"settings.force_6button" = "6-Buton Kontrolcü Zorla";
+"settings.experimental_alert_title" = "Deneysel Ayarlar";
+"settings.experimental_alert_message" = "Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?";
+"settings.enable" = "Aç";
 "Deneysel Ayarlar" = "Deneysel Ayarlar";
 "Emülasyon Çekirdeği" = "Emülasyon Çekirdeği";
 "Aktif Çekirdek" = "Aktif Çekirdek";
 "PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (Varsayılan / Kararlı)";
 "YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (Deneysel / Yerel Motor)";
+"core.picodrive.title" = "PicoDrive (Varsayılan / Kararlı)";
+"core.ydcore.title" = "YD-Core v1.2.0 (Deneysel / Yerel Motor)";
 "YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz.";
 "YD-Core Gelişmiş Ayarlar" = "YD-Core Gelişmiş Ayarlar";
 "Doğrudan Bellek Erişimi (DMA)" = "Doğrudan Bellek Erişimi (DMA)";
@@ -177,3 +188,21 @@
 "Ses Sentezleyici" = "Ses Sentezleyici";
 "Durum Kaydı (Save State)" = "Durum Kaydı (Save State)";
 "YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";
+
+// Save Manager & Share (v1.0.3)
+"saves.no_preview" = "Önizleme Yok";
+"saves.load" = "Yükle";
+"saves.overwrite" = "Üzerine Yaz";
+"saves.new" = "Yeni Kayıt";
+"share.preparing" = "Hazırlanıyor...";
+"Hazırlanıyor..." = "Hazırlanıyor...";
+
+// Emulator Alerts (v1.0.3)
+"emulator.exit_confirm_title" = "Oyundan çıkmak istiyor musunuz?";
+"emulator.exit_confirm_message" = "Kaydedilmemiş ilerlemeniz kaybolabilir.";
+"emulator.save_and_exit" = "Kaydet ve Çık";
+"emulator.quit_without_saving" = "Kaydetmeden Çık";
+"emulator.restart_confirm_title" = "Oyunu yeniden başlatmak istiyor musunuz?";
+
+// Library Deletion (v1.0.3)
+"library.delete_confirm_named" = "Bu ROM'u silmek istediğinize emin misiniz? \"%@\"";

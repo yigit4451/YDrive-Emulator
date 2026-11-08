@@ -373,6 +373,8 @@ struct ActivityViewController: UIViewControllerRepresentable {
 // ─────────────────────────────────────────────────────────────────────────────
 
 struct ShareLoadingHUD: View {
+    @AppStorage("appLanguage") private var appLanguage = "system"
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.35)
@@ -384,7 +386,7 @@ struct ShareLoadingHUD: View {
                     .scaleEffect(1.2)
                     .tint(.primary)
 
-                Text("Hazırlanıyor...")
+                Text(LocalizationHelper.string("share.preparing", default: "Preparing..."))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
             }

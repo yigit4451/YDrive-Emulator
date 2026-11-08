@@ -70,6 +70,12 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.menu)
 
+                    Picker("settings.language", selection: $appLanguage) {
+                        Text("settings.language.system").tag("system")
+                        Text("settings.language.tr").tag("tr")
+                        Text("settings.language.en").tag("en")
+                    }
+                    .pickerStyle(.menu)
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
@@ -96,13 +102,13 @@ struct SettingsView: View {
 
                 // ── DENEYSEL (EXPERIMENTAL) ───────────────────────────────────
                 Section(
-                    header: Label("Experimental", systemImage: "flask.fill"),
-                    footer: Text("Experimental features are under active development and may cause instability.")
+                    header: Label(LocalizationHelper.string("settings.experimental", default: "Experimental"), systemImage: "flask.fill"),
+                    footer: Text(LocalizationHelper.string("settings.experimental_footer", default: "Experimental features are under active development and may cause instability."))
                 ) {
-                    Toggle("Experimental Core (YD-Core)", isOn: experimentalCoreBinding)
+                    Toggle(LocalizationHelper.string("settings.experimental_core", default: "Experimental Core (YD-Core)"), isOn: experimentalCoreBinding)
                         .tint(.blue)
 
-                    Picker("Emulation Core", selection: $selectedCore) {
+                    Picker(LocalizationHelper.string("settings.emulation_core", default: "Emulation Core"), selection: $selectedCore) {
                         ForEach(EmulationCoreType.allCases) { core in
                             Text(core.displayName).tag(core)
                         }
@@ -111,17 +117,17 @@ struct SettingsView: View {
                     .disabled(!enableExperimentalCore)
                     .opacity(enableExperimentalCore ? 1.0 : 0.45)
 
-                    Toggle("Direct Memory Access (DMA)", isOn: $fastMemory)
+                    Toggle(LocalizationHelper.string("settings.dma", default: "Direct Memory Access (DMA)"), isOn: $fastMemory)
                         .tint(.blue)
                         .disabled(!enableExperimentalCore)
                         .opacity(enableExperimentalCore ? 1.0 : 0.45)
 
-                    Toggle("Audio Interpolation (44.1 kHz)", isOn: $audioInterpolation)
+                    Toggle(LocalizationHelper.string("settings.audio_interpolation", default: "Audio Interpolation (44.1 kHz)"), isOn: $audioInterpolation)
                         .tint(.blue)
                         .disabled(!enableExperimentalCore)
                         .opacity(enableExperimentalCore ? 1.0 : 0.45)
 
-                    Toggle("Force 6-Button Controller", isOn: $forceSixButton)
+                    Toggle(LocalizationHelper.string("settings.force_6button", default: "Force 6-Button Controller"), isOn: $forceSixButton)
                         .tint(.blue)
                         .disabled(!enableExperimentalCore)
                         .opacity(enableExperimentalCore ? 1.0 : 0.45)
@@ -220,16 +226,16 @@ struct SettingsView: View {
         .preferredColorScheme(colorScheme)
         .navigationTitle("settings")
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-        .alert("Experimental Settings", isPresented: $showExperimentalAlert) {
-            Button("Cancel", role: .cancel) {
+        .alert(LocalizationHelper.string("settings.experimental_alert_title", default: "Experimental Features"), isPresented: $showExperimentalAlert) {
+            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) {
                 enableExperimentalCore = false
             }
-            Button("Enable", role: .destructive) {
+            Button(LocalizationHelper.string("settings.enable", default: "Enable"), role: .destructive) {
                 enableExperimentalCore = true
                 selectedCore = .ydCore
             }
         } message: {
-            Text("Experimental features are under active development and may cause instability. Do you still want to enable them?")
+            Text(LocalizationHelper.string("settings.experimental_alert_message", default: "Experimental features are under active development and may cause instability. Do you still want to enable them?"))
         }
     }
 }
