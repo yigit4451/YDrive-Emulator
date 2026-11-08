@@ -677,31 +677,31 @@ void yd_md_vdp_render_scanline(yd_md_vdp_t *vdp, uint16_t scanline) {
     memset(spr_prio, 0, sizeof(spr_prio));
     render_sprites_line(vdp, scanline, spr_color, spr_prio);
 
-    /* 2. Low-priority Sprites */
+    /* 6. Low-priority Plane B */
+    render_scroll_plane_line(vdp, scanline, true, false, line_out);
+
+    /* 5. Low-priority Plane A / Window */
+    render_scroll_plane_line(vdp, scanline, false, false, line_out);
+
+    /* 4. Low-priority Sprites (e.g. Sonic in title screen & normal game layers) */
     for (uint16_t x = 0; x < vdp->active_width; x++) {
         if (spr_color[x] != 0u && spr_prio[x] == 0u) {
             line_out[x] = vdp->palette_lut[spr_color[x] & 0x3Fu];
         }
     }
 
-    /* 3. Low-priority Plane B */
-    render_scroll_plane_line(vdp, scanline, true, false, line_out);
+    /* 3. High-priority Plane B */
+    render_scroll_plane_line(vdp, scanline, true, true, line_out);
 
-    /* 4. Low-priority Plane A / Window */
-    render_scroll_plane_line(vdp, scanline, false, false, line_out);
+    /* 2. High-priority Plane A / Window (e.g. Title screen ribbon / logo overlay) */
+    render_scroll_plane_line(vdp, scanline, false, true, line_out);
 
-    /* 5. High-priority Sprites */
+    /* 1. High-priority Sprites (Top-most HUD / prioritized objects) */
     for (uint16_t x = 0; x < vdp->active_width; x++) {
         if (spr_color[x] != 0u && spr_prio[x] != 0u) {
             line_out[x] = vdp->palette_lut[spr_color[x] & 0x3Fu];
         }
     }
-
-    /* 6. High-priority Plane B */
-    render_scroll_plane_line(vdp, scanline, true, true, line_out);
-
-    /* 7. High-priority Plane A / Window */
-    render_scroll_plane_line(vdp, scanline, false, true, line_out);
 }
 
 /* ==========================================================================
