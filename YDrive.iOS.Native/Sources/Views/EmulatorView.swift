@@ -28,7 +28,6 @@ struct EmulatorView: View {
     @AppStorage("m30MappingEnabled")   private var m30MappingEnabled   = false
     @AppStorage("allRightShoulders")   private var allRightShoulders   = false
     @AppStorage("appTheme")            private var appTheme            = "system"
-    @AppStorage("appLanguage")         private var appLanguage         = "system"
 
     private var colorScheme: ColorScheme? {
         switch appTheme {

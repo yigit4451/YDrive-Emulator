@@ -373,8 +373,6 @@ struct ActivityViewController: UIViewControllerRepresentable {
 // ─────────────────────────────────────────────────────────────────────────────
 
 struct ShareLoadingHUD: View {
-    @AppStorage("appLanguage") private var appLanguage = "system"
-
     var body: some View {
         ZStack {
             Color.black.opacity(0.35)

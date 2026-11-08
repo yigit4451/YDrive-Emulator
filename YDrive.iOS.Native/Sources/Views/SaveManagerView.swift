@@ -13,7 +13,6 @@ struct SaveManagerView: View {
     let gameFileName: String
     @Binding var isPresented: Bool
     @AppStorage("appTheme") private var appTheme = "system"
-    @AppStorage("appLanguage") private var appLanguage = "system"
     
     @State private var savedSlots: [SaveSlotItem] = []
     @State private var selectedSlotForAction: SaveSlotItem?

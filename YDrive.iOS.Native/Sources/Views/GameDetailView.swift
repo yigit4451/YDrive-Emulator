@@ -8,7 +8,6 @@ struct GameDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     @AppStorage("appTheme") private var appTheme = "system"
-    @AppStorage("appLanguage") private var appLanguage = "system"
     
     @State private var showingGame = false
     @State private var showingRenameAlert = false

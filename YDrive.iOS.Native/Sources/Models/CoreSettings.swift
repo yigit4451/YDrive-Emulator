@@ -1,22 +1,13 @@
 import Foundation
 import SwiftUI
 
-/// Dynamic bundle-based localization helper honoring in-app `@AppStorage("appLanguage")`.
+/// Dynamic bundle-based localization helper honoring iOS per-app language settings.
 enum LocalizationHelper {
     static var activeBundle: Bundle {
-        let lang = UserDefaults.standard.string(forKey: "appLanguage") ?? "system"
-        let langCode: String? = {
-            switch lang {
-            case "tr": return "tr"
-            case "en": return "en"
-            default:
-                let preferred = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "en"
-                return (preferred == "tr") ? "tr" : "en"
-            }
-        }()
+        let preferred = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "en"
+        let code = (preferred == "tr") ? "tr" : "en"
 
-        if let code = langCode,
-           let path = Bundle.main.path(forResource: code, ofType: "lproj"),
+        if let path = Bundle.main.path(forResource: code, ofType: "lproj"),
            let bundle = Bundle(path: path) {
             return bundle
         }

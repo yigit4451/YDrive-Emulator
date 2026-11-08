@@ -22,7 +22,6 @@ struct GameLibraryView: View {
     @ObservedObject private var quickActionManager = QuickActionManager.shared
 
     @AppStorage("appTheme") private var appTheme = "system"
-    @AppStorage("appLanguage") private var appLanguage = "system"
     @AppStorage("libraryViewMode") private var viewMode = "grid" // "grid" or "list"
     @AppStorage("lastPlayedFileName") private var lastPlayedFileName = ""
 
