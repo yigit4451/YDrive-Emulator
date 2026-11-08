@@ -18,6 +18,8 @@ struct EmulatorView: View {
     @State private var isSaveManagerPresented = false
     @State private var showingBiosAlert = false
     @State private var showFlash = false
+    @State private var showingExitConfirmation = false
+    @State private var showingRestartConfirmation = false
 
     @AppStorage("showFPS")             private var showFPS             = false
     @AppStorage("audioEnabled")        private var audioEnabled        = true
@@ -139,12 +141,17 @@ struct EmulatorView: View {
                         HStack(spacing: 16) {
                             Button { engine.setPaused(!engine.isPaused) } label: { Image(systemName: engine.isPaused ? "play.fill" : "pause.fill") }
                             Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
-                            Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
+                            Button(role: .destructive) {
+                                engine.setPaused(true)
+                                showingExitConfirmation = true
+                            } label: {
+                                Image(systemName: "xmark").foregroundStyle(.red)
+                            }
                             
                             Menu {
                                 Button {
-                                    engine.reset()
-                                    if engine.isPaused { engine.setPaused(false) }
+                                    engine.setPaused(true)
+                                    showingRestartConfirmation = true
                                 } label: {
                                     Label {
                                         Text(NSLocalizedString("emulator.reset", comment: ""))
@@ -180,6 +187,18 @@ struct EmulatorView: View {
                                         Image(uiImage: whiteMenuIcon("camera.fill"))
                                     }
                                 }
+                                Button(role: .destructive) {
+                                    engine.setPaused(true)
+                                    showingExitConfirmation = true
+                                } label: {
+                                    Label {
+                                        Text("Oyundan Çık")
+                                            .font(.body.weight(.bold))
+                                            .foregroundStyle(.red)
+                                    } icon: {
+                                        Image(uiImage: whiteMenuIcon("xmark.circle"))
+                                    }
+                                }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
                                     .foregroundStyle(.white)
@@ -204,9 +223,19 @@ struct EmulatorView: View {
                                 }
                             } label: { Image(systemName: "tray.and.arrow.down") }
                             Button { takeScreenshot() } label: { Image(systemName: "camera.fill") }
-                            Button { engine.reset(); if engine.isPaused { engine.setPaused(false) } } label: { Image(systemName: "arrow.counterclockwise") }
+                            Button {
+                                engine.setPaused(true)
+                                showingRestartConfirmation = true
+                            } label: {
+                                Image(systemName: "arrow.counterclockwise")
+                            }
                             Button { withAnimation { isTopBarVisible = false } } label: { Image(systemName: "chevron.up") }
-                            Button(role: .destructive) { engine.stop(); dismiss() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
+                            Button(role: .destructive) {
+                                engine.setPaused(true)
+                                showingExitConfirmation = true
+                            } label: {
+                                Image(systemName: "xmark").foregroundStyle(.red)
+                            }
                         }
                         .font(.title3)
                         .tint(.white)
@@ -232,6 +261,41 @@ struct EmulatorView: View {
             Button(NSLocalizedString("emulator.ok", comment: ""), role: .cancel) { dismiss() }
         } message: {
             Text(NSLocalizedString("emulator.bios_message", comment: ""))
+        }
+        .confirmationDialog(
+            "Oyundan çıkmak istiyor musunuz?",
+            isPresented: $showingExitConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Kaydet ve Çık") {
+                Task {
+                    _ = await engine.saveState(for: game.fileName, slot: 0)
+                    engine.stop()
+                    dismiss()
+                }
+            }
+            Button("Kaydetmeden Çık", role: .destructive) {
+                engine.stop()
+                dismiss()
+            }
+            Button("İptal", role: .cancel) {
+                engine.setPaused(false)
+            }
+        } message: {
+            Text("Kaydedilmemiş ilerlemeniz kaybolabilir.")
+        }
+        .confirmationDialog(
+            "Oyunu yeniden başlatmak istiyor musunuz?",
+            isPresented: $showingRestartConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Yeniden Başlat", role: .destructive) {
+                engine.reset()
+                engine.setPaused(false)
+            }
+            Button("İptal", role: .cancel) {
+                engine.setPaused(false)
+            }
         }
         .onAppear {
             engine.isAudioEnabled = audioEnabled

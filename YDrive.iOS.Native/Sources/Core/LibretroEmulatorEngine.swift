@@ -400,9 +400,43 @@ final class LibretroEmulatorEngine: ObservableObject {
         return nil
     }
 
+    func screenshotURL(for gameFileName: String, slot: Int) -> URL {
+        let stateURL = saveStateURL(for: gameFileName, slot: slot)
+        return stateURL.deletingPathExtension().appendingPathExtension("jpg")
+    }
+
+    func loadScreenshot(for gameFileName: String, slot: Int) -> UIImage? {
+        let primaryJpg = screenshotURL(for: gameFileName, slot: slot)
+        if FileManager.default.fileExists(atPath: primaryJpg.path),
+           let img = UIImage(contentsOfFile: primaryJpg.path) {
+            return img
+        }
+        let primaryPng = primaryJpg.deletingPathExtension().appendingPathExtension("png")
+        if FileManager.default.fileExists(atPath: primaryPng.path),
+           let img = UIImage(contentsOfFile: primaryPng.path) {
+            return img
+        }
+
+        let gameURL = URL(fileURLWithPath: gameFileName)
+        let gameDir = gameURL.deletingLastPathComponent()
+        let altJpg = gameDir.appendingPathComponent("slot\(slot).jpg")
+        if FileManager.default.fileExists(atPath: altJpg.path),
+           let img = UIImage(contentsOfFile: altJpg.path) {
+            return img
+        }
+        let altPng = gameDir.appendingPathComponent("slot\(slot).png")
+        if FileManager.default.fileExists(atPath: altPng.path),
+           let img = UIImage(contentsOfFile: altPng.path) {
+            return img
+        }
+        return nil
+    }
+
     func saveState(for gameFileName: String, slot: Int) async -> Bool {
         log.info("[ENGINE] Requesting save state for slot \(slot)")
         let url = saveStateURL(for: gameFileName, slot: slot)
+        let shotURL = screenshotURL(for: gameFileName, slot: slot)
+        let capturedImage = currentFrame.flatMap { ScreenshotGenerator.generateScreenshotImage(from: $0) }
         
         let bridgeRef = bridge
         return await withCheckedContinuation { continuation in
@@ -413,6 +447,10 @@ final class LibretroEmulatorEngine: ObservableObject {
                 }
                 do {
                     try data.write(to: url, options: .atomic)
+                    if let img = capturedImage,
+                       let imgData = img.jpegData(compressionQuality: 0.85) ?? img.pngData() {
+                        try? imgData.write(to: shotURL, options: .atomic)
+                    }
                     continuation.resume(returning: true)
                 } catch {
                     log.error("[ENGINE] Failed to write save state: \(error.localizedDescription, privacy: .public)")

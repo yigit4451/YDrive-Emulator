@@ -141,14 +141,26 @@ struct GameLibraryView: View {
                     Button("Cancel", role: .cancel) {}
                 }
                 .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Delete", role: .destructive) {
+                    Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
+                    Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
                         if let game = gameToDelete {
                             viewModel.deleteGame(game)
                             quickActionManager.updateShortcuts(games: viewModel.games, lastPlayedFileName: lastPlayedFileName)
                         }
                     }
+                } message: {
+                    if let game = gameToDelete {
+                        Text("Bu ROM'u silmek istediğinize emin misiniz? \"\(game.title)\"")
+                    } else {
+                        Text("Bu ROM'u silmek istediğinize emin misiniz?")
+                    }
                 }
+                .overlay {
+                    if shareManager.isArchiving {
+                        ShareLoadingHUD()
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: shareManager.isArchiving)
                 .fullScreenCover(item: $playingGame) { game in
                     EmulatorView(game: game, viewModel: viewModel)
                         .defersSystemGestures(on: .all)

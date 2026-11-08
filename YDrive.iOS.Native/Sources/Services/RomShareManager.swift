@@ -232,24 +232,30 @@ final class RomShareManager: ObservableObject {
         let tempDir = FileManager.default.temporaryDirectory
         let targetZipURL = tempDir.appendingPathComponent("\(cleanTitle).zip")
 
-        // If the game file is already a .zip archive, share it directly or copy as <Title>.zip
-        if primaryURL.pathExtension.lowercased() == "zip" {
-            do {
-                if FileManager.default.fileExists(atPath: targetZipURL.path) {
-                    try? FileManager.default.removeItem(at: targetZipURL)
-                }
-                try FileManager.default.copyItem(at: primaryURL, to: targetZipURL)
-                self.shareItem = ShareItem(url: targetZipURL)
-            } catch {
-                // Fallback to sharing original zip URL directly
-                self.shareItem = ShareItem(url: primaryURL)
-            }
-            return
-        }
-
         isArchiving = true
 
         Task.detached(priority: .userInitiated) {
+            // If the game file is already a .zip archive, share it directly or copy as <Title>.zip
+            if primaryURL.pathExtension.lowercased() == "zip" {
+                do {
+                    if FileManager.default.fileExists(atPath: targetZipURL.path) {
+                        try? FileManager.default.removeItem(at: targetZipURL)
+                    }
+                    try FileManager.default.copyItem(at: primaryURL, to: targetZipURL)
+                    await MainActor.run {
+                        self.isArchiving = false
+                        self.shareItem = ShareItem(url: targetZipURL)
+                    }
+                } catch {
+                    // Fallback to sharing original zip URL directly
+                    await MainActor.run {
+                        self.isArchiving = false
+                        self.shareItem = ShareItem(url: primaryURL)
+                    }
+                }
+                return
+            }
+
             let folderURL = primaryURL.deletingLastPathComponent()
             var filesToArchive: [(url: URL, relativePath: String)] = []
 
@@ -285,6 +291,66 @@ final class RomShareManager: ObservableObject {
             }
         }
     }
+
+    /// Prepares a .zip archive of a save state (including state and screenshot) and triggers share sheet.
+    func shareSaveState(gameFileName: String, slot: Int) {
+        let gameURL = URL(fileURLWithPath: gameFileName)
+        let gameDir = gameURL.deletingLastPathComponent()
+        let stateURL = gameDir.appendingPathComponent("slot\(slot).state")
+        let ydStateURL = gameDir.appendingPathComponent("slot\(slot)_ydcore.state")
+
+        var resolvedStateURL: URL? = nil
+        if FileManager.default.fileExists(atPath: stateURL.path) {
+            resolvedStateURL = stateURL
+        } else if FileManager.default.fileExists(atPath: ydStateURL.path) {
+            resolvedStateURL = ydStateURL
+        } else if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(gameFileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
+            if FileManager.default.fileExists(atPath: legacyURL.path) {
+                resolvedStateURL = legacyURL
+            }
+        }
+
+        guard let targetState = resolvedStateURL else {
+            print("[RomShareManager] Save state for slot \(slot) not found")
+            return
+        }
+
+        let cleanTitle = sanitizeFileName(gameURL.deletingPathExtension().lastPathComponent)
+        let tempDir = FileManager.default.temporaryDirectory
+        let targetZipURL = tempDir.appendingPathComponent("\(cleanTitle)_Slot\(slot + 1).zip")
+
+        isArchiving = true
+
+        Task.detached(priority: .userInitiated) {
+            var filesToArchive: [(url: URL, relativePath: String)] = [
+                (url: targetState, relativePath: targetState.lastPathComponent)
+            ]
+
+            let jpgURL = gameDir.appendingPathComponent("slot\(slot).jpg")
+            if FileManager.default.fileExists(atPath: jpgURL.path) {
+                filesToArchive.append((url: jpgURL, relativePath: jpgURL.lastPathComponent))
+            }
+            let pngURL = gameDir.appendingPathComponent("slot\(slot).png")
+            if FileManager.default.fileExists(atPath: pngURL.path) {
+                filesToArchive.append((url: pngURL, relativePath: pngURL.lastPathComponent))
+            }
+
+            do {
+                try ZipArchiver.createZip(from: filesToArchive, to: targetZipURL)
+                await MainActor.run {
+                    self.isArchiving = false
+                    self.shareItem = ShareItem(url: targetZipURL)
+                }
+            } catch {
+                print("[RomShareManager] Failed to zip save state: \(error)")
+                await MainActor.run {
+                    self.isArchiving = false
+                }
+            }
+        }
+    }
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -301,4 +367,34 @@ struct ActivityViewController: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK: - Share Loading HUD Overlay
+// ─────────────────────────────────────────────────────────────────────────────
+
+struct ShareLoadingHUD: View {
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+
+            VStack(spacing: 14) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .scaleEffect(1.2)
+                    .tint(.primary)
+
+                Text("Hazırlanıyor...")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 22)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: Color.black.opacity(0.12), radius: 12, y: 4)
+        }
+        .transition(.opacity)
+        .zIndex(999)
+    }
 }

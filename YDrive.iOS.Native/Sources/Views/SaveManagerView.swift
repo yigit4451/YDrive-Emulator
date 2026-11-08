@@ -1,18 +1,34 @@
 import SwiftUI
 
+struct SaveSlotItem: Identifiable, Sendable {
+    let id: Int
+    let slot: Int
+    let date: Date
+    let thumbnail: UIImage?
+    let coreInfo: String?
+}
+
 struct SaveManagerView: View {
     let engine: LibretroEmulatorEngine
     let gameFileName: String
     @Binding var isPresented: Bool
     @AppStorage("appTheme") private var appTheme = "system"
     
-    @State private var savedSlots: [(slot: Int, date: Date)] = []
+    @State private var savedSlots: [SaveSlotItem] = []
+    @State private var selectedSlotForAction: SaveSlotItem?
+    @State private var showingActionSheet = false
     @State private var slotToDelete: Int?
     @State private var showingDeleteAlert = false
     @State private var isSaving = false
     @State private var isLoading = true
+    @ObservedObject private var shareManager = RomShareManager.shared
 
     @Environment(\.colorScheme) private var envColorScheme
+
+    private let gridColumns = [
+        GridItem(.flexible(), spacing: 14),
+        GridItem(.flexible(), spacing: 14)
+    ]
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -46,27 +62,27 @@ struct SaveManagerView: View {
     
     var body: some View {
         ZStack {
-            // Slightly transparent adaptive grouped background
-            Color(UIColor.systemGroupedBackground).opacity(0.85)
+            // Adaptive grouped background
+            Color(UIColor.systemGroupedBackground)
                 .ignoresSafeArea()
 
             ScrollView {
-                LazyVStack(spacing: 14) {
-                    if isLoading && savedSlots.isEmpty {
-                        ProgressView()
-                            .padding(.top, 40)
-                    } else if savedSlots.isEmpty {
-                        emptySavesView
-                    } else {
-                        // Pre-sorted descending by date
-                        ForEach(savedSlots, id: \.slot) { item in
-                            liquidGlassSaveCard(slot: item.slot, date: item.date)
+                if isLoading && savedSlots.isEmpty {
+                    ProgressView()
+                        .padding(.top, 40)
+                } else if savedSlots.isEmpty {
+                    emptySavesView
+                        .padding(.horizontal, 16)
+                } else {
+                    LazyVGrid(columns: gridColumns, spacing: 14) {
+                        ForEach(savedSlots) { item in
+                            saveCard(item: item)
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 14)
+                    .padding(.bottom, 28)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 14)
-                .padding(.bottom, 28)
             }
             .scrollContentBackground(.hidden)
         }
@@ -123,6 +139,27 @@ struct SaveManagerView: View {
                 engine.setPaused(false)
             }
         }
+        .confirmationDialog(
+            selectedSlotForAction.map { "Slot \($0.slot + 1)" } ?? "Save State",
+            isPresented: $showingActionSheet,
+            titleVisibility: .visible,
+            presenting: selectedSlotForAction
+        ) { item in
+            Button("Yükle") {
+                loadState(slot: item.slot)
+            }
+            Button("Üzerine Yaz") {
+                overwriteSave(slot: item.slot)
+            }
+            Button("Paylaş") {
+                shareManager.shareSaveState(gameFileName: gameFileName, slot: item.slot)
+            }
+            Button("Sil", role: .destructive) {
+                slotToDelete = item.slot
+                showingDeleteAlert = true
+            }
+            Button("İptal", role: .cancel) { }
+        }
         .alert(NSLocalizedString("confirm_delete", comment: "Delete?"), isPresented: $showingDeleteAlert) {
             Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
             Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
@@ -133,75 +170,114 @@ struct SaveManagerView: View {
         } message: {
             Text(NSLocalizedString("confirm_delete", comment: "Are you sure you want to delete this?"))
         }
+        .sheet(item: $shareManager.shareItem) { item in
+            ActivityViewController(activityItems: [item.url])
+                .ignoresSafeArea()
+        }
+        .overlay {
+            if shareManager.isArchiving {
+                ShareLoadingHUD()
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: shareManager.isArchiving)
     }
 
-    // MARK: – Liquid Glass Save Card
-    private func liquidGlassSaveCard(slot: Int, date: Date) -> some View {
-        HStack(spacing: 12) {
-            // Main clickable load state action (tap card to load)
-            Button {
-                Task {
-                    let success = await engine.loadState(for: gameFileName, slot: slot)
-                    if success {
-                        engine.setPaused(false)
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            isPresented = false
-                        }
+    // MARK: – Save Card (2-Column Grid Item)
+    private func saveCard(item: SaveSlotItem) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // 4:3 Rounded Thumbnail Preview
+            ZStack {
+                Color(UIColor.secondarySystemFill)
+
+                if let img = item.thumbnail {
+                    Image(uiImage: img)
+                        .resizable()
+                        .aspectRatio(4.0 / 3.0, contentMode: .fill)
+                } else {
+                    VStack(spacing: 6) {
+                        Image(systemName: "photo")
+                            .font(.system(size: 26, weight: .light))
+                            .foregroundStyle(.tertiary)
+                        Text("Önizleme Yok")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
                     }
                 }
-            } label: {
-                HStack(spacing: 14) {
-                    // Native Icon Orb
-                    ZStack {
-                        Circle()
-                            .fill(Color.accentColor.opacity(0.12))
-                            .frame(width: 44, height: 44)
-                        
-                        Image(systemName: "externaldrive.fill")
-                            .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
-                    }
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(4.0 / 3.0, contentMode: .fit)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding(8)
 
-                    // Slot Information
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Slot \(slot + 1)")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.primary)
-
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock")
-                                .font(.system(size: 11))
-                                .foregroundStyle(.secondary)
-                            Text(date, format: .dateTime.month().day().hour().minute().second())
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+            // Slot Details
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("Slot \(item.slot + 1)")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.primary)
 
                     Spacer()
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
 
-            // Delete Button
+                    if let info = item.coreInfo {
+                        Text(info)
+                            .font(.system(size: 9, weight: .bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.accentColor.opacity(0.12), in: Capsule())
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                    Text(item.date, format: .dateTime.month().day().hour().minute())
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.bottom, 10)
+        }
+        .background(Color(UIColor.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.08), radius: 6, y: 2)
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .onTapGesture {
+            selectedSlotForAction = item
+            showingActionSheet = true
+        }
+        .contextMenu {
             Button {
-                slotToDelete = slot
+                loadState(slot: item.slot)
+            } label: {
+                Label("Yükle", systemImage: "play.fill")
+            }
+
+            Button {
+                overwriteSave(slot: item.slot)
+            } label: {
+                Label("Üzerine Yaz", systemImage: "arrow.triangle.2.circlepath")
+            }
+
+            Button {
+                shareManager.shareSaveState(gameFileName: gameFileName, slot: item.slot)
+            } label: {
+                Label("Paylaş", systemImage: "square.and.arrow.up")
+            }
+
+            Button(role: .destructive) {
+                slotToDelete = item.slot
                 showingDeleteAlert = true
             } label: {
-                Image(systemName: "trash.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.red)
-                    .frame(width: 38, height: 38)
-                    .background(Color.red.opacity(0.12))
-                    .clipShape(Circle())
+                Label("Sil", systemImage: "trash")
             }
-            .buttonStyle(.borderless)
-            .contentShape(Circle())
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     // MARK: – Empty Saves View
@@ -246,7 +322,8 @@ struct SaveManagerView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.borderedProminent)
+            .tint(Color.accentColor)
             .disabled(isSaving)
             .padding(.horizontal, 20)
             .padding(.top, 6)
@@ -254,27 +331,101 @@ struct SaveManagerView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(Color(UIColor.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.08), radius: 8, y: 3)
         .padding(.top, 20)
+    }
+
+    private func loadState(slot: Int) {
+        Task {
+            let success = await engine.loadState(for: gameFileName, slot: slot)
+            if success {
+                engine.setPaused(false)
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isPresented = false
+                }
+            }
+        }
+    }
+
+    private func overwriteSave(slot: Int) {
+        guard !isSaving else { return }
+        isSaving = true
+        Task {
+            let success = await engine.saveState(for: gameFileName, slot: slot)
+            await MainActor.run {
+                if success {
+                    fetchAllSaves()
+                }
+                isSaving = false
+            }
+        }
+    }
+
+    private func addNewSave() {
+        guard !isSaving else { return }
+        isSaving = true
+        let nextSlot = (savedSlots.map(\.slot).max() ?? -1) + 1
+        Task {
+            let success = await engine.saveState(for: gameFileName, slot: nextSlot)
+            await MainActor.run {
+                if success {
+                    fetchAllSaves()
+                }
+                isSaving = false
+            }
+        }
+    }
+
+    private func deleteSave(slot: Int) {
+        let fileName = gameFileName
+        Task.detached(priority: .userInitiated) {
+            let gameURL = URL(fileURLWithPath: fileName)
+            let gameDir = gameURL.deletingLastPathComponent()
+            let extensions = [".state", "_ydcore.state", ".jpg", ".png"]
+            for ext in extensions {
+                let fileURL = gameDir.appendingPathComponent("slot\(slot)\(ext)")
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+
+            if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                let savesDir = docs.appendingPathComponent("Saves")
+                let safeName = fileName.replacingOccurrences(of: "/", with: "_")
+                for ext in extensions {
+                    let fileURL = savesDir.appendingPathComponent("\(safeName)_slot\(slot)\(ext)")
+                    try? FileManager.default.removeItem(at: fileURL)
+                }
+            }
+            await MainActor.run {
+                self.fetchAllSaves()
+            }
+        }
     }
     
     private func fetchAllSaves() {
         let fileName = gameFileName
+        let currentEngine = self.engine
         Task.detached(priority: .userInitiated) {
-            var saves = [Int: Date]()
+            var rawSaves = [Int: (date: Date, isYdCore: Bool)]()
             let gameURL = URL(fileURLWithPath: fileName)
             let gameDir = gameURL.deletingLastPathComponent()
 
-            // 1. Check game directory (slotX.state)
+            // 1. Check game directory (slotX.state, slotX_ydcore.state)
             if let files = try? FileManager.default.contentsOfDirectory(atPath: gameDir.path) {
                 for file in files {
-                    if file.hasPrefix("slot") && file.hasSuffix(".state") {
-                        let numStr = file.replacingOccurrences(of: "slot", with: "").replacingOccurrences(of: ".state", with: "")
-                        if let slot = Int(numStr) {
-                            let fileURL = gameDir.appendingPathComponent(file)
-                            if let attr = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
-                               let date = attr[.modificationDate] as? Date {
-                                saves[slot] = date
+                    if file.hasPrefix("slot") {
+                        let isYd = file.hasSuffix("_ydcore.state")
+                        let isState = file.hasSuffix(".state")
+                        if isYd || isState {
+                            let numStr = file.replacingOccurrences(of: "slot", with: "")
+                                .replacingOccurrences(of: "_ydcore.state", with: "")
+                                .replacingOccurrences(of: ".state", with: "")
+                            if let slot = Int(numStr) {
+                                let fileURL = gameDir.appendingPathComponent(file)
+                                if let attr = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
+                                   let date = attr[.modificationDate] as? Date {
+                                    rawSaves[slot] = (date: date, isYdCore: isYd)
+                                }
                             }
                         }
                     }
@@ -298,12 +449,12 @@ struct SaveManagerView: View {
                                     try? FileManager.default.moveItem(at: legacyURL, to: newURL)
                                     if let attr = try? FileManager.default.attributesOfItem(atPath: newURL.path),
                                        let date = attr[.modificationDate] as? Date {
-                                        saves[slot] = date
+                                        rawSaves[slot] = (date: date, isYdCore: false)
                                     }
-                                } else if saves[slot] == nil {
+                                } else if rawSaves[slot] == nil {
                                     if let attr = try? FileManager.default.attributesOfItem(atPath: legacyURL.path),
                                        let date = attr[.modificationDate] as? Date {
-                                        saves[slot] = date
+                                        rawSaves[slot] = (date: date, isYdCore: false)
                                     }
                                 }
                             }
@@ -312,43 +463,23 @@ struct SaveManagerView: View {
                 }
             }
 
-            let sorted = saves.map { (slot: $0.key, date: $0.value) }.sorted(by: { $0.date > $1.date })
+            var items: [SaveSlotItem] = []
+            for (slot, saveInfo) in rawSaves {
+                let thumbnail = await currentEngine.loadScreenshot(for: fileName, slot: slot)
+                let coreTag = saveInfo.isYdCore ? "YD-Core" : "PicoDrive"
+                items.append(SaveSlotItem(
+                    id: slot,
+                    slot: slot,
+                    date: saveInfo.date,
+                    thumbnail: thumbnail,
+                    coreInfo: coreTag
+                ))
+            }
+
+            let sorted = items.sorted(by: { $0.date > $1.date })
             await MainActor.run {
                 self.savedSlots = sorted
                 self.isLoading = false
-            }
-        }
-    }
-    
-    private func addNewSave() {
-        guard !isSaving else { return }
-        isSaving = true
-        let nextSlot = (savedSlots.map(\.slot).max() ?? -1) + 1
-        Task {
-            let success = await engine.saveState(for: gameFileName, slot: nextSlot)
-            await MainActor.run {
-                if success {
-                    fetchAllSaves()
-                }
-                isSaving = false
-            }
-        }
-    }
-    
-    private func deleteSave(slot: Int) {
-        let fileName = gameFileName
-        Task.detached(priority: .userInitiated) {
-            let gameURL = URL(fileURLWithPath: fileName)
-            let gameDir = gameURL.deletingLastPathComponent()
-            let fileURL = gameDir.appendingPathComponent("slot\(slot).state")
-            try? FileManager.default.removeItem(at: fileURL)
-
-            if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                let legacyURL = docs.appendingPathComponent("Saves").appendingPathComponent("\(fileName.replacingOccurrences(of: "/", with: "_"))_slot\(slot).state")
-                try? FileManager.default.removeItem(at: legacyURL)
-            }
-            await MainActor.run {
-                self.fetchAllSaves()
             }
         }
     }

@@ -190,11 +190,13 @@ struct GameDetailView: View {
             Button("Cancel", role: .cancel) {}
         }
         .alert("Are you sure you want to delete?", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+            Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) { }
+            Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
                 viewModel.deleteGame(game)
                 dismiss()
             }
+        } message: {
+            Text("Bu ROM'u silmek istediğinize emin misiniz? \"\(game.title)\"")
         }
         .fullScreenCover(item: $playingGame) { gameItem in
             EmulatorView(game: gameItem, viewModel: viewModel)
@@ -204,6 +206,12 @@ struct GameDetailView: View {
             ActivityViewController(activityItems: [item.url])
                 .ignoresSafeArea()
         }
+        .overlay {
+            if shareManager.isArchiving {
+                ShareLoadingHUD()
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: shareManager.isArchiving)
         .preferredColorScheme(colorScheme)
     }
 

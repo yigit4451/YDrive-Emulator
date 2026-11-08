@@ -6,11 +6,30 @@ struct SettingsView: View {
     @AppStorage("appLanguage")         private var appLanguage        = "system"
 
     // Emulation & Audio
-    @AppStorage("audioEnabled")               private var audioEnabled           = true
-    @AppStorage("showFPS")                    private var showFPS                = false
-    @AppStorage("videoFilter")                private var videoFilter            = "Off"
-    @AppStorage("enableExperimentalCore")     private var enableExperimentalCore = false
-    @AppStorage(CoreSettings.selectedCoreKey) private var selectedCore: EmulationCoreType = .picodrive
+    @AppStorage("audioEnabled")                     private var audioEnabled           = true
+    @AppStorage("showFPS")                          private var showFPS                = false
+    @AppStorage("videoFilter")                      private var videoFilter            = "Off"
+    @AppStorage("enableExperimentalCore")           private var enableExperimentalCore = false
+    @AppStorage(CoreSettings.selectedCoreKey)       private var selectedCore: EmulationCoreType = .picodrive
+    @AppStorage(CoreSettings.fastMemoryKey)         private var fastMemory: Bool = true
+    @AppStorage(CoreSettings.audioInterpolationKey) private var audioInterpolation: Bool = false
+    @AppStorage(CoreSettings.forceSixButtonKey)     private var forceSixButton: Bool = false
+
+    @State private var showExperimentalAlert: Bool = false
+
+    private var experimentalCoreBinding: Binding<Bool> {
+        Binding(
+            get: { enableExperimentalCore },
+            set: { newValue in
+                if newValue {
+                    showExperimentalAlert = true
+                } else {
+                    enableExperimentalCore = false
+                    selectedCore = .picodrive
+                }
+            }
+        )
+    }
 
     // Controller
     @AppStorage("hapticFeedback")      private var hapticFeedback      = true
@@ -78,16 +97,34 @@ struct SettingsView: View {
                 // ── DENEYSEL (EXPERIMENTAL) ───────────────────────────────────
                 Section(
                     header: Label("Experimental", systemImage: "flask.fill"),
-                    footer: Text("Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir.")
+                    footer: Text("Experimental features are under active development and may cause instability.")
                 ) {
-                    NavigationLink(destination: ExperimentalSettingsView()) {
-                        HStack {
-                            Text("settings.experimental")
-                            Spacer()
-                            Text("YD-Core v1.2.0")
-                                .foregroundStyle(.secondary)
+                    Toggle("Experimental Core (YD-Core)", isOn: experimentalCoreBinding)
+                        .tint(.blue)
+
+                    Picker("Emulation Core", selection: $selectedCore) {
+                        ForEach(EmulationCoreType.allCases) { core in
+                            Text(core.displayName).tag(core)
                         }
                     }
+                    .pickerStyle(.menu)
+                    .disabled(!enableExperimentalCore)
+                    .opacity(enableExperimentalCore ? 1.0 : 0.45)
+
+                    Toggle("Direct Memory Access (DMA)", isOn: $fastMemory)
+                        .tint(.blue)
+                        .disabled(!enableExperimentalCore)
+                        .opacity(enableExperimentalCore ? 1.0 : 0.45)
+
+                    Toggle("Audio Interpolation (44.1 kHz)", isOn: $audioInterpolation)
+                        .tint(.blue)
+                        .disabled(!enableExperimentalCore)
+                        .opacity(enableExperimentalCore ? 1.0 : 0.45)
+
+                    Toggle("Force 6-Button Controller", isOn: $forceSixButton)
+                        .tint(.blue)
+                        .disabled(!enableExperimentalCore)
+                        .opacity(enableExperimentalCore ? 1.0 : 0.45)
                 }
                 .listRowBackground(Color.clear.background(.ultraThinMaterial))
 
@@ -183,6 +220,17 @@ struct SettingsView: View {
         .preferredColorScheme(colorScheme)
         .navigationTitle("settings")
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .alert("Experimental Settings", isPresented: $showExperimentalAlert) {
+            Button("Cancel", role: .cancel) {
+                enableExperimentalCore = false
+            }
+            Button("Enable", role: .destructive) {
+                enableExperimentalCore = true
+                selectedCore = .ydCore
+            }
+        } message: {
+            Text("Experimental features are under active development and may cause instability. Do you still want to enable them?")
+        }
     }
 }
 
