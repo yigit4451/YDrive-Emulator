@@ -1,0 +1,218 @@
+/* ─── Localization: German ───────────────────────────────────── */
+
+// Navigation / General
+"settings" = "Einstellungen";
+"library" = "Bibliothek";
+"games" = "Spiele";
+"recent" = "Zuletzt gespielt";
+"favorites" = "Favoriten";
+"close" = "Schließen";
+"save" = "Speichern";
+"cancel" = "Abbrechen";
+"delete" = "Löschen";
+"rename" = "Umbenennen";
+"confirm_delete" = "Möchten Sie dies wirklich löschen?";
+"play" = "Spielen";
+"share" = "Teilen";
+"change_cover" = "Cover ändern";
+"remove_artwork" = "Cover entfernen";
+
+// Library
+"library.empty.title" = "Keine Spiele in der Bibliothek";
+"library.empty.subtitle" = "Füge ein Genesis-, 32X-, Master System-, Game Gear- oder SEGA CD-ROM hinzu\n(.md .bin .gen .32x .sms .gg .zip .chd)";
+"library.add_rom" = "ROM hinzufügen";
+"library.search" = "Suchen...";
+"library.refresh" = "Metadaten aktualisieren";
+"library.refresh_data" = "Daten aktualisieren";
+"library.game_info" = "Spielinformationen";
+"library.rename" = "Umbenennen";
+"library.delete" = "Löschen";
+"library.rename_title" = "Umbenennen";
+"library.new_name" = "Neuer Name";
+"library.grid_view" = "Gitteransicht";
+"library.list_view" = "Listenansicht";
+"library.view_options" = "Ansichtsoptionen";
+
+// Quick Actions
+"quick_action.add_rom" = "ROM hinzufügen";
+"quick_action.continue" = "Fortsetzen: %@";
+
+// Save Manager
+"saves.title" = "Speicherstände";
+"saves.empty" = "Noch keine Speicherstände";
+"saves.slot" = "Slot %lld";
+"saves.quick_load" = "Schnellladen";
+
+// Emulator
+"emulator.bios_required" = "BIOS erforderlich";
+"emulator.bios_message" = "Du musst ein BIOS in den Einstellungen laden, um SEGA CD-Spiele zu starten.";
+"emulator.ok" = "OK";
+"emulator.exit" = "Spiel beenden";
+"emulator.reset" = "Neustarten";
+"emulator.resume" = "Fortsetzen";
+"emulator.load_state" = "Spielstand laden";
+"emulator.pause" = "Pause";
+"emulator.play" = "Abspielen";
+"emulator.save_state" = "Speicherstände";
+"emulator.saves" = "Speicherstände";
+"saves.empty.title" = "Noch keine Speicherstände";
+"saves.empty.subtitle" = "Speichere deinen Spielstand jederzeit, um später fortzusetzen.";
+"saves.create_now" = "Speicherstand erstellen";
+"emulator.screenshot" = "Screenshot";
+"emulator.screenshot_saved" = "Screenshot in Fotos gespeichert";
+"emulator.core_unavailable" = "Emulator-Kern nicht verfügbar";
+
+// Settings — Sections
+"settings.appearance" = "Erscheinungsbild";
+"settings.emulation" = "Emulation & Audio";
+"settings.controller" = "Controller";
+"settings.about" = "Über";
+"settings.version" = "Version";
+
+// Settings — Appearance
+"settings.theme" = "Design";
+"settings.theme.system" = "System";
+"settings.theme.dark" = "Dunkel";
+"settings.theme.light" = "Hell";
+"settings.language" = "Sprache";
+"settings.language.system" = "Systemstandard";
+"settings.language.tr" = "Türkçe";
+"settings.language.en" = "English";
+"settings.language.de" = "Deutsch";
+"settings.language.es" = "Español";
+"settings.language.ja" = "日本語";
+"settings.language.ar" = "العربية";
+"settings.language.ru" = "Русский";
+
+// Settings — Emulation
+"settings.bios_files" = "BIOS-Dateien";
+"settings.video_filter" = "Videofilter";
+"settings.audio" = "Audio";
+"settings.show_fps" = "FPS anzeigen";
+
+// Settings — Controller
+"settings.opacity" = "Deckkraft: %lld%%";
+"settings.button_size" = "Tastengröße";
+"settings.button_size.small" = "Klein";
+"settings.button_size.normal" = "Normal";
+"settings.button_size.large" = "Groß";
+"settings.colored_buttons" = "Farbige Tasten";
+"settings.haptic" = "Haptisches Feedback";
+"settings.layout" = "Layout";
+"settings.layout.auto" = "Automatisch (nach Konsole)";
+"settings.layout.3btn" = "3-Tasten (Genesis)";
+"settings.layout.6btn" = "6-Tasten (Genesis)";
+"settings.layout.sms" = "Master System & Game Gear (2-Tasten)";
+"settings.m30" = "8BitDo M30-Layout";
+"settings.shoulders" = "Alle Schultertasten rechts";
+"settings.mfi" = "MFi / GCController";
+"settings.mfi.auto" = "Automatisch";
+
+// Settings — About
+"settings.version" = "Version";
+"settings.platform" = "Plattform";
+"settings.core" = "Kern";
+"settings.core.value" = "PicoDrive";
+"settings.github" = "GitHub-Repository";
+"settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
+"settings.thanks" = "Danksagung & Lizenzen";
+"settings.thanks.text" = "PicoDrive © notaz.\nAlle Spiel-ROMs und BIOS-Dateien sind Eigentum der jeweiligen Inhaber.";
+
+// BIOS
+"bios.title" = "BIOS-Dateien";
+"bios.footer" = "Ein passendes regionales BIOS (.bin) muss installiert sein, um SEGA CD-Spiele auszuführen.";
+"bios.import" = "BIOS importieren...";
+"bios.delete_confirm" = "Möchten Sie dieses BIOS wirklich löschen?";
+
+// Search
+"search" = "Suchen...";
+"close" = "Schließen";
+"no_results" = "Keine Ergebnisse gefunden";
+"no_results_for" = "Keine Spiele gefunden für \"%@\"";
+
+// Literal-key strings used directly by SwiftUI views
+"Cancel" = "Abbrechen";
+"Delete" = "Löschen";
+"Save" = "Speichern";
+"Close" = "Schließen";
+"Rename" = "Umbenennen";
+"New name" = "Neuer Name";
+"Are you sure you want to delete?" = "Möchten Sie dies wirklich löschen?";
+"Restart" = "Neustarten";
+"Summary" = "Zusammenfassung";
+"Change Cover" = "Cover ändern";
+"Remove Artwork" = "Cover entfernen";
+"Game Info" = "Spielinformationen";
+"Add ROM" = "ROM hinzufügen";
+"No Games in Library" = "Keine Spiele in der Bibliothek";
+"Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)" = "Genesis- oder SEGA CD-ROM-Datei\n(.md .bin .gen .zip .chd) hinzufügen";
+"Saves" = "Speicherstände";
+"No saves yet" = "Noch keine Speicherstände";
+"Slot %lld" = "Slot %lld";
+"Import BIOS..." = "BIOS importieren...";
+"BIOS Files" = "BIOS-Dateien";
+"SEGA CD BIOS" = "SEGA CD BIOS";
+"A correct regional BIOS (.bin) file must be installed for games to run." = "Ein passendes regionales BIOS (.bin) muss installiert sein, um Spiele auszuführen.";
+"Off" = "Aus";
+"CRT" = "CRT";
+"Simple CRT" = "Einfaches CRT";
+"PicoDrive / Genesis Plus GX" = "PicoDrive";
+"GitHub" = "GitHub";
+
+"Developer" = "Entwickler";
+"Release Year" = "Veröffentlichungsjahr";
+"File" = "Datei";
+
+// Experimental Settings (v1.0.3)
+"Experimental" = "Experimentell";
+"Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir." = "Experimentelle Funktionen befinden sich in aktiver Entwicklung und können Instabilitäten verursachen.";
+"Deneysel Çekirdek (YD-Core)" = "Experimenteller Kern (YD-Core)";
+"Deneysel çekirdek etkinleştirildiğinde YD-Core v1.2.0 motoru ve gelişmiş donanım seçenekleri açılır." = "Die Aktivierung des experimentellen Kerns schaltet die YD-Core v1.2.0 Engine frei.";
+"Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "Experimentelle Funktionen befinden sich in Entwicklung und können Fehler enthalten. Trotzdem aktivieren?";
+"Vazgeç" = "Abbrechen";
+"Aç" = "Aktivieren";
+"settings.experimental" = "Experimentell";
+"settings.experimental_footer" = "Experimentelle Funktionen befinden sich in aktiver Entwicklung und können Instabilitäten verursachen.";
+"settings.experimental_core" = "Experimenteller Kern (YD-Core)";
+"settings.emulation_core" = "Emulationskern";
+"settings.dma" = "Direct Memory Access (DMA)";
+"settings.audio_interpolation" = "Audio-Interpolation (44.1 kHz)";
+"settings.force_6button" = "6-Tasten-Controller erzwingen";
+"settings.experimental_alert_title" = "Experimentelle Funktionen";
+"settings.experimental_alert_message" = "Experimentelle Funktionen befinden sich in Entwicklung und können Fehler enthalten. Trotzdem aktivieren?";
+"settings.enable" = "Aktivieren";
+"Deneysel Ayarlar" = "Experimentelle Einstellungen";
+"Emülasyon Çekirdeği" = "Emulationskern";
+"Aktif Çekirdek" = "Aktiver Kern";
+"PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (Standard / Stabil)";
+"YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (Experimentell)";
+"core.picodrive.title" = "PicoDrive (Stabil)";
+"core.ydcore.title" = "YD-Core (Experimentell)";
+"YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core ist ein eigenständiger SEGA-Kern. Sie können jederzeit zum Standardmotor zurückkehren.";
+"YD-Core Gelişmiş Ayarlar" = "YD-Core Erweiterte Einstellungen";
+"Doğrudan Bellek Erişimi (DMA)" = "Direct Memory Access (DMA)";
+"Ses Enterpolasyonu (44.1 kHz)" = "Audio-Interpolation (44.1 kHz)";
+"6-Buton Kontrolcü Zorla" = "6-Tasten-Controller erzwingen";
+"Motor Mimarisi" = "Engine-Architektur";
+"İşlemci Çekirdekleri" = "CPU-Kerne";
+"Ses Sentezleyici" = "Audio-Synthesizer";
+"Durum Kaydı (Save State)" = "Speicherstand-Format";
+"YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";
+
+// Save Manager & Share (v1.0.3)
+"saves.no_preview" = "Keine Vorschau";
+"saves.load" = "Laden";
+"saves.overwrite" = "Überschreiben";
+"saves.new" = "Neuer Speicherstand";
+"share.preparing" = "Vorbereitung...";
+"Hazırlanıyor..." = "Vorbereitung...";
+
+// Emulator Alerts (v1.0.3)
+"emulator.exit_confirm_title" = "Möchten Sie das Spiel beenden?";
+"emulator.exit_confirm_message" = "Nicht gespeicherter Fortschritt kann verloren gehen.";
+"emulator.save_and_exit" = "Speichern und beenden";
+"emulator.quit_without_saving" = "Ohne Speichern beenden";
+"emulator.restart_confirm_title" = "Möchten Sie das Spiel neu starten?";
+
+// Library Deletion (v1.0.3)
+"library.delete_confirm_named" = "Möchten Sie \"%@\" wirklich löschen?";

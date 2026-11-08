@@ -95,7 +95,7 @@ struct GameDetailView: View {
                         if let summary = game.summary {
                             Divider()
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Summary")
+                                Text(LocalizationHelper.string("Summary", default: "Summary"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(summary)

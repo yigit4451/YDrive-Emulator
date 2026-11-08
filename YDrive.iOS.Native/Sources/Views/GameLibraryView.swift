@@ -279,7 +279,7 @@ struct GameLibraryView: View {
                 .foregroundStyle(.tertiary)
                 .padding(.bottom, 8)
 
-            Text("No Games in Library")
+            Text(LocalizationHelper.string("library.empty.title", default: "No Games in Library"))
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
@@ -291,7 +291,7 @@ struct GameLibraryView: View {
             Button {
                 viewModel.isFilePickerPresented = true
             } label: {
-                Label("Add ROM", systemImage: "plus.circle.fill")
+                Label(LocalizationHelper.string("library.add_rom", default: "Add ROM"), systemImage: "plus.circle.fill")
                     .font(.headline)
             }
             .buttonStyle(.glassProminent)

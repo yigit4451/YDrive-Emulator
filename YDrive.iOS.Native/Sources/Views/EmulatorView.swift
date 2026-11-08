@@ -98,6 +98,7 @@ struct EmulatorView: View {
                     // ── On-screen controls ───────────────────────────────────────
                     if !isControllerConnected {
                         OnScreenControlsView(engine: engine, consoleName: game.consoleName)
+                            .environment(\.layoutDirection, .leftToRight)
                             .ignoresSafeArea()
                     }
 
@@ -1057,6 +1058,7 @@ struct OnScreenControlsView: View {
             }
             .frame(width: w, height: h, alignment: .topLeading)
         }
+        .environment(\.layoutDirection, .leftToRight)
     }
 
     private func dpadArea(

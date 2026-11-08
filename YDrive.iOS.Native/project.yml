@@ -5,6 +5,15 @@ options:
     iOS: "26.0"
   generateEmptyDirectories: true
   defaultConfig: Release
+  knownRegions:
+    - en
+    - tr
+    - de
+    - es
+    - ja
+    - ar
+    - ru
+    - Base
 
 settings:
   base:
@@ -42,7 +51,7 @@ targets:
         OTHER_LDFLAGS: "-lpicodrive -lz"
         HEADER_SEARCH_PATHS: "$(SRCROOT)/Sources/Core/YDCore/include"
         LIBRARY_SEARCH_PATHS: "$(SRCROOT)/Sources/Core"
-        KNOWN_REGIONS: "en tr"
+        KNOWN_REGIONS: "en tr de es ja ar ru"
         DEVELOPMENT_LANGUAGE: en
     dependencies:
       - sdk: Metal.framework

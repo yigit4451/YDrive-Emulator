@@ -3,6 +3,9 @@
 // Navigation / General
 "settings" = "Ayarlar";
 "library" = "Kütüphane";
+"games" = "Oyunlar";
+"recent" = "Son Oynananlar";
+"favorites" = "Favoriler";
 "close" = "Kapat";
 "save" = "Kaydet";
 "cancel" = "İptal";
@@ -46,6 +49,8 @@
 "emulator.ok" = "Tamam";
 "emulator.exit" = "Çıkış";
 "emulator.reset" = "Yeniden Başlat";
+"emulator.resume" = "Devam Et";
+"emulator.load_state" = "Durumu Yükle";
 "emulator.pause" = "Duraklat";
 "emulator.play" = "Oynat";
 "emulator.save_state" = "Saves";
@@ -73,6 +78,11 @@
 "settings.language.system" = "Sistem Varsayılanı";
 "settings.language.tr" = "Türkçe";
 "settings.language.en" = "English";
+"settings.language.de" = "Deutsch";
+"settings.language.es" = "Español";
+"settings.language.ja" = "日本語";
+"settings.language.ar" = "العربية";
+"settings.language.ru" = "Русский";
 
 // Settings — Emulation
 "settings.bios_files" = "BIOS Dosyaları";

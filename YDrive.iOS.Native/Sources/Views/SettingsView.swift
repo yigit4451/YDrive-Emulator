@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     // Appearance
     @AppStorage("appTheme")            private var appTheme          = "system"
+    @AppStorage("appLanguage")         private var appLanguage       = "system"
 
     // Emulation & Audio
     @AppStorage("audioEnabled")                     private var audioEnabled           = true
@@ -66,6 +67,13 @@ struct SettingsView: View {
                         Text("settings.theme.system").tag("system")
                         Text("settings.theme.dark").tag("dark")
                         Text("settings.theme.light").tag("light")
+                    }
+                    .pickerStyle(.menu)
+
+                    Picker("settings.language", selection: $appLanguage) {
+                        ForEach(AppLanguage.allCases) { lang in
+                            Text(lang.displayName).tag(lang.rawValue)
+                        }
                     }
                     .pickerStyle(.menu)
                 }

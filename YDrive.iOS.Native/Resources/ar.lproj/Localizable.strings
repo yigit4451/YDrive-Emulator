@@ -1,0 +1,218 @@
+/* ─── Localization: Arabic ───────────────────────────────────── */
+
+// Navigation / General
+"settings" = "الإعدادات";
+"library" = "المكتبة";
+"games" = "الألعاب";
+"recent" = "الأخيرة";
+"favorites" = "المفضلة";
+"close" = "إغلاق";
+"save" = "حفظ";
+"cancel" = "إلغاء";
+"delete" = "حذف";
+"rename" = "إعادة التسمية";
+"confirm_delete" = "هل أنت متأكد أنك تريد حذف هذا؟";
+"play" = "تشغيل";
+"share" = "مشاركة";
+"change_cover" = "تغيير الغلاف";
+"remove_artwork" = "إزالة الغلاف";
+
+// Library
+"library.empty.title" = "لا توجد ألعاب في المكتبة";
+"library.empty.subtitle" = "أضف ملف ROM لجهاز Genesis أو 32X أو Master System أو Game Gear أو SEGA CD\n(.md .bin .gen .32x .sms .gg .zip .chd)";
+"library.add_rom" = "إضافة ROM";
+"library.search" = "بحث...";
+"library.refresh" = "تحديث البيانات الوصفية";
+"library.refresh_data" = "تحديث البيانات";
+"library.game_info" = "معلومات اللعبة";
+"library.rename" = "إعادة التسمية";
+"library.delete" = "حذف";
+"library.rename_title" = "إعادة التسمية";
+"library.new_name" = "الاسم الجديد";
+"library.grid_view" = "عرض الشبكة";
+"library.list_view" = "عرض القائمة";
+"library.view_options" = "خيارات العرض";
+
+// Quick Actions
+"quick_action.add_rom" = "إضافة ROM";
+"quick_action.continue" = "متابعة: %@";
+
+// Save Manager
+"saves.title" = "الحفظ";
+"saves.empty" = "لا يوجد حفظ حتى الآن";
+"saves.slot" = "فتحة %lld";
+"saves.quick_load" = "تحميل سريع";
+
+// Emulator
+"emulator.bios_required" = "مطلوب BIOS";
+"emulator.bios_message" = "يجب تحميل BIOS من الإعدادات لتشغيل ألعاب SEGA CD.";
+"emulator.ok" = "حسناً";
+"emulator.exit" = "الخروج من اللعبة";
+"emulator.reset" = "إعادة التشغيل";
+"emulator.resume" = "استئناف";
+"emulator.load_state" = "تحميل الحالة";
+"emulator.pause" = "إيقاف مؤقت";
+"emulator.play" = "تشغيل";
+"emulator.save_state" = "الحفظ";
+"emulator.saves" = "الحفظ";
+"saves.empty.title" = "لا يوجد حفظ بعد";
+"saves.empty.subtitle" = "احفظ تقدمك في أي وقت للمتابعة لاحقاً.";
+"saves.create_now" = "إنشاء نقطة حفظ";
+"emulator.screenshot" = "لقطة شاشة";
+"emulator.screenshot_saved" = "تم حفظ لقطة الشاشة في الصور";
+"emulator.core_unavailable" = "نواة المحاكي غير متوفرة";
+
+// Settings — Sections
+"settings.appearance" = "المظهر";
+"settings.emulation" = "المحاكاة والصوت";
+"settings.controller" = "وحدة التحكم";
+"settings.about" = "حول";
+"settings.version" = "الإصدار";
+
+// Settings — Appearance
+"settings.theme" = "السمة";
+"settings.theme.system" = "النظام";
+"settings.theme.dark" = "داكن";
+"settings.theme.light" = "فاتح";
+"settings.language" = "اللغة";
+"settings.language.system" = "افتراضي النظام";
+"settings.language.tr" = "Türkçe";
+"settings.language.en" = "English";
+"settings.language.de" = "Deutsch";
+"settings.language.es" = "Español";
+"settings.language.ja" = "日本語";
+"settings.language.ar" = "العربية";
+"settings.language.ru" = "Русский";
+
+// Settings — Emulation
+"settings.bios_files" = "ملفات BIOS";
+"settings.video_filter" = "مرشح الفيديو";
+"settings.audio" = "الصوت";
+"settings.show_fps" = "عرض معدل الإطارات";
+
+// Settings — Controller
+"settings.opacity" = "الشفافية: %lld%%";
+"settings.button_size" = "حجم الأزرار";
+"settings.button_size.small" = "صغير";
+"settings.button_size.normal" = "عادي";
+"settings.button_size.large" = "كبير";
+"settings.colored_buttons" = "أزرار ملونة";
+"settings.haptic" = "استجابة لمسية";
+"settings.layout" = "التخطيط";
+"settings.layout.auto" = "تلقائي (حسب الجهاز)";
+"settings.layout.3btn" = "3 أزرار (Genesis)";
+"settings.layout.6btn" = "6 أزرار (Genesis)";
+"settings.layout.sms" = "Master System و Game Gear (زران)";
+"settings.m30" = "تخطيط 8BitDo M30";
+"settings.shoulders" = "جميع أزرار الكتف على اليمين";
+"settings.mfi" = "MFi / GCController";
+"settings.mfi.auto" = "تلقائي";
+
+// Settings — About
+"settings.version" = "الإصدار";
+"settings.platform" = "المنصة";
+"settings.core" = "النواة";
+"settings.core.value" = "PicoDrive";
+"settings.github" = "مستودع GitHub";
+"settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
+"settings.thanks" = "شكر وتراخيص";
+"settings.thanks.text" = "PicoDrive © notaz.\nجميع ملفات ROM و BIOS ملك لأصحابها المعنيين.";
+
+// BIOS
+"bios.title" = "ملفات BIOS";
+"bios.footer" = "يجب تثبيت ملف BIOS (.bin) إقليمي صحيح لتشغيل ألعاب SEGA CD.";
+"bios.import" = "استيراد BIOS...";
+"bios.delete_confirm" = "هل أنت متأكد أنك تريد حذف هذا الـ BIOS؟";
+
+// Search
+"search" = "بحث...";
+"close" = "إغلاق";
+"no_results" = "لم يتم العثور على نتائج";
+"no_results_for" = "لم يتم العثور على ألعاب مطابقة لـ \"%@\"";
+
+// Literal-key strings used directly by SwiftUI views
+"Cancel" = "إلغاء";
+"Delete" = "حذف";
+"Save" = "حفظ";
+"Close" = "إغلاق";
+"Rename" = "إعادة التسمية";
+"New name" = "الاسم الجديد";
+"Are you sure you want to delete?" = "هل أنت متأكد أنك تريد حذف هذا؟";
+"Restart" = "إعادة التشغيل";
+"Summary" = "الملخص";
+"Change Cover" = "تغيير الغلاف";
+"Remove Artwork" = "إزالة الغلاف";
+"Game Info" = "معلومات اللعبة";
+"Add ROM" = "إضافة ROM";
+"No Games in Library" = "لا توجد ألعاب في المكتبة";
+"Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)" = "أضف ملف ROM لجهاز Genesis أو SEGA CD\n(.md .bin .gen .zip .chd)";
+"Saves" = "الحفظ";
+"No saves yet" = "لا يوجد حفظ بعد";
+"Slot %lld" = "فتحة %lld";
+"Import BIOS..." = "استيراد BIOS...";
+"BIOS Files" = "ملفات BIOS";
+"SEGA CD BIOS" = "SEGA CD BIOS";
+"A correct regional BIOS (.bin) file must be installed for games to run." = "يجب تثبيت ملف BIOS (.bin) إقليمي صحيح لتشغيل الألعاب.";
+"Off" = "متوقف";
+"CRT" = "CRT";
+"Simple CRT" = "CRT بسيط";
+"PicoDrive / Genesis Plus GX" = "PicoDrive";
+"GitHub" = "GitHub";
+
+"Developer" = "المطور";
+"Release Year" = "سنة الإصدار";
+"File" = "الملف";
+
+// Experimental Settings (v1.0.3)
+"Experimental" = "تجريبي";
+"Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir." = "الميزات التجريبية قيد التطوير النشط وقد تسبب عدم استقرار.";
+"Deneysel Çekirdek (YD-Core)" = "نواة تجريبية (YD-Core)";
+"Deneysel çekirdek etkinleştirildiğinde YD-Core v1.2.0 motoru ve gelişmiş donanım seçenekleri açılır." = "تفعيل النواة التجريبية يفتح محرك YD-Core v1.2.0.";
+"Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "الميزات التجريبية قيد التطوير وقد تحتوي على أخطاء. هل ما زلت ترغب في تفعيلها؟";
+"Vazgeç" = "إلغاء";
+"Aç" = "تفعيل";
+"settings.experimental" = "تجريبي";
+"settings.experimental_footer" = "الميزات التجريبية قيد التطوير النشط وقد تسبب عدم استقرار.";
+"settings.experimental_core" = "نواة تجريبية (YD-Core)";
+"settings.emulation_core" = "نواة المحاكاة";
+"settings.dma" = "الوصول المباشر للذاكرة (DMA)";
+"settings.audio_interpolation" = "استيفاء الصوت (44.1 كيلوهرتز)";
+"settings.force_6button" = "فرض وحدة تحكم 6 أزرار";
+"settings.experimental_alert_title" = "ميزات تجريبية";
+"settings.experimental_alert_message" = "الميزات التجريبية قيد التطوير وقد تحتوي على أخطاء. هل ما زلت ترغب في تفعيلها؟";
+"settings.enable" = "تفعيل";
+"Deneysel Ayarlar" = "إعدادات تجريبية";
+"Emülasyon Çekirdeği" = "نواة المحاكاة";
+"Aktif Çekirdek" = "النواة النشطة";
+"PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (الافتراضي / مستقر)";
+"YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (تجريبي)";
+"core.picodrive.title" = "PicoDrive (مستقر)";
+"core.ydcore.title" = "YD-Core (تجريبي)";
+"YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core هي نواة SEGA مستقلة. يمكنك العودة إلى المحرك الافتراضي في أي وقت.";
+"YD-Core Gelişmiş Ayarlar" = "إعدادات YD-Core المتقدمة";
+"Doğrudan Bellek Erişimi (DMA)" = "الوصول المباشر للذاكرة (DMA)";
+"Ses Enterpolasyonu (44.1 kHz)" = "استيفاء الصوت (44.1 كيلوهرتز)";
+"6-Buton Kontrolcü Zorla" = "فرض وحدة تحكم 6 أزرار";
+"Motor Mimarisi" = "بنية المحرك";
+"İşlemci Çekirdekleri" = "أنوية المعالج";
+"Ses Sentezleyici" = "مركب الصوت";
+"Durum Kaydı (Save State)" = "تنسيق الحفظ";
+"YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";
+
+// Save Manager & Share (v1.0.3)
+"saves.no_preview" = "بلا معاينة";
+"saves.load" = "تحميل";
+"saves.overwrite" = "استبدال";
+"saves.new" = "نقطة حفظ جديدة";
+"share.preparing" = "جارٍ التحضير...";
+"Hazırlanıyor..." = "جارٍ التحضير...";
+
+// Emulator Alerts (v1.0.3)
+"emulator.exit_confirm_title" = "هل تريد الخروج من اللعبة؟";
+"emulator.exit_confirm_message" = "قد يتم فقدان التقدم غير المحفوظ.";
+"emulator.save_and_exit" = "حفظ والخروج";
+"emulator.quit_without_saving" = "خروج دون حفظ";
+"emulator.restart_confirm_title" = "هل تريد إعادة تشغيل اللعبة؟";
+
+// Library Deletion (v1.0.3)
+"library.delete_confirm_named" = "هل أنت متأكد أنك تريد حذف \"%@\"؟";

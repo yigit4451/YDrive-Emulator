@@ -1,0 +1,218 @@
+/* ─── Localization: Russian ──────────────────────────────────── */
+
+// Navigation / General
+"settings" = "Настройки";
+"library" = "Библиотека";
+"games" = "Игры";
+"recent" = "Недавние";
+"favorites" = "Избранное";
+"close" = "Закрыть";
+"save" = "Сохранить";
+"cancel" = "Отмена";
+"delete" = "Удалить";
+"rename" = "Переименовать";
+"confirm_delete" = "Вы уверены, что хотите удалить это?";
+"play" = "Играть";
+"share" = "Поделиться";
+"change_cover" = "Изменить обложку";
+"remove_artwork" = "Удалить обложку";
+
+// Library
+"library.empty.title" = "В библиотеке нет игр";
+"library.empty.subtitle" = "Добавьте ROM для Genesis, 32X, Master System, Game Gear или SEGA CD\n(.md .bin .gen .32x .sms .gg .zip .chd)";
+"library.add_rom" = "Добавить ROM";
+"library.search" = "Поиск...";
+"library.refresh" = "Обновить метаданные";
+"library.refresh_data" = "Обновить данные";
+"library.game_info" = "Информация об игре";
+"library.rename" = "Переименовать";
+"library.delete" = "Удалить";
+"library.rename_title" = "Переименовать";
+"library.new_name" = "Новое имя";
+"library.grid_view" = "Сетка";
+"library.list_view" = "Список";
+"library.view_options" = "Параметры вида";
+
+// Quick Actions
+"quick_action.add_rom" = "Добавить ROM";
+"quick_action.continue" = "Продолжить: %@";
+
+// Save Manager
+"saves.title" = "Сохранения";
+"saves.empty" = "Сохранений пока нет";
+"saves.slot" = "Слот %lld";
+"saves.quick_load" = "Быстрая загрузка";
+
+// Emulator
+"emulator.bios_required" = "Требуется BIOS";
+"emulator.bios_message" = "Для запуска игр SEGA CD необходимо загрузить BIOS в Настройках.";
+"emulator.ok" = "OK";
+"emulator.exit" = "Выйти из игры";
+"emulator.reset" = "Перезапустить";
+"emulator.resume" = "Продолжить";
+"emulator.load_state" = "Загрузить состояние";
+"emulator.pause" = "Пауза";
+"emulator.play" = "Воспроизведение";
+"emulator.save_state" = "Сохранения";
+"emulator.saves" = "Сохранения";
+"saves.empty.title" = "Пока нет сохранений";
+"saves.empty.subtitle" = "Сохраняйте игру в любой момент, чтобы продолжить позже.";
+"saves.create_now" = "Создать сохранение";
+"emulator.screenshot" = "Скриншот";
+"emulator.screenshot_saved" = "Скриншот сохранён в Фото";
+"emulator.core_unavailable" = "Ядро эмулятора недоступно";
+
+// Settings — Sections
+"settings.appearance" = "Оформление";
+"settings.emulation" = "Эмуляция и звук";
+"settings.controller" = "Контроллер";
+"settings.about" = "О приложении";
+"settings.version" = "Версия";
+
+// Settings — Appearance
+"settings.theme" = "Тема";
+"settings.theme.system" = "Системная";
+"settings.theme.dark" = "Тёмная";
+"settings.theme.light" = "Светлая";
+"settings.language" = "Язык";
+"settings.language.system" = "По умолчанию";
+"settings.language.tr" = "Türkçe";
+"settings.language.en" = "English";
+"settings.language.de" = "Deutsch";
+"settings.language.es" = "Español";
+"settings.language.ja" = "日本語";
+"settings.language.ar" = "العربية";
+"settings.language.ru" = "Русский";
+
+// Settings — Emulation
+"settings.bios_files" = "Файлы BIOS";
+"settings.video_filter" = "Видеофильтр";
+"settings.audio" = "Звук";
+"settings.show_fps" = "Показывать FPS";
+
+// Settings — Controller
+"settings.opacity" = "Непрозрачность: %lld%%";
+"settings.button_size" = "Размер кнопок";
+"settings.button_size.small" = "Маленький";
+"settings.button_size.normal" = "Обычный";
+"settings.button_size.large" = "Большой";
+"settings.colored_buttons" = "Цветные кнопки";
+"settings.haptic" = "Тактильный отклик";
+"settings.layout" = "Раскладка";
+"settings.layout.auto" = "Авто (по консоли)";
+"settings.layout.3btn" = "3 кнопки (Genesis)";
+"settings.layout.6btn" = "6 кнопок (Genesis)";
+"settings.layout.sms" = "Master System и Game Gear (2 кнопки)";
+"settings.m30" = "Раскладка 8BitDo M30";
+"settings.shoulders" = "Все шифты справа";
+"settings.mfi" = "MFi / GCController";
+"settings.mfi.auto" = "Автоматически";
+
+// Settings — About
+"settings.version" = "Версия";
+"settings.platform" = "Платформа";
+"settings.core" = "Ядро";
+"settings.core.value" = "PicoDrive";
+"settings.github" = "Репозиторий GitHub";
+"settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
+"settings.thanks" = "Благодарности и лицензии";
+"settings.thanks.text" = "PicoDrive © notaz.\nВсе ROM игр и файлы BIOS являются собственностью их владельцев.";
+
+// BIOS
+"bios.title" = "Файлы BIOS";
+"bios.footer" = "Для работы игр SEGA CD должен быть установлен правильный региональный BIOS (.bin).";
+"bios.import" = "Импорт BIOS...";
+"bios.delete_confirm" = "Вы уверены, что хотите удалить этот BIOS?";
+
+// Search
+"search" = "Поиск...";
+"close" = "Закрыть";
+"no_results" = "Результатов не найдено";
+"no_results_for" = "Игры, соответствующие «%@», не найдены";
+
+// Literal-key strings used directly by SwiftUI views
+"Cancel" = "Отмена";
+"Delete" = "Удалить";
+"Save" = "Сохранить";
+"Close" = "Закрыть";
+"Rename" = "Переименовать";
+"New name" = "Новое имя";
+"Are you sure you want to delete?" = "Вы уверены, что хотите удалить это?";
+"Restart" = "Перезапустить";
+"Summary" = "Описание";
+"Change Cover" = "Изменить обложку";
+"Remove Artwork" = "Удалить обложку";
+"Game Info" = "Информация об игре";
+"Add ROM" = "Добавить ROM";
+"No Games in Library" = "В библиотеке нет игр";
+"Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)" = "Добавьте ROM для Genesis или SEGA CD\n(.md .bin .gen .zip .chd)";
+"Saves" = "Сохранения";
+"No saves yet" = "Сохранений пока нет";
+"Slot %lld" = "Слот %lld";
+"Import BIOS..." = "Импорт BIOS...";
+"BIOS Files" = "Файлы BIOS";
+"SEGA CD BIOS" = "SEGA CD BIOS";
+"A correct regional BIOS (.bin) file must be installed for games to run." = "Для работы игр должен быть установлен правильный региональный файл BIOS (.bin).";
+"Off" = "Выкл";
+"CRT" = "ЭЛТ";
+"Simple CRT" = "Простой ЭЛТ";
+"PicoDrive / Genesis Plus GX" = "PicoDrive";
+"GitHub" = "GitHub";
+
+"Developer" = "Разработчик";
+"Release Year" = "Год выпуска";
+"File" = "Файл";
+
+// Experimental Settings (v1.0.3)
+"Experimental" = "Экспериментальные";
+"Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir." = "Экспериментальные функции находятся в активной разработке и могут работать нестабильно.";
+"Deneysel Çekirdek (YD-Core)" = "Экспериментальное ядро (YD-Core)";
+"Deneysel çekirdek etkinleştirildiğinde YD-Core v1.2.0 motoru ve gelişmiş donanım seçenekleri açılır." = "Включение экспериментального ядра открывает движок YD-Core v1.2.0.";
+"Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "Экспериментальные функции находятся в разработке и могут содержать ошибки. Всё равно включить?";
+"Vazgeç" = "Отмена";
+"Aç" = "Включить";
+"settings.experimental" = "Экспериментальные";
+"settings.experimental_footer" = "Экспериментальные функции находятся в активной разработке и могут работать нестабильно.";
+"settings.experimental_core" = "Экспериментальное ядро (YD-Core)";
+"settings.emulation_core" = "Ядро эмуляции";
+"settings.dma" = "Прямой доступ к памяти (DMA)";
+"settings.audio_interpolation" = "Интерполяция звука (44.1 кГц)";
+"settings.force_6button" = "Принудительно 6-кнопочный геймпад";
+"settings.experimental_alert_title" = "Экспериментальные функции";
+"settings.experimental_alert_message" = "Экспериментальные функции находятся в разработке и могут содержать ошибки. Всё равно включить?";
+"settings.enable" = "Включить";
+"Deneysel Ayarlar" = "Экспериментальные настройки";
+"Emülasyon Çekirdeği" = "Ядро эмуляции";
+"Aktif Çekirdek" = "Активное ядро";
+"PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (По умолчанию / Стабильное)";
+"YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (Экспериментальное)";
+"core.picodrive.title" = "PicoDrive (Стабильное)";
+"core.ydcore.title" = "YD-Core (Экспериментальное)";
+"YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Core — независимое ядро SEGA. Вы можете в любой момент вернуться к стандартному движку.";
+"YD-Core Gelişmiş Ayarlar" = "Расширенные настройки YD-Core";
+"Doğrudan Bellek Erişimi (DMA)" = "Прямой доступ к памяти (DMA)";
+"Ses Enterpolasyonu (44.1 kHz)" = "Интерполяция звука (44.1 кГц)";
+"6-Buton Kontrolcü Zorla" = "Принудительно 6-кнопочный геймпад";
+"Motor Mimarisi" = "Архитектура движка";
+"İşlemci Çekirdekleri" = "Ядра процессора";
+"Ses Sentezleyici" = "Аудиосинтезатор";
+"Durum Kaydı (Save State)" = "Формат сохранений";
+"YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";
+
+// Save Manager & Share (v1.0.3)
+"saves.no_preview" = "Нет превью";
+"saves.load" = "Загрузить";
+"saves.overwrite" = "Перезаписать";
+"saves.new" = "Новое сохранение";
+"share.preparing" = "Подготовка...";
+"Hazırlanıyor..." = "Подготовка...";
+
+// Emulator Alerts (v1.0.3)
+"emulator.exit_confirm_title" = "Вы хотите выйти из игры?";
+"emulator.exit_confirm_message" = "Несохранённый прогресс может быть потерян.";
+"emulator.save_and_exit" = "Сохранить и выйти";
+"emulator.quit_without_saving" = "Выйти без сохранения";
+"emulator.restart_confirm_title" = "Вы хотите перезапустить игру?";
+
+// Library Deletion (v1.0.3)
+"library.delete_confirm_named" = "Вы уверены, что хотите удалить «%@»?";

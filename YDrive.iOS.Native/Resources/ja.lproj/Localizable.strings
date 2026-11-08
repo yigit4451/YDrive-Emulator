@@ -1,0 +1,218 @@
+/* ─── Localization: Japanese ─────────────────────────────────── */
+
+// Navigation / General
+"settings" = "設定";
+"library" = "ライブラリ";
+"games" = "ゲーム";
+"recent" = "最近";
+"favorites" = "お気に入り";
+"close" = "閉じる";
+"save" = "保存";
+"cancel" = "キャンセル";
+"delete" = "削除";
+"rename" = "名前を変更";
+"confirm_delete" = "本当に削除しますか？";
+"play" = "プレイ";
+"share" = "共有";
+"change_cover" = "カバーを変更";
+"remove_artwork" = "カバーを削除";
+
+// Library
+"library.empty.title" = "ゲームが見つかりません";
+"library.empty.subtitle" = "Genesis、32X、Master System、Game Gear、SEGA CDのROMを追加してください\n(.md .bin .gen .32x .sms .gg .zip .chd)";
+"library.add_rom" = "ROMを追加";
+"library.search" = "検索...";
+"library.refresh" = "メタデータを更新";
+"library.refresh_data" = "データを更新";
+"library.game_info" = "ゲーム情報";
+"library.rename" = "名前を変更";
+"library.delete" = "削除";
+"library.rename_title" = "名前を変更";
+"library.new_name" = "新しい名前";
+"library.grid_view" = "グリッド表示";
+"library.list_view" = "リスト表示";
+"library.view_options" = "表示オプション";
+
+// Quick Actions
+"quick_action.add_rom" = "ROMを追加";
+"quick_action.continue" = "再開: %@";
+
+// Save Manager
+"saves.title" = "セーブデータ";
+"saves.empty" = "セーブデータはありません";
+"saves.slot" = "スロット %lld";
+"saves.quick_load" = "クイックロード";
+
+// Emulator
+"emulator.bios_required" = "BIOSが必要です";
+"emulator.bios_message" = "SEGA CDゲームを起動するには設定からBIOSを読み込む必要があります。";
+"emulator.ok" = "OK";
+"emulator.exit" = "ゲームを終了";
+"emulator.reset" = "リセット";
+"emulator.resume" = "再開";
+"emulator.load_state" = "ステートロード";
+"emulator.pause" = "一時停止";
+"emulator.play" = "再生";
+"emulator.save_state" = "セーブデータ";
+"emulator.saves" = "セーブデータ";
+"saves.empty.title" = "セーブデータはありません";
+"saves.empty.subtitle" = "いつでも進行状況を保存して後で再開できます。";
+"saves.create_now" = "セーブデータを作成";
+"emulator.screenshot" = "スクリーンショット";
+"emulator.screenshot_saved" = "スクリーンショットを写真に保存しました";
+"emulator.core_unavailable" = "エミュレータコアが利用できません";
+
+// Settings — Sections
+"settings.appearance" = "外観";
+"settings.emulation" = "エミュレーションと音声";
+"settings.controller" = "コントローラー";
+"settings.about" = "情報";
+"settings.version" = "バージョン";
+
+// Settings — Appearance
+"settings.theme" = "テーマ";
+"settings.theme.system" = "システム";
+"settings.theme.dark" = "ダーク";
+"settings.theme.light" = "ライト";
+"settings.language" = "言語";
+"settings.language.system" = "システムデフォルト";
+"settings.language.tr" = "Türkçe";
+"settings.language.en" = "English";
+"settings.language.de" = "Deutsch";
+"settings.language.es" = "Español";
+"settings.language.ja" = "日本語";
+"settings.language.ar" = "العربية";
+"settings.language.ru" = "Русский";
+
+// Settings — Emulation
+"settings.bios_files" = "BIOSファイル";
+"settings.video_filter" = "ビデオフィルタ";
+"settings.audio" = "オーディオ";
+"settings.show_fps" = "FPSを表示";
+
+// Settings — Controller
+"settings.opacity" = "不透明度: %lld%%";
+"settings.button_size" = "ボタンサイズ";
+"settings.button_size.small" = "小";
+"settings.button_size.normal" = "標準";
+"settings.button_size.large" = "大";
+"settings.colored_buttons" = "カラーボタン";
+"settings.haptic" = "触覚フィードバック";
+"settings.layout" = "配置";
+"settings.layout.auto" = "自動（機種別）";
+"settings.layout.3btn" = "3ボタン (Genesis)";
+"settings.layout.6btn" = "6ボタン (Genesis)";
+"settings.layout.sms" = "Master System & Game Gear (2ボタン)";
+"settings.m30" = "8BitDo M30 配置";
+"settings.shoulders" = "全ショルダーボタン右配置";
+"settings.mfi" = "MFi / GCController";
+"settings.mfi.auto" = "自動";
+
+// Settings — About
+"settings.version" = "バージョン";
+"settings.platform" = "プラットフォーム";
+"settings.core" = "コア";
+"settings.core.value" = "PicoDrive";
+"settings.github" = "GitHubリポジトリ";
+"settings.github.url" = "https://github.com/yigit4451/YDrive-Emulator";
+"settings.thanks" = "謝辞とライセンス";
+"settings.thanks.text" = "PicoDrive © notaz.\nすべてのゲームROMおよびBIOSファイルは各権利者に帰属します。";
+
+// BIOS
+"bios.title" = "BIOSファイル";
+"bios.footer" = "SEGA CDゲームを実行するには正しいリージョンのBIOS (.bin) が必要です。";
+"bios.import" = "BIOSをインポート...";
+"bios.delete_confirm" = "このBIOSを本当に削除しますか？";
+
+// Search
+"search" = "検索...";
+"close" = "閉じる";
+"no_results" = "結果が見つかりません";
+"no_results_for" = "\"%@\" に一致するゲームは見つかりませんでした";
+
+// Literal-key strings used directly by SwiftUI views
+"Cancel" = "キャンセル";
+"Delete" = "削除";
+"Save" = "保存";
+"Close" = "閉じる";
+"Rename" = "名前を変更";
+"New name" = "新しい名前";
+"Are you sure you want to delete?" = "本当に削除しますか？";
+"Restart" = "リセット";
+"Summary" = "概要";
+"Change Cover" = "カバーを変更";
+"Remove Artwork" = "カバーを削除";
+"Game Info" = "ゲーム情報";
+"Add ROM" = "ROMを追加";
+"No Games in Library" = "ゲームが見つかりません";
+"Add a Genesis or SEGA CD ROM file\n(.md .bin .gen .zip .chd)" = "GenesisまたはSEGA CDのROMファイル\n(.md .bin .gen .zip .chd) を追加";
+"Saves" = "セーブデータ";
+"No saves yet" = "セーブデータはありません";
+"Slot %lld" = "スロット %lld";
+"Import BIOS..." = "BIOSをインポート...";
+"BIOS Files" = "BIOSファイル";
+"SEGA CD BIOS" = "SEGA CD BIOS";
+"A correct regional BIOS (.bin) file must be installed for games to run." = "ゲームを実行するには正しいリージョンのBIOS (.bin) が必要です。";
+"Off" = "オフ";
+"CRT" = "CRT";
+"Simple CRT" = "シンプルCRT";
+"PicoDrive / Genesis Plus GX" = "PicoDrive";
+"GitHub" = "GitHub";
+
+"Developer" = "開発者";
+"Release Year" = "発売年";
+"File" = "ファイル";
+
+// Experimental Settings (v1.0.3)
+"Experimental" = "実験的機能";
+"Deneysel özellikler geliştirme aşamasındadır ve kararsızlıklara yol açabilir." = "実験的機能は開発中であり、不安定になる可能性があります。";
+"Deneysel Çekirdek (YD-Core)" = "実験的コア (YD-Core)";
+"Deneysel çekirdek etkinleştirildiğinde YD-Core v1.2.0 motoru ve gelişmiş donanım seçenekleri açılır." = "実験的コアを有効にするとYD-Core v1.2.0エンジンが有効になります。";
+"Deneysel ayarlar henüz geliştirme aşamasındadır ve hatalar olabilir. Yine de deneysel ayarları açmak istiyor musunuz?" = "実験的機能は開発中であり、問題が発生する可能性があります。有効にしますか？";
+"Vazgeç" = "キャンセル";
+"Aç" = "有効にする";
+"settings.experimental" = "実験的機能";
+"settings.experimental_footer" = "実験的機能は開発中であり、不安定になる可能性があります。";
+"settings.experimental_core" = "実験的コア (YD-Core)";
+"settings.emulation_core" = "エミュレーションコア";
+"settings.dma" = "ダイレクトメモリアクセス (DMA)";
+"settings.audio_interpolation" = "音声補間 (44.1 kHz)";
+"settings.force_6button" = "6ボタンコントローラーを強制";
+"settings.experimental_alert_title" = "実験的機能";
+"settings.experimental_alert_message" = "実験的機能は開発中であり、問題が発生する可能性があります。有効にしますか？";
+"settings.enable" = "有効にする";
+"Deneysel Ayarlar" = "実験的設定";
+"Emülasyon Çekirdeği" = "エミュレーションコア";
+"Aktif Çekirdek" = "アクティブコア";
+"PicoDrive (Varsayılan / Kararlı)" = "PicoDrive (標準 / 安定版)";
+"YD-Core v1.2.0 (Deneysel / Yerel Motor)" = "YD-Core v1.2.0 (実験的)";
+"core.picodrive.title" = "PicoDrive (安定版)";
+"core.ydcore.title" = "YD-Core (実験的)";
+"YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz." = "YD-Coreは独立したSEGAコアです。いつでも標準エンジンに戻せます。";
+"YD-Core Gelişmiş Ayarlar" = "YD-Core 詳細設定";
+"Doğrudan Bellek Erişimi (DMA)" = "ダイレクトメモリアクセス (DMA)";
+"Ses Enterpolasyonu (44.1 kHz)" = "音声補間 (44.1 kHz)";
+"6-Buton Kontrolcü Zorla" = "6ボタンコントローラーを強制";
+"Motor Mimarisi" = "エンジンアーキテクチャ";
+"İşlemci Çekirdekleri" = "CPUコア";
+"Ses Sentezleyici" = "オーディオシンセサイザー";
+"Durum Kaydı (Save State)" = "セーブ形式";
+"YD-Core v1.2.0 • Gold Master Build" = "YD-Core v1.2.0 • Gold Master Build";
+
+// Save Manager & Share (v1.0.3)
+"saves.no_preview" = "プレビューなし";
+"saves.load" = "ロード";
+"saves.overwrite" = "上書き";
+"saves.new" = "新しいセーブ";
+"share.preparing" = "準備中...";
+"Hazırlanıyor..." = "準備中...";
+
+// Emulator Alerts (v1.0.3)
+"emulator.exit_confirm_title" = "ゲームを終了しますか？";
+"emulator.exit_confirm_message" = "保存されていない進行状況は失われる可能性があります。";
+"emulator.save_and_exit" = "保存して終了";
+"emulator.quit_without_saving" = "保存せずに終了";
+"emulator.restart_confirm_title" = "ゲームを再起動しますか？";
+
+// Library Deletion (v1.0.3)
+"library.delete_confirm_named" = "\"%@\" を本当に削除しますか？";

@@ -212,7 +212,7 @@ struct SaveManagerView: View {
             // Slot Details
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("Slot \(item.slot + 1)")
+                    Text(LocalizationHelper.format("saves.slot", item.slot + 1))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(.primary)
 

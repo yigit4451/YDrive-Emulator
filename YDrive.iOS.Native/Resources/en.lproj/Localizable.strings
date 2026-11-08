@@ -3,6 +3,9 @@
 // Navigation / General
 "settings" = "Settings";
 "library" = "Library";
+"games" = "Games";
+"recent" = "Recent";
+"favorites" = "Favorites";
 "close" = "Close";
 "save" = "Save";
 "cancel" = "Cancel";
@@ -46,6 +49,8 @@
 "emulator.ok" = "OK";
 "emulator.exit" = "Exit";
 "emulator.reset" = "Reset";
+"emulator.resume" = "Resume";
+"emulator.load_state" = "Load State";
 "emulator.pause" = "Pause";
 "emulator.play" = "Play";
 "emulator.save_state" = "Saves";
@@ -73,6 +78,11 @@
 "settings.language.system" = "System Default";
 "settings.language.tr" = "Türkçe";
 "settings.language.en" = "English";
+"settings.language.de" = "Deutsch";
+"settings.language.es" = "Español";
+"settings.language.ja" = "日本語";
+"settings.language.ar" = "العربية";
+"settings.language.ru" = "Русский";
 
 // Settings — Emulation
 "settings.bios_files" = "BIOS Files";
