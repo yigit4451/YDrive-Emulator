@@ -34,15 +34,13 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
 @main
 struct YDriveApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @AppStorage("appTheme")    private var appTheme    = "system"
-    @AppStorage("appLanguage") private var appLanguage = "system"
+    @AppStorage("appTheme") private var appTheme = "system"
 
     init() {
         UserDefaults.standard.register(defaults: [
             "buttonColorsEnabled": false,
             "hapticFeedback": true,
-            "libraryViewMode": "grid",
-            "appLanguage": "system"
+            "libraryViewMode": "grid"
         ])
     }
 
@@ -54,23 +52,10 @@ struct YDriveApp: App {
         }
     }
 
-    private var activeLocale: Locale {
-        let code = LocalizationHelper.currentLanguageCode
-        return Locale(identifier: code)
-    }
-
-    private var activeLayoutDirection: LayoutDirection {
-        let code = LocalizationHelper.currentLanguageCode
-        return (code == "ar") ? .rightToLeft : .leftToRight
-    }
-
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(colorScheme)
-                .environment(\.locale, activeLocale)
-                .environment(\.layoutDirection, activeLayoutDirection)
-                .id(appLanguage)
         }
     }
 }

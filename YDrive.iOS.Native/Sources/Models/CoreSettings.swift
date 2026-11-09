@@ -1,44 +1,9 @@
 import Foundation
 import SwiftUI
 
-/// Supported UI languages in YDrive iOS.
-enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
-    case system = "system"
-    case en     = "en"
-    case tr     = "tr"
-    case de     = "de"
-    case es     = "es"
-    case ja     = "ja"
-    case ar     = "ar"
-    case ru     = "ru"
-
-    var id: String { rawValue }
-
-    var displayName: String {
-        switch self {
-        case .system: return LocalizationHelper.string("settings.language.system", default: "System Default")
-        case .en:     return "English"
-        case .tr:     return "Türkçe"
-        case .de:     return "Deutsch"
-        case .es:     return "Español"
-        case .ja:     return "日本語"
-        case .ar:     return "العربية"
-        case .ru:     return "Русский"
-        }
-    }
-
-    var isRTL: Bool {
-        self == .ar
-    }
-}
-
-/// Dynamic bundle-based localization helper honoring both iOS system/per-app settings and in-app language picker.
+/// Dynamic bundle-based localization helper honoring iOS per-app language settings.
 enum LocalizationHelper {
     static var currentLanguageCode: String {
-        let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? "system"
-        if stored != "system" {
-            return stored
-        }
         let preferred = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "en"
         let supported = ["en", "tr", "de", "es", "ja", "ar", "ru"]
         return supported.contains(preferred) ? preferred : "en"
