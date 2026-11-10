@@ -15,7 +15,7 @@
       "bundleIdentifier": "com.yigit.ydrive",
       "developerName": "yigit4451",
       "subtitle": "Open-source SEGA console emulator for iOS.",
-      "localizedDescription": "Open-source SEGA console emulator developed for iOS.\n\nSupported Systems:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (requires BIOS files)\n• SEGA 32X\n• SEGA Master System\n\nFeatures:\n• PicoDrive (Libretro) emulation core\n• Metal-based rendering\n• Modern SwiftUI and Liquid Glass interface\n• On-screen touch controls and physical controller support\n• Save states and screenshots\n• Automatic cover art and game info via TheGamesDB\n\nYDrive does not contain any game ROMs or BIOS files; you must provide your own legally obtained copies.\n\nSource code: https://github.com/yigit4451/YDrive-Emulator",
+      "localizedDescription": "Open-source SEGA console emulator developed for iOS.\n\nSupported Systems:\n• SEGA Genesis / Mega Drive\n• SEGA CD / Mega-CD (requires BIOS files)\n• SEGA 32X\n• SEGA Master System\n• SEGA Game Gear\n\nFeatures:\n• PicoDrive (Libretro) and in-house YD-Core emulation cores\n• Metal-based rendering\n• Modern SwiftUI and Liquid Glass interface\n• Full multi-language localization (7 languages)\n• On-screen touch controls and physical controller support\n• Save states and screenshots\n• Automatic cover art and game info via TheGamesDB\n\nYDrive does not contain any game ROMs or BIOS files; you must provide your own legally obtained copies.\n\nSource code: https://github.com/yigit4451/YDrive-Emulator",
       "iconURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
       "tintColor": "#005FD9",
       "category": "games",
@@ -35,5 +35,36 @@
       }
     }
   ],
-  "news": []
+  "news": [
+    {
+      "title": "Introducing YD-Core (Experimental Core)",
+      "identifier": "yd-core-announcement",
+      "caption": "We are proud to introduce YD-Core v1.2.0 — YDrive's in-house SEGA Mega Drive / Genesis emulation core written in pure C with Libretro API compatibility.\n\nKey Highlights:\n• Standalone In-House Core: Cycle-accurate Motorola 68000 and Zilog Z80 emulation.\n• Dual-Chip Sound Engine: Yamaha YM2612 FM synthesis + SN76489 PSG with 44.1 kHz audio interpolation support.\n• Hardware Acceleration: Direct Memory Access (DMA) transfer acceleration.\n• Ultra-Low Latency: Zero external dependencies, integrated directly into YDrive.\n• YDSS v2 State Engine: Robust state management with FNV-1a checksum validation.\n\nYD-Core can be enabled inside YDrive under Settings > Experimental.",
+      "date": "2026-11-10T22:30:00Z",
+      "tintColor": "#005FD9",
+      "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
+      "appID": "com.yigit.ydrive",
+      "url": "https://github.com/yigit4451/YDrive-Emulator/releases/tag/yd-core-v1.2.0"
+    },
+    {
+      "title": "YDrive 1.0.3 Update",
+      "identifier": "ydrive-1.0.3-update",
+      "caption": "YDrive 1.0.3 is now available with full internationalization, refined save management, and enhanced user experience!\n\n• Multi-Language Localization: Complete support for 7 languages — English, Turkish, German, Spanish, Japanese, Arabic (with RTL layout support), and Russian.\n• System Language Settings: Integrated with iOS Per-App Language settings in Apple Settings app.\n• Liquid Glass Save Cards: Save states redesigned with native Apple Liquid Glass, single-tap instant load, and leading alignment in landscape mode.\n• Screenshot Toast Notification: Smooth top-to-bottom animated blue notification banner confirming screenshots are saved to Photos.\n• Streamlined Experimental Settings: Enabling experimental features now automatically switches to the in-house YD-Core engine.\n• Refined Confirmation Dialogs: Simplified and translated deletion and restart prompts.",
+      "date": "2026-11-10T22:30:00Z",
+      "tintColor": "#005FD9",
+      "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
+      "appID": "com.yigit.ydrive",
+      "url": "https://github.com/yigit4451/YDrive-Emulator/releases/tag/ios-v1.0.3"
+    },
+    {
+      "title": "YDrive 1.0.2 Update",
+      "identifier": "ydrive-1.0.2-update",
+      "caption": "⚠️NOTE: The sharing feature only uses the native iOS Share Sheet. The app does not include or host any ROMs in any way.\n\nYDrive 1.0.2 is now available!\n\n• SEGA Game Gear Support: Full emulation support added for SEGA Game Gear titles.\n• Grid & List Layouts: Switch between card grid and compact list views directly in the home library.\n• ROM Sharing: Export and share selected games as .zip archives using the native iOS share sheet.\n• Touch Input Fix: Resolved an input timing issue where button presses were triggering on touch release instead of touch down.\n• Duplicate ROMs Fix: Resolved an issue where adding ROMs could cause duplicate entries in the game library.\n• UI Refinements: Streamlined the Details view and moved metadata refresh into the ROM context menu.",
+      "date": "2026-10-29T12:00:00Z",
+      "tintColor": "#005FD9",
+      "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",
+      "appID": "com.yigit.ydrive",
+      "url": "https://github.com/yigit4451/YDrive-Emulator/releases/tag/ios-v1.0.2"
+    }
+  ]
 }

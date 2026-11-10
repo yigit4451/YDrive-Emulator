@@ -117,8 +117,12 @@ jobs:
             gh release upload "$TAG" "${FILES[@]}" --clobber
           else
             echo "Creating release $TAG"
+            NOTES_FLAG="--generate-notes"
+            if [ -f "RELEASE-NOTES.md" ]; then
+              NOTES_FLAG="--notes-file RELEASE-NOTES.md"
+            fi
             gh release create "$TAG" "${FILES[@]}" \
-              --title "YDrive ${VERSION} (iOS)" --generate-notes
+              --title "YDrive ${VERSION} (iOS)" $NOTES_FLAG
           fi
 
       - name: Verify uploaded IPA matches the built file

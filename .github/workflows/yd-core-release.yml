@@ -1,0 +1,33 @@
+name: YD-Core Release
+
+on:
+  push:
+    tags: [ "yd-core-*" ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create YD-Core GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          NOTES_FLAG="--generate-notes"
+          if [ -f "YD-CORE-RELEASE.md" ]; then
+            NOTES_FLAG="--notes-file YD-CORE-RELEASE.md"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists - editing notes"
+            gh release edit "$TAG" $NOTES_FLAG --title "YD-Core v1.2.0 - Standalone SEGA Emulation Core"
+          else
+            echo "Creating standalone release $TAG"
+            gh release create "$TAG" \
+              --title "YD-Core v1.2.0 - Standalone SEGA Emulation Core" $NOTES_FLAG
+          fi
