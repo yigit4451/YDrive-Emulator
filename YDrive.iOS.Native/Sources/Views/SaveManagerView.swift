@@ -31,26 +31,12 @@ struct SaveManagerView: View {
 
     private var gridColumns: [GridItem] {
         if isLandscapeOrWide {
-            return [GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 16)]
+            return [GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 16, alignment: .topLeading)]
         } else {
             return [
                 GridItem(.flexible(), spacing: 14),
                 GridItem(.flexible(), spacing: 14)
             ]
-        }
-    }
-
-    private var contentContainerMaxWidth: CGFloat? {
-        guard isLandscapeOrWide else { return nil }
-        let count = max(1, savedSlots.count)
-        if count == 1 {
-            return 220
-        } else if count == 2 {
-            return 220 * 2 + 16
-        } else if count == 3 {
-            return 220 * 3 + 32
-        } else {
-            return 220 * 4 + 48
         }
     }
 
@@ -98,13 +84,11 @@ struct SaveManagerView: View {
                     emptySavesView
                         .padding(.horizontal, 16)
                 } else {
-                    LazyVGrid(columns: gridColumns, spacing: isLandscapeOrWide ? 16 : 14) {
+                    LazyVGrid(columns: gridColumns, alignment: .leading, spacing: isLandscapeOrWide ? 16 : 14) {
                         ForEach(savedSlots) { item in
                             saveCard(item: item)
                         }
                     }
-                    .frame(maxWidth: contentContainerMaxWidth)
-                    .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal, isLandscapeOrWide ? 24 : 16)
                     .padding(.top, 14)
                     .padding(.bottom, 28)
