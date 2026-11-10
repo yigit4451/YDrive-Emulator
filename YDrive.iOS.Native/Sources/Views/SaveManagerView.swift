@@ -15,8 +15,6 @@ struct SaveManagerView: View {
     @AppStorage("appTheme") private var appTheme = "system"
     
     @State private var savedSlots: [SaveSlotItem] = []
-    @State private var selectedSlotForAction: SaveSlotItem?
-    @State private var showingActionSheet = false
     @State private var slotToDelete: Int?
     @State private var showingDeleteAlert = false
     @State private var isSaving = false
@@ -167,27 +165,6 @@ struct SaveManagerView: View {
                 engine.setPaused(false)
             }
         }
-        .confirmationDialog(
-            selectedSlotForAction.map { "Slot \($0.slot + 1)" } ?? LocalizationHelper.string("saves.title", default: "Saves"),
-            isPresented: $showingActionSheet,
-            titleVisibility: .visible,
-            presenting: selectedSlotForAction
-        ) { item in
-            Button(LocalizationHelper.string("saves.load", default: "Load")) {
-                loadState(slot: item.slot)
-            }
-            Button(LocalizationHelper.string("saves.overwrite", default: "Overwrite")) {
-                overwriteSave(slot: item.slot)
-            }
-            Button(LocalizationHelper.string("share", default: "Share")) {
-                shareManager.shareSaveState(gameFileName: gameFileName, slot: item.slot)
-            }
-            Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
-                slotToDelete = item.slot
-                showingDeleteAlert = true
-            }
-            Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
-        }
         .alert(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete this?"), isPresented: $showingDeleteAlert) {
             Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
             Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
@@ -257,16 +234,12 @@ struct SaveManagerView: View {
             .padding(.horizontal, 10)
             .padding(.bottom, 10)
         }
-        .background(Color(UIColor.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
-        )
-        .shadow(color: Color.black.opacity(0.08), radius: 6, y: 2)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: Color.black.opacity(0.10), radius: 6, y: 2)
         .onTapGesture {
-            selectedSlotForAction = item
-            showingActionSheet = true
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            loadState(slot: item.slot)
         }
         .contextMenu {
             Button {
@@ -347,8 +320,8 @@ struct SaveManagerView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .background(Color(UIColor.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: Color.black.opacity(0.08), radius: 8, y: 3)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.10), radius: 8, y: 3)
         .padding(.top, 20)
     }
 
