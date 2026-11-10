@@ -111,36 +111,6 @@ struct EmulatorView: View {
                             .allowsHitTesting(false)
                             .transition(.opacity)
                     }
-
-                    // ── Screenshot saved toast banner (slides from top) ───────────
-                    if showScreenshotToast {
-                        VStack {
-                            HStack(spacing: 8) {
-                                Image(systemName: "camera.fill")
-                                    .font(.subheadline.weight(.bold))
-                                Text(LocalizationHelper.string("emulator.screenshot_saved", default: "Ekran görüntüsü Fotoğraflar'a kaydedildi"))
-                                    .font(.subheadline.weight(.semibold))
-                            }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 11)
-                            .background(
-                                Capsule()
-                                    .fill(Color(red: 0, green: 115/255, blue: 250/255))
-                            )
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                            )
-                            .shadow(color: Color.black.opacity(0.18), radius: 10, y: 4)
-                            .padding(.top, isLandscape ? 12 : max(stableSafeTop + 6, 16))
-                            .transition(.move(edge: .top).combined(with: .opacity))
-
-                            Spacer()
-                        }
-                        .allowsHitTesting(false)
-                        .zIndex(999)
-                    }
                 }
             }
             .ignoresSafeArea()
@@ -347,8 +317,52 @@ struct EmulatorView: View {
             removeControllerObservers()
             engine.stop()
         }
+        .overlay(alignment: .top) {
+            screenshotToastBanner
+                .ignoresSafeArea()
+        }
+        .animation(.spring(response: 0.38, dampingFraction: 0.78), value: showScreenshotToast)
         .defersSystemGestures(on: .all)
         .preferredColorScheme(.dark)
+    }
+
+    private var isLandscapeOrientation: Bool {
+        if verticalSizeClass == .compact { return true }
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+            ?? scenes.first as? UIWindowScene
+        if let size = windowScene?.screen.bounds.size {
+            return size.width > size.height
+        }
+        return UIScreen.main.bounds.width > UIScreen.main.bounds.height
+    }
+
+    @ViewBuilder
+    private var screenshotToastBanner: some View {
+        if showScreenshotToast {
+            HStack(spacing: 8) {
+                Image(systemName: "camera.fill")
+                    .font(.subheadline.weight(.bold))
+                Text(LocalizationHelper.string("emulator.screenshot_saved", default: "Ekran görüntüsü Fotoğraflar'a kaydedildi"))
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 11)
+            .background(
+                Capsule()
+                    .fill(Color(red: 0, green: 115/255, blue: 250/255))
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.20), radius: 12, y: 4)
+            .padding(.top, isLandscapeOrientation ? 12 : max(stableSafeTop + 6, 16))
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .allowsHitTesting(false)
+            .zIndex(9999)
+        }
     }
 
     @MainActor
