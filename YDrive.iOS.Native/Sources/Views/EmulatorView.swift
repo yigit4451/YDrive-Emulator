@@ -18,6 +18,8 @@ struct EmulatorView: View {
     @State private var isSaveManagerPresented = false
     @State private var showingBiosAlert = false
     @State private var showFlash = false
+    @State private var showScreenshotToast = false
+    @State private var screenshotToastWorkItem: DispatchWorkItem? = nil
     @State private var showingExitConfirmation = false
     @State private var showingRestartConfirmation = false
 
@@ -108,6 +110,36 @@ struct EmulatorView: View {
                             .ignoresSafeArea()
                             .allowsHitTesting(false)
                             .transition(.opacity)
+                    }
+
+                    // ── Screenshot saved toast banner (slides from top) ───────────
+                    if showScreenshotToast {
+                        VStack {
+                            HStack(spacing: 8) {
+                                Image(systemName: "camera.fill")
+                                    .font(.subheadline.weight(.bold))
+                                Text(LocalizationHelper.string("emulator.screenshot_saved", default: "Ekran görüntüsü Fotoğraflar'a kaydedildi"))
+                                    .font(.subheadline.weight(.semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 11)
+                            .background(
+                                Capsule()
+                                    .fill(Color(red: 0, green: 115/255, blue: 250/255))
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
+                            .shadow(color: Color.black.opacity(0.18), radius: 10, y: 4)
+                            .padding(.top, isLandscape ? 12 : max(stableSafeTop + 6, 16))
+                            .transition(.move(edge: .top).combined(with: .opacity))
+
+                            Spacer()
+                        }
+                        .allowsHitTesting(false)
+                        .zIndex(999)
                     }
                 }
             }
@@ -384,6 +416,19 @@ struct EmulatorView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             withAnimation(.easeIn(duration: 0.2)) { showFlash = false }
         }
+
+        // Top-to-bottom animated blue message toast
+        screenshotToastWorkItem?.cancel()
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+            showScreenshotToast = true
+        }
+        let workItem = DispatchWorkItem {
+            withAnimation(.easeInOut(duration: 0.28)) {
+                showScreenshotToast = false
+            }
+        }
+        screenshotToastWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5, execute: workItem)
 
         // Save to Photos in background to avoid blocking main thread / engine
         Task.detached {
