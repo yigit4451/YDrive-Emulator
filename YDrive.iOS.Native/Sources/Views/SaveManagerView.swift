@@ -24,11 +24,37 @@ struct SaveManagerView: View {
     @ObservedObject private var shareManager = RomShareManager.shared
 
     @Environment(\.colorScheme) private var envColorScheme
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    private let gridColumns = [
-        GridItem(.flexible(), spacing: 14),
-        GridItem(.flexible(), spacing: 14)
-    ]
+    private var isLandscapeOrWide: Bool {
+        verticalSizeClass == .compact || horizontalSizeClass == .regular
+    }
+
+    private var gridColumns: [GridItem] {
+        if isLandscapeOrWide {
+            return [GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 16)]
+        } else {
+            return [
+                GridItem(.flexible(), spacing: 14),
+                GridItem(.flexible(), spacing: 14)
+            ]
+        }
+    }
+
+    private var contentContainerMaxWidth: CGFloat? {
+        guard isLandscapeOrWide else { return nil }
+        let count = max(1, savedSlots.count)
+        if count == 1 {
+            return 220
+        } else if count == 2 {
+            return 220 * 2 + 16
+        } else if count == 3 {
+            return 220 * 3 + 32
+        } else {
+            return 220 * 4 + 48
+        }
+    }
 
     private var colorScheme: ColorScheme? {
         switch appTheme {
@@ -74,12 +100,14 @@ struct SaveManagerView: View {
                     emptySavesView
                         .padding(.horizontal, 16)
                 } else {
-                    LazyVGrid(columns: gridColumns, spacing: 14) {
+                    LazyVGrid(columns: gridColumns, spacing: isLandscapeOrWide ? 16 : 14) {
                         ForEach(savedSlots) { item in
                             saveCard(item: item)
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .frame(maxWidth: contentContainerMaxWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, isLandscapeOrWide ? 24 : 16)
                     .padding(.top, 14)
                     .padding(.bottom, 28)
                 }
@@ -211,22 +239,9 @@ struct SaveManagerView: View {
 
             // Slot Details
             VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(LocalizationHelper.format("saves.slot", item.slot + 1))
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    if let info = item.coreInfo {
-                        Text(info)
-                            .font(.system(size: 9, weight: .bold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.accentColor.opacity(0.12), in: Capsule())
-                            .foregroundStyle(Color.accentColor)
-                    }
-                }
+                Text(LocalizationHelper.format("saves.slot", item.slot + 1))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.primary)
 
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
@@ -238,6 +253,7 @@ struct SaveManagerView: View {
                         .lineLimit(1)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 10)
             .padding(.bottom, 10)
         }
