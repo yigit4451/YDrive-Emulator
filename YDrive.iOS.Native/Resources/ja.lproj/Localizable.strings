@@ -204,6 +204,7 @@
 "saves.load" = "ロード";
 "saves.overwrite" = "上書き";
 "saves.new" = "新しいセーブ";
+"saves.delete_confirm" = "このセーブデータを本当に削除しますか？";
 "share.preparing" = "準備中...";
 "Hazırlanıyor..." = "準備中...";
 

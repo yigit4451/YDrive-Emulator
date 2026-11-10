@@ -204,6 +204,7 @@
 "saves.load" = "تحميل";
 "saves.overwrite" = "استبدال";
 "saves.new" = "نقطة حفظ جديدة";
+"saves.delete_confirm" = "هل أنت متأكد أنك تريد حذف هذا الحفظ؟";
 "share.preparing" = "جارٍ التحضير...";
 "Hazırlanıyor..." = "جارٍ التحضير...";
 

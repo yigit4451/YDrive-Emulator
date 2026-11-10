@@ -149,15 +149,13 @@ struct SaveManagerView: View {
                 engine.setPaused(false)
             }
         }
-        .alert(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete this?"), isPresented: $showingDeleteAlert) {
+        .alert(LocalizationHelper.string("saves.delete_confirm", default: "Are you sure you want to delete this save?"), isPresented: $showingDeleteAlert) {
             Button(LocalizationHelper.string("cancel", default: "Cancel"), role: .cancel) { }
             Button(LocalizationHelper.string("delete", default: "Delete"), role: .destructive) {
                 if let slot = slotToDelete {
                     deleteSave(slot: slot)
                 }
             }
-        } message: {
-            Text(LocalizationHelper.string("confirm_delete", default: "Are you sure you want to delete this?"))
         }
         .sheet(item: $shareManager.shareItem) { item in
             ActivityViewController(activityItems: [item.url])

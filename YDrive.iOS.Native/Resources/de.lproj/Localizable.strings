@@ -204,6 +204,7 @@
 "saves.load" = "Laden";
 "saves.overwrite" = "Überschreiben";
 "saves.new" = "Neuer Speicherstand";
+"saves.delete_confirm" = "Möchten Sie diesen Speicherstand wirklich löschen?";
 "share.preparing" = "Vorbereitung...";
 "Hazırlanıyor..." = "Vorbereitung...";
 

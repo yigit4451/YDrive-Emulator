@@ -204,6 +204,7 @@
 "saves.load" = "Загрузить";
 "saves.overwrite" = "Перезаписать";
 "saves.new" = "Новое сохранение";
+"saves.delete_confirm" = "Вы уверены, что хотите удалить это сохранение?";
 "share.preparing" = "Подготовка...";
 "Hazırlanıyor..." = "Подготовка...";
 

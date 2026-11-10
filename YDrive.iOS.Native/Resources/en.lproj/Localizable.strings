@@ -204,6 +204,7 @@
 "saves.load" = "Load";
 "saves.overwrite" = "Overwrite";
 "saves.new" = "New Save State";
+"saves.delete_confirm" = "Are you sure you want to delete this save?";
 "share.preparing" = "Preparing...";
 "Hazırlanıyor..." = "Preparing...";
 

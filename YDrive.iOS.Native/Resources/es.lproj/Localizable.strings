@@ -204,6 +204,7 @@
 "saves.load" = "Cargar";
 "saves.overwrite" = "Sobrescribir";
 "saves.new" = "Nuevo guardado";
+"saves.delete_confirm" = "¿Estás seguro de que deseas eliminar esta partida guardada?";
 "share.preparing" = "Preparando...";
 "Hazırlanıyor..." = "Preparando...";
 

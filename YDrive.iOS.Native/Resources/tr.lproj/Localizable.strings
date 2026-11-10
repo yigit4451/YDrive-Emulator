@@ -204,6 +204,7 @@
 "saves.load" = "Yükle";
 "saves.overwrite" = "Üzerine Yaz";
 "saves.new" = "Yeni Kayıt";
+"saves.delete_confirm" = "Kaydı silmek istediğinize emin misiniz?";
 "share.preparing" = "Hazırlanıyor...";
 "Hazırlanıyor..." = "Hazırlanıyor...";
 
