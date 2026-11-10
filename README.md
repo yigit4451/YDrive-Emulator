@@ -10,10 +10,10 @@ Designed with sleek aesthetics, automated metadata scraping, low-latency audio, 
 
 | System | Supported Core | Notes |
 |---|---|---|
-| **SEGA Genesis / Mega Drive** | PicoDrive / Genesis Plus GX | Full support, 3-button & 6-button controller mapping |
-| **SEGA CD / Mega-CD** | PicoDrive / Genesis Plus GX | ISO/BIN/CUE/CHD format, requires BIOS (`bios_CD_U.bin`, etc.) |
+| **SEGA Genesis / Mega Drive** | PicoDrive / YD-Core (Experimental)| Full support, 3-button & 6-button controller mapping |
+| **SEGA CD / Mega-CD** | PicoDrive  | ISO/BIN/CUE/CHD format, requires BIOS (`bios_CD_U.bin`, etc.) |
 | **SEGA 32X** | PicoDrive | Full support with 32X BIOS or High-Level Emulation |
-| **SEGA Master System** | PicoDrive / Genesis Plus GX | 2-button controller layout, cartridge & ROM support |
+| **SEGA Master System** | PicoDrive / YD-Core (Experimental) | 2-button controller layout, cartridge & ROM support |
 
 ---
 
