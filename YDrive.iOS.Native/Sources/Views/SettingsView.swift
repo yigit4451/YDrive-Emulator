@@ -100,15 +100,6 @@ struct SettingsView: View {
                     Toggle(LocalizationHelper.string("settings.experimental_core", default: "Experimental Core (YD-Core)"), isOn: experimentalCoreBinding)
                         .tint(.blue)
 
-                    Picker(LocalizationHelper.string("settings.emulation_core", default: "Emulation Core"), selection: $selectedCore) {
-                        ForEach(EmulationCoreType.allCases) { core in
-                            Text(core.displayName).tag(core)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .disabled(!enableExperimentalCore)
-                    .opacity(enableExperimentalCore ? 1.0 : 0.45)
-
                     Toggle(LocalizationHelper.string("settings.dma", default: "Direct Memory Access (DMA)"), isOn: $fastMemory)
                         .tint(.blue)
                         .disabled(!enableExperimentalCore)
@@ -186,7 +177,7 @@ struct SettingsView: View {
                     HStack {
                         Text("settings.core")
                         Spacer()
-                        Text((enableExperimentalCore && selectedCore == .ydCore) ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive")
+                        Text(enableExperimentalCore ? "YD-Core v1.2.0 (Pure C)" : "PicoDrive")
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.trailing)
                     }

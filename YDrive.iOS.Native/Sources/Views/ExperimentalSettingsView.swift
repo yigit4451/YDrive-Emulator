@@ -33,21 +33,6 @@ struct ExperimentalSettingsView: View {
                     .tint(.blue)
             }
 
-            // ── EMÜLASYON ÇEKİRDEĞİ ───────────────────────────────────────────
-            Section(
-                header: Text("Emülasyon Çekirdeği"),
-                footer: Text("YD-Core, saf C ile sıfırdan geliştirilmiş bağımsız SEGA çekirdeğidir. Kararsızlık durumunda varsayılan motora dönebilirsiniz.")
-            ) {
-                Picker("Aktif Çekirdek", selection: $selectedCore) {
-                    ForEach(EmulationCoreType.allCases) { core in
-                        Text(core.displayName).tag(core)
-                    }
-                }
-                .pickerStyle(.inline)
-            }
-            .disabled(!enableExperimentalCore)
-            .opacity(enableExperimentalCore ? 1.0 : 0.45)
-
             // ── YD-CORE GELİŞMİŞ AYARLAR ──────────────────────────────────────
             Section(header: Text("YD-Core Gelişmiş Ayarlar")) {
                 Toggle("Doğrudan Bellek Erişimi (DMA)", isOn: $fastMemory)

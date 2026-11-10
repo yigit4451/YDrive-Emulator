@@ -74,9 +74,7 @@ struct CoreSettings: Sendable {
     static func current() -> CoreSettings {
         let defaults = UserDefaults.standard
         let expEnabled = defaults.object(forKey: enableExperimentalKey) as? Bool ?? false
-        let rawCore = defaults.string(forKey: selectedCoreKey) ?? EmulationCoreType.picodrive.rawValue
-        let storedCore = EmulationCoreType(rawValue: rawCore) ?? .picodrive
-        let activeCore: EmulationCoreType = expEnabled ? storedCore : .picodrive
+        let activeCore: EmulationCoreType = expEnabled ? .ydCore : .picodrive
 
         let fastMem = defaults.object(forKey: fastMemoryKey) as? Bool ?? true
         let audioInterp = defaults.object(forKey: audioInterpolationKey) as? Bool ?? false
