@@ -39,7 +39,7 @@
     {
       "title": "Introducing YD-Core (Experimental Core)",
       "identifier": "yd-core-announcement",
-      "caption": "We are proud to introduce YD-Core v1.2.0 — YDrive's in-house SEGA Mega Drive / Genesis emulation core written in pure C with Libretro API compatibility.\n\nKey Highlights:\n• Standalone In-House Core: High-fidelity Motorola 68000 and Zilog Z80 emulation.\n• Dual-Chip Sound Engine: Yamaha YM2612 FM synthesis + SN76489 PSG with authentic discrete hardware output.\n• Hardware Acceleration: Direct Memory Access (DMA) transfer acceleration.\n• Ultra-Low Latency: Zero external dependencies, integrated directly into YDrive.\n• YDSS v2 State Engine: Robust state management with FNV-1a checksum validation.\n\nYD-Core can be enabled inside YDrive under Settings > Experimental.",
+      "caption": "We are proud to introduce YD-Core v1.2.0 — YDrive's in-house SEGA Mega Drive / Master System emulation core written in pure C with Libretro API compatibility.\n\nKey Highlights:\n• Standalone In-House Core: High-fidelity Motorola 68000 and Zilog Z80 emulation.\n• Dual-Chip Sound Engine: Yamaha YM2612 FM synthesis + SN76489 PSG with authentic discrete hardware output.\n• Hardware Acceleration: Direct Memory Access (DMA) transfer acceleration.\n• Ultra-Low Latency: Zero external dependencies, integrated directly into YDrive.\n• YDSS v2 State Engine: Robust state management with FNV-1a checksum validation.\n\nYD-Core can be enabled inside YDrive under Settings > Experimental.",
       "date": "2026-11-10T22:30:00Z",
       "tintColor": "#005FD9",
       "imageURL": "https://yigit4451.github.io/YDrive-Emulator/icon.png",

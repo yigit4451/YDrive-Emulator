@@ -1,6 +1,6 @@
 # Introducing YD-Core (Experimental Core)
 
-We are proud to introduce YD-Core v1.2.0 — YDrive's in-house SEGA Mega Drive / Genesis emulation core written in pure C with Libretro API compatibility.
+We are proud to introduce YD-Core v1.2.0 — YDrive's in-house SEGA Mega Drive / Master System emulation core written in pure C with Libretro API compatibility.
 
 ### Key Highlights:
 • **Standalone In-House Core:** High-fidelity Motorola 68000 and Zilog Z80 emulation.  
